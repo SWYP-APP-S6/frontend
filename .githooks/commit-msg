@@ -30,7 +30,7 @@ echo "Commit blocked: invalid commit message."
 echo
 echo "Required formats:"
 echo "  chore: [geonwoo.kim]: ktlint 적용"
-echo "  release: [v1.0.2(8)][geonwoo.kim]: 내부 테스트 버전 릴리즈"
+echo "  release: [v1.0.0][geonwoo.kim]: 내부 테스트 버전 릴리즈"
 echo
 echo "Allowed types:"
 echo "  feat, fix, docs, style, refactor, test, chore, build, release"

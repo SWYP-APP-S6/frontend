@@ -1,6 +1,7 @@
 package com.swyp.mangro.buildlogic
 
 import com.android.build.api.dsl.LibraryExtension
+import com.swyp.mangro.buildlogic.conf.Constants
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
@@ -11,19 +12,17 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
 
         extensions.configure<LibraryExtension> {
             compileSdk {
-                version = release(AndroidConfig.COMPILE_SDK) {
-                    minorApiLevel = AndroidConfig.COMPILE_SDK_MINOR
-                }
+                version = release(Constants.COMPILE_SDK)
             }
 
             defaultConfig {
-                minSdk = AndroidConfig.MIN_SDK
+                minSdk = Constants.MIN_SDK
                 testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
             }
 
             compileOptions {
-                sourceCompatibility = AndroidConfig.javaVersion
-                targetCompatibility = AndroidConfig.javaVersion
+                sourceCompatibility = Constants.JAVA_VERSION
+                targetCompatibility = Constants.JAVA_VERSION
             }
         }
     }

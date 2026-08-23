@@ -26,3 +26,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "mangro"
 include(":app")
+include(":core:network")
+include(":core:designsystem")

@@ -11,14 +11,18 @@ git config --local core.hooksPath .githooks
 현재 정책은 다음과 같습니다.
 
 - `commit-msg`: 커밋 메시지 형식을 검증하고 잘못된 메시지를 차단합니다.
-- `pre-commit`: ktlint 검사를 실행하지 않고 항상 성공합니다.
+- `pre-commit`: 전체 ktlint 검사를 실행하고 위반 사항이 있으면 커밋을 차단합니다.
 
-ktlint는 개발자가 필요한 범위에 대해 수동으로 실행합니다.
+커밋 시에는 `pre-commit`이 전체 ktlint 검사를 자동 실행합니다.
+필요한 범위를 직접 검사하거나 포맷하려면 다음 명령을 사용합니다.
 
 ```bash
-./gradlew :feature:shop:ktlintCheck
-./gradlew :feature:shop:ktlintFormat
+./gradlew ktlintCheck
+./gradlew ktlintFormat
+./gradlew :app:ktlintCheck
+./gradlew :app:ktlintFormat
 ```
 
-전체 `ktlintFormat`은 광범위한 파일을 수정할 수 있으므로 초기 도입 단계에서는
-모듈 단위로 실행합니다.
+루트 태스크는 루트 Gradle 스크립트와 앱 모듈을 검사하거나 포맷하며,
+포함 빌드인 `build-logic`은 대상에서 제외합니다.
+특정 모듈만 대상으로 삼으려면 모듈 경로가 포함된 태스크를 실행합니다.

@@ -1,10 +1,8 @@
 #!/bin/sh
-#
-#set -eu
-#
-#repo_root="$(git rev-parse --show-toplevel)"
-#cd "$repo_root"
-#
-#./gradlew ktlintCheck --continue
 
-exit 0
+set -eu
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+./gradlew ktlintCheck --continue

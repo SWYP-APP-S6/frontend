@@ -1,0 +1,24 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{kt,kts}]
+indent_style = space
+indent_size = 4
+max_line_length = off
+
+ktlint_code_style = android_studio
+
+# Keep multiline declarations and calls diff-friendly.
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true
+
+# Do not let IDE import optimization introduce wildcard imports.
+ij_kotlin_packages_to_use_import_on_demand = unset
+
+# PascalCase is the naming convention for composable functions.
+ktlint_function_naming_ignore_when_annotated_with = Composable

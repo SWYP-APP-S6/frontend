@@ -9,7 +9,6 @@ import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.getByType
 
-
 /**
  * Version Catalog에 추가된 라이브러리 의존성 정보를 가져오는 프로퍼티
  *
@@ -20,19 +19,11 @@ import org.gradle.kotlin.dsl.getByType
 internal val Project.libs
     get() = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
+internal fun Project.library(alias: String): Provider<MinimalExternalModuleDependency> = libs.findLibrary(alias).get()
 
-internal fun Project.library(alias: String): Provider<MinimalExternalModuleDependency> {
-    return libs.findLibrary(alias).get()
-}
+internal fun Project.bundle(alias: String): Provider<ExternalModuleDependencyBundle> = libs.findBundle(alias).get()
 
-internal fun Project.bundle(alias: String): Provider<ExternalModuleDependencyBundle> {
-    return libs.findBundle(alias).get()
-}
-
-internal fun Project.version(alias: String): String {
-    return libs.findVersion(alias).get().requiredVersion
-}
-
+internal fun Project.version(alias: String): String = libs.findVersion(alias).get().requiredVersion
 
 internal fun DependencyHandler.implementation(dependencyNotation: Any) {
     add("implementation", dependencyNotation)

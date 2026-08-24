@@ -1,0 +1,12 @@
+# <type>: [<작성자>]: <설명>
+#
+# 예시:
+# docs: [geonwoo.kim]: 에이전트 하네스 문서 추가
+# fix: [geonwoo.kim]: 로그인 실패 처리 수정
+#
+# 일반 type:
+# feat, fix, docs, style, refactor, test, chore
+#
+# 빌드 및 릴리스 형식:
+# release: [v1.0.0][geonwoo.kim]: 내부 테스트 버전 릴리즈
+

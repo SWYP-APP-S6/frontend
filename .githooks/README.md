@@ -4,8 +4,7 @@
 다음 명령을 실행합니다.
 
 ```bash
-git config --local commit.template .gitmessage
-git config --local core.hooksPath .githooks
+./scripts/agent/install-git-hooks.sh
 ```
 
 현재 정책은 다음과 같습니다.
@@ -26,3 +25,11 @@ git config --local core.hooksPath .githooks
 루트 태스크는 루트 Gradle 스크립트와 앱 모듈을 검사하거나 포맷하며,
 포함 빌드인 `build-logic`은 대상에서 제외합니다.
 특정 모듈만 대상으로 삼으려면 모듈 경로가 포함된 태스크를 실행합니다.
+
+저장소 공용 검증 진입점은 다음과 같습니다.
+
+```bash
+./scripts/agent/verify.sh --quick
+./scripts/agent/verify.sh --full
+./scripts/agent/verify.sh --device
+```

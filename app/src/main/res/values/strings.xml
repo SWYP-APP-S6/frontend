@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">mangro</string>
+    <string name="greeting_message">Hello Mangro!</string>
 </resources>

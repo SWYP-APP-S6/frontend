@@ -1,5 +1,6 @@
 plugins {
     id("mangro.android.application")
+    id("mangro.android.compose")
 }
 
 android {
@@ -19,6 +20,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:designsystem"))
+    implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)

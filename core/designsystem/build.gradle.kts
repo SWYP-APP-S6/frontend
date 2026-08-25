@@ -1,0 +1,8 @@
+plugins {
+    id("mangro.android.library")
+    id("mangro.android.compose")
+}
+
+android {
+    namespace = "com.swyp.mangro.core.designsystem"
+}

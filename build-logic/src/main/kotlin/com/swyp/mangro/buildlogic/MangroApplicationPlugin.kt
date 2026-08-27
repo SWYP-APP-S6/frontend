@@ -30,15 +30,15 @@ class MangroApplicationPlugin : Plugin<Project> {
                     targetCompatibility = Constants.JAVA_VERSION
                 }
 
-                flavorDimensions += "role"
+                flavorDimensions += Constants.FLAVOR_DIMENSION_ROLE
                 productFlavors {
-                    create("owner") {
-                        dimension = "role"
-                        applicationIdSuffix = ".owner"
+                    create(Constants.FLAVOR_OWNER) {
+                        dimension = Constants.FLAVOR_DIMENSION_ROLE
+                        applicationIdSuffix = ".${Constants.FLAVOR_OWNER}"
                     }
-                    create("consumer") {
-                        dimension = "role"
-                        applicationIdSuffix = ".consumer"
+                    create(Constants.FLAVOR_CONSUMER) {
+                        dimension = Constants.FLAVOR_DIMENSION_ROLE
+                        applicationIdSuffix = ".${Constants.FLAVOR_CONSUMER}"
                     }
                 }
             }

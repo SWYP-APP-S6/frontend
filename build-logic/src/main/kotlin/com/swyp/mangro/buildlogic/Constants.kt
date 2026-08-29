@@ -16,4 +16,8 @@ internal object Constants {
     const val VERSION_NAME = "${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}"
 
     val JAVA_VERSION = JavaVersion.VERSION_17
+
+    const val FLAVOR_DIMENSION_ROLE = "role"
+    const val FLAVOR_OWNER = "owner"
+    const val FLAVOR_CONSUMER = "consumer"
 }

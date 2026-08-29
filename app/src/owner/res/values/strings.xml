@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Mangro Owner</string>
+    <string name="greeting_message">Hello Mangro Owner!</string>
+</resources>

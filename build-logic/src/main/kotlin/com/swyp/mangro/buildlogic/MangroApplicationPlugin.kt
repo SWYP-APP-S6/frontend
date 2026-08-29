@@ -29,6 +29,18 @@ class MangroApplicationPlugin : Plugin<Project> {
                     sourceCompatibility = Constants.JAVA_VERSION
                     targetCompatibility = Constants.JAVA_VERSION
                 }
+
+                flavorDimensions += Constants.FLAVOR_DIMENSION_ROLE
+                productFlavors {
+                    create(Constants.FLAVOR_OWNER) {
+                        dimension = Constants.FLAVOR_DIMENSION_ROLE
+                        applicationIdSuffix = ".${Constants.FLAVOR_OWNER}"
+                    }
+                    create(Constants.FLAVOR_CONSUMER) {
+                        dimension = Constants.FLAVOR_DIMENSION_ROLE
+                        applicationIdSuffix = ".${Constants.FLAVOR_CONSUMER}"
+                    }
+                }
             }
         }
     }

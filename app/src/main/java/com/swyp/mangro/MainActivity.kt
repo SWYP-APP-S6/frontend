@@ -7,7 +7,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,7 +32,7 @@ class MainActivity : ComponentActivity() {
 private fun MainScreen() {
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background,
+        color = MangroTheme.colors.surfaceNormal,
     ) {
         Box(
             modifier = Modifier
@@ -48,7 +47,10 @@ private fun MainScreen() {
 
 @Composable
 private fun Greeting() {
-    Text(text = stringResource(R.string.greeting_message))
+    Text(
+        text = stringResource(R.string.greeting_message),
+        color = MangroTheme.colors.primaryNormal,
+    )
 }
 
 @Preview(showBackground = true)

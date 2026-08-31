@@ -15,6 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.naver.maps.map.compose.ExperimentalNaverMapApi
+import com.naver.maps.map.compose.NaverMap
 import com.swyp.mangro.core.designsystem.component.appbar.BottomAppBar
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
 import com.swyp.mangro.core.designsystem.component.appbar.Menu
@@ -33,6 +35,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalNaverMapApi::class)
 @Composable
 private fun MainScreen() {
     Scaffold(
@@ -62,7 +65,7 @@ private fun MainScreen() {
                 .padding(paddingValues),
             contentAlignment = Alignment.Center,
         ) {
-            Greeting()
+            NaverMap(modifier = Modifier.fillMaxSize())
         }
     }
 }

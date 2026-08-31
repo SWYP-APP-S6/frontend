@@ -17,14 +17,14 @@
 
 ## 현재 빌드 기준
 
-| 항목 | 현재 값 | 원본 |
-|---|---:|---|
+| 항목 |  현재 값 | 원본 |
+|---|------:|---|
 | Gradle | 9.4.1 | `gradle/wrapper/gradle-wrapper.properties` |
 | Android Gradle Plugin | 9.2.1 | `gradle/libs.versions.toml` |
-| Java | 17 | `build-logic/.../Constants.kt` |
-| minSdk | 28 | `build-logic/.../Constants.kt` |
-| targetSdk | 36 | `build-logic/.../Constants.kt` |
-| compileSdk | 36 | `build-logic/.../Constants.kt` |
+| Java |    17 | `build-logic/.../Constants.kt` |
+| minSdk |    28 | `build-logic/.../Constants.kt` |
+| targetSdk |    37 | `build-logic/.../Constants.kt` |
+| compileSdk |    37 | `build-logic/.../Constants.kt` |
 
 값을 변경할 때는 이 문서만 수정하지 말고 원본 설정을 먼저 변경한다.
 

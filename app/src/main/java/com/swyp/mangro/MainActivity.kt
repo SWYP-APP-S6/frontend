@@ -14,6 +14,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.naver.maps.map.compose.ExperimentalNaverMapApi
+import com.naver.maps.map.compose.NaverMap
 import com.swyp.mangro.theme.MangroTheme
 
 class MainActivity : ComponentActivity() {
@@ -28,6 +30,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalNaverMapApi::class)
 @Composable
 private fun MainScreen() {
     Surface(
@@ -40,7 +43,7 @@ private fun MainScreen() {
                 .safeDrawingPadding(),
             contentAlignment = Alignment.Center,
         ) {
-            Greeting()
+            NaverMap(modifier = Modifier.fillMaxSize())
         }
     }
 }

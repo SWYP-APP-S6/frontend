@@ -24,7 +24,7 @@
 | Java | 17 | `build-logic/.../Constants.kt` |
 | minSdk | 28 | `build-logic/.../Constants.kt` |
 | targetSdk | 36 | `build-logic/.../Constants.kt` |
-| compileSdk | 36 | `build-logic/.../Constants.kt` |
+| compileSdk | 37 | `build-logic/.../Constants.kt` |
 
 값을 변경할 때는 이 문서만 수정하지 말고 원본 설정을 먼저 변경한다.
 

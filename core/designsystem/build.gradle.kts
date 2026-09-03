@@ -6,3 +6,7 @@ plugins {
 android {
     namespace = "com.swyp.mangro.core.designsystem"
 }
+
+dependencies {
+    implementation(libs.kotlinx.collections.immutable)
+}

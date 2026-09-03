@@ -58,7 +58,7 @@ val Gray50 = Color(0xFFFAFAFA)
 val Gray200 = Color(0xFFF5F5F5)
 val Gray300 = Color(0xFFEBEBEA)
 val Gray400 = Color(0xFFE0E0E0)
-val Gray500 = Color(0xFFBDBDBD)
+val Gray500 = Color(0xFF9E9E9E)
 val Gray600 = Color(0xFF808080)
 val Gray700 = Color(0xFF616161)
 val Gray800 = Color(0xFF333333)
@@ -105,6 +105,7 @@ data class MangroColors(
 
     val grayScale900: Color,
     val grayScale700: Color,
+    val grayScale500: Color,
     val grayScale50: Color,
 
     val borderFocus: Color,
@@ -157,6 +158,7 @@ val defaultMangroColors = MangroColors(
 
     grayScale900 = Gray900,
     grayScale700 = Gray700,
+    grayScale500 = Gray500,
     grayScale50 = Gray50,
 
     borderFocus = Gray600,

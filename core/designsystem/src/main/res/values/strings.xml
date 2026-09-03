@@ -1,0 +1,5 @@
+<resources>
+    <string name="bottom_app_bar_home">홈</string>
+    <string name="bottom_app_bar_wish_list">찜 내역</string>
+    <string name="bottom_app_bar_my">마이</string>
+</resources>

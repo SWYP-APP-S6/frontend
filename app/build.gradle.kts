@@ -21,6 +21,7 @@ android {
 
 dependencies {
     implementation(project(":core:designsystem"))
+
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
@@ -28,4 +29,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+
+    implementation(libs.kotlinx.collections.immutable)
 }

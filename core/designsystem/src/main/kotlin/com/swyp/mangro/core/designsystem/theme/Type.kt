@@ -20,39 +20,42 @@ object PretendardFont {
 
 @Immutable
 data class Heading(
-    val heading01: TextStyle,
-    val heading02: TextStyle,
-    val heading03: TextStyle,
+    val headingL: TextStyle,
+    val headingM: TextStyle,
+    val headingS: TextStyle,
+    val headingXXS: TextStyle,
 )
 
 @Immutable
 data class Title(
-    val title01: TextStyle,
-    val title02: TextStyle,
+    val titleL: TextStyle,
+    val titleM: TextStyle,
 )
 
 @Immutable
 data class Body(
-    val body01: TextStyle,
-    val body02: TextStyle,
+    val bodyL: TextStyle,
+    val bodyM: TextStyle,
 )
 
 @Immutable
 data class Caption(
-    val caption: TextStyle,
+    val captionL: TextStyle? = null,
+    val captionM: TextStyle? = null,
+    val captionS: TextStyle,
 )
 
 @Immutable
 data class Label(
-    val label01: TextStyle,
-    val label02: TextStyle,
-    val label03: TextStyle? = null,
+    val labelL: TextStyle,
+    val labelM: TextStyle,
+    val labelS: TextStyle? = null,
 )
 
 @Immutable
 data class Number(
-    val number01: TextStyle,
-    val number02: TextStyle,
+    val numberL: TextStyle,
+    val numberM: TextStyle,
 )
 
 private fun mangroTextStyle(
@@ -82,41 +85,47 @@ data class MangroTypography(
 )
 
 val MangroHeading = Heading(
-    heading01 = mangroTextStyle(
+    headingL = mangroTextStyle(
         fontFamily = PretendardFont.Bold,
         fontSize = 28.sp,
         lineHeightPercent = 130,
     ),
-    heading02 = mangroTextStyle(
+    headingM = mangroTextStyle(
         fontFamily = PretendardFont.Bold,
         fontSize = 24.sp,
         lineHeightPercent = 130,
     ),
-    heading03 = mangroTextStyle(
+    headingS = mangroTextStyle(
         fontFamily = PretendardFont.Semibold,
         fontSize = 20.sp,
+    ),
+    headingXXS = mangroTextStyle(
+        fontFamily = PretendardFont.Bold,
+        fontSize = 18.sp,
+        lineHeightPercent = 150,
+        letterSpacingPercent = -1,
     ),
 )
 
 val ConsumerMangroTitle = Title(
-    title01 = mangroTextStyle(
+    titleL = mangroTextStyle(
         fontFamily = PretendardFont.Semibold,
         fontSize = 18.sp,
     ),
-    title02 = mangroTextStyle(
+    titleM = mangroTextStyle(
         fontFamily = PretendardFont.Semibold,
         fontSize = 16.sp,
     ),
 )
 
 val ConsumerMangroBody = Body(
-    body01 = mangroTextStyle(
+    bodyL = mangroTextStyle(
         fontFamily = PretendardFont.Regular,
         fontSize = 16.sp,
         lineHeightPercent = 150,
         letterSpacingPercent = -3,
     ),
-    body02 = mangroTextStyle(
+    bodyM = mangroTextStyle(
         fontFamily = PretendardFont.Regular,
         fontSize = 14.sp,
         lineHeightPercent = 150,
@@ -125,18 +134,18 @@ val ConsumerMangroBody = Body(
 )
 
 val ConsumerMangroCaption = Caption(
-    caption = mangroTextStyle(
+    captionS = mangroTextStyle(
         fontFamily = PretendardFont.Regular,
         fontSize = 12.sp,
     ),
 )
 
 val ConsumerMangroLabel = Label(
-    label01 = mangroTextStyle(
+    labelL = mangroTextStyle(
         fontFamily = PretendardFont.Semibold,
         fontSize = 16.sp,
     ),
-    label02 = mangroTextStyle(
+    labelM = mangroTextStyle(
         fontFamily = PretendardFont.Medium,
         fontSize = 14.sp,
         lineHeightPercent = 150,
@@ -144,12 +153,12 @@ val ConsumerMangroLabel = Label(
 )
 
 val ConsumerMangroNumber = Number(
-    number01 = mangroTextStyle(
+    numberL = mangroTextStyle(
         fontFamily = PretendardFont.Semibold,
         fontSize = 20.sp,
         letterSpacingPercent = -1,
     ),
-    number02 = mangroTextStyle(
+    numberM = mangroTextStyle(
         fontFamily = PretendardFont.Semibold,
         fontSize = 18.sp,
         lineHeightPercent = 150,
@@ -158,12 +167,12 @@ val ConsumerMangroNumber = Number(
 )
 
 val OwnerMangroTitle = Title(
-    title01 = mangroTextStyle(
+    titleL = mangroTextStyle(
         fontFamily = PretendardFont.Semibold,
         fontSize = 20.sp,
         letterSpacingPercent = -1,
     ),
-    title02 = mangroTextStyle(
+    titleM = mangroTextStyle(
         fontFamily = PretendardFont.Semibold,
         fontSize = 18.sp,
         lineHeightPercent = 150,
@@ -172,12 +181,12 @@ val OwnerMangroTitle = Title(
 )
 
 val OwnerMangroBody = Body(
-    body01 = mangroTextStyle(
+    bodyL = mangroTextStyle(
         fontFamily = PretendardFont.Regular,
         fontSize = 18.sp,
         lineHeightPercent = 150,
     ),
-    body02 = mangroTextStyle(
+    bodyM = mangroTextStyle(
         fontFamily = PretendardFont.Regular,
         fontSize = 16.sp,
         lineHeightPercent = 150,
@@ -185,7 +194,17 @@ val OwnerMangroBody = Body(
 )
 
 val OwnerMangroCaption = Caption(
-    caption = mangroTextStyle(
+    captionL = mangroTextStyle(
+        fontFamily = PretendardFont.Bold,
+        fontSize = 14.sp,
+        letterSpacingPercent = -1,
+    ),
+    captionM = mangroTextStyle(
+        fontFamily = PretendardFont.Medium,
+        fontSize = 14.sp,
+        letterSpacingPercent = -1,
+    ),
+    captionS = mangroTextStyle(
         fontFamily = PretendardFont.Regular,
         fontSize = 14.sp,
         letterSpacingPercent = -1,
@@ -193,18 +212,18 @@ val OwnerMangroCaption = Caption(
 )
 
 val OwnerMangroLabel = Label(
-    label01 = mangroTextStyle(
+    labelL = mangroTextStyle(
         fontFamily = PretendardFont.Semibold,
         fontSize = 18.sp,
         letterSpacingPercent = -1,
     ),
-    label02 = mangroTextStyle(
+    labelM = mangroTextStyle(
         fontFamily = PretendardFont.Medium,
         fontSize = 16.sp,
         lineHeightPercent = 150,
         letterSpacingPercent = -1,
     ),
-    label03 = mangroTextStyle(
+    labelS = mangroTextStyle(
         fontFamily = PretendardFont.Medium,
         fontSize = 14.sp,
         letterSpacingPercent = -1,
@@ -212,12 +231,12 @@ val OwnerMangroLabel = Label(
 )
 
 val OwnerMangroNumber = Number(
-    number01 = mangroTextStyle(
+    numberL = mangroTextStyle(
         fontFamily = PretendardFont.Semibold,
         fontSize = 24.sp,
         letterSpacingPercent = -1,
     ),
-    number02 = mangroTextStyle(
+    numberM = mangroTextStyle(
         fontFamily = PretendardFont.Semibold,
         fontSize = 20.sp,
         lineHeightPercent = 150,

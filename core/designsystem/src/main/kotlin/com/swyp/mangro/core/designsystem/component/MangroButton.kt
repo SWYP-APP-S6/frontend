@@ -33,6 +33,7 @@ enum class MangroButtonStyle {
     ACTIVE,
     GHOST,
     SUBTLE,
+    TEXT,
 }
 
 private val MangroButtonStyle.textColor: Color
@@ -41,7 +42,7 @@ private val MangroButtonStyle.textColor: Color
         MangroButtonStyle.DEFAULT -> MangroTheme.colors.textBody
         MangroButtonStyle.ACTIVE -> MangroTheme.colors.textOnBrandWhite
         MangroButtonStyle.GHOST -> MangroTheme.colors.textCanceled
-        MangroButtonStyle.SUBTLE -> MangroTheme.colors.primaryNormal
+        else -> MangroTheme.colors.primaryNormal
     }
 
 private val MangroButtonStyle.backgroundColor: Color
@@ -51,6 +52,7 @@ private val MangroButtonStyle.backgroundColor: Color
         MangroButtonStyle.ACTIVE -> MangroTheme.colors.primaryNormal
         MangroButtonStyle.GHOST -> MangroTheme.colors.textOnBrandWhite
         MangroButtonStyle.SUBTLE -> MangroTheme.colors.primaryLight
+        MangroButtonStyle.TEXT -> Color.Transparent
     }
 
 @Composable
@@ -61,7 +63,11 @@ fun MangroButton(
     enabled: Boolean = true,
     content: @Composable RowScope.() -> Unit,
 ) {
-    val backgroundColor = if (!enabled) MangroTheme.colors.surfaceDisabled else style.backgroundColor
+    val backgroundColor = when {
+        style == MangroButtonStyle.TEXT -> Color.Transparent
+        !enabled -> MangroTheme.colors.surfaceDisabled
+        else -> style.backgroundColor
+    }
     val textColor = if (!enabled) MangroTheme.colors.textCanceled else style.textColor
     val shape = RoundedCornerShape(12.dp)
 
@@ -98,7 +104,7 @@ fun MangroButton(
     style: MangroButtonStyle,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    textStyle: TextStyle = MangroTheme.typography.title.titleL,
+    textStyle: TextStyle = MangroTheme.typography.title.titleM,
 ) {
     MangroButton(
         onClick = onClick,
@@ -152,8 +158,13 @@ fun MangroButton(
 private class MangroButtonPreviewProvider : PreviewParameterProvider<MangroButtonStyle> {
     override val values: Sequence<MangroButtonStyle>
         get() = MangroButtonStyle.entries
-            .filter { it != MangroButtonStyle.SUBTLE }
+            .filter { it != MangroButtonStyle.SUBTLE && it != MangroButtonStyle.TEXT }
             .asSequence()
+}
+
+private class MangroTextButtonPreviewProvider : PreviewParameterProvider<Boolean> {
+    override val values: Sequence<Boolean>
+        get() = sequenceOf(true, false)
 }
 
 @Preview
@@ -179,7 +190,28 @@ private fun MangroButtonPreview(
 
 @Preview
 @Composable
-private fun MangroButtonDisabledPreview() {
+private fun MangroTextButtonPreview(
+    @PreviewParameter(MangroTextButtonPreviewProvider::class) enabled: Boolean,
+) {
+    MangroTheme {
+        Box(
+            modifier = Modifier
+                .background(White)
+                .padding(16.dp),
+        ) {
+            MangroButton(
+                text = "주소 복사",
+                style = MangroButtonStyle.TEXT,
+                onClick = {},
+                enabled = enabled,
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun MangroDisabledButtonPreview() {
     MangroTheme {
         Box(
             modifier = Modifier
@@ -199,7 +231,7 @@ private fun MangroButtonDisabledPreview() {
 
 @Preview
 @Composable
-private fun MangroButtonSubtlePreview() {
+private fun MangroSubtleButtonPreview() {
     MangroTheme {
         Box(
             modifier = Modifier

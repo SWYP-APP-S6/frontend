@@ -105,21 +105,21 @@ private fun MangroBadgeCatalogPreview() {
                 text = "여유 있어요",
                 containerColor = colors.surfaceNormal,
                 contentColor = colors.primaryNormal,
-                textStyle = ConsumerMangroCaption.caption,
+                textStyle = ConsumerMangroCaption.captionS,
                 iconResId = R.drawable.ic_alarm_on_16px,
             )
             MangroBadge(
                 text = "서둘러 주세요",
                 containerColor = colors.surfaceNormal,
                 contentColor = Red400,
-                textStyle = ConsumerMangroCaption.caption,
+                textStyle = ConsumerMangroCaption.captionS,
                 iconResId = R.drawable.ic_acute,
             )
             MangroBadge(
                 text = "아직 2개가 남아 있어요",
                 containerColor = colors.surfaceNormal,
                 contentColor = colors.textTitle,
-                textStyle = ConsumerMangroCaption.caption,
+                textStyle = ConsumerMangroCaption.captionS,
                 iconResId = R.drawable.ic_bag,
             )
         }
@@ -130,21 +130,21 @@ private fun MangroBadgeCatalogPreview() {
                     text = "판매중",
                     containerColor = colors.primaryNormal,
                     contentColor = colors.textOnBrandWhite,
-                    textStyle = OwnerMangroCaption.caption,
+                    textStyle = OwnerMangroCaption.captionS,
                     contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
                 )
                 MangroBadge(
                     text = "품절",
                     containerColor = colors.surfaceNormal,
                     contentColor = colors.textCanceled,
-                    textStyle = OwnerMangroCaption.caption,
+                    textStyle = OwnerMangroCaption.captionS,
                     contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
                 )
                 MangroBadge(
                     text = "마감",
                     containerColor = colors.surfaceDisabled,
                     contentColor = colors.textCanceled,
-                    textStyle = OwnerMangroCaption.caption,
+                    textStyle = OwnerMangroCaption.captionS,
                     contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
                 )
             }
@@ -154,19 +154,19 @@ private fun MangroBadgeCatalogPreview() {
                     text = "찜중",
                     containerColor = colors.warningBg,
                     contentColor = colors.primaryNormal,
-                    textStyle = ConsumerMangroCaption.caption,
+                    textStyle = ConsumerMangroCaption.captionS,
                 )
                 MangroBadge(
                     text = "수령완료",
                     containerColor = colors.surfaceAlter,
                     contentColor = colors.textCanceled,
-                    textStyle = ConsumerMangroCaption.caption,
+                    textStyle = ConsumerMangroCaption.captionS,
                 )
                 MangroBadge(
                     text = "만료",
                     containerColor = colors.dangerBg,
                     contentColor = colors.dangerNormal,
-                    textStyle = ConsumerMangroCaption.caption,
+                    textStyle = ConsumerMangroCaption.captionS,
                 )
             }
 
@@ -175,7 +175,7 @@ private fun MangroBadgeCatalogPreview() {
                     text = "3개 남음",
                     containerColor = colors.warningBg,
                     contentColor = colors.primaryNormal,
-                    textStyle = ConsumerMangroCaption.caption,
+                    textStyle = ConsumerMangroCaption.captionS,
                     iconResId = R.drawable.ic_badge_dot_4px,
                     iconSize = 4.dp,
                     iconSpacing = 4.dp,
@@ -184,7 +184,7 @@ private fun MangroBadgeCatalogPreview() {
                     text = "1시간 뒤 마감",
                     containerColor = Red100,
                     contentColor = colors.dangerNormal,
-                    textStyle = ConsumerMangroCaption.caption,
+                    textStyle = ConsumerMangroCaption.captionS,
                     iconResId = R.drawable.ic_acute,
                     contentPadding = PaddingValues(start = 7.dp, top = 2.dp, end = 8.dp, bottom = 2.dp),
                 )
@@ -196,7 +196,7 @@ private fun MangroBadgeCatalogPreview() {
                     trailingText = "3",
                     containerColor = colors.primaryLight,
                     contentColor = colors.primaryNormal,
-                    textStyle = OwnerMangroCaption.caption,
+                    textStyle = OwnerMangroCaption.captionS,
                     iconResId = R.drawable.ic_person_pin_circle_16px,
                     iconSpacing = 4.dp,
                 )
@@ -210,14 +210,14 @@ private fun MangroBadgeCatalogPreview() {
                     text = "취소예정",
                     containerColor = colors.dangerBg,
                     contentColor = colors.dangerNormal,
-                    textStyle = ConsumerMangroCaption.caption,
+                    textStyle = ConsumerMangroCaption.captionS,
                 )
 
                 MangroBadge(
                     text = "60%",
                     containerColor = colors.primaryNormal,
                     contentColor = colors.textOnBrandWhite,
-                    textStyle = ConsumerMangroCaption.caption,
+                    textStyle = ConsumerMangroCaption.captionS,
                     contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
                 )
             }

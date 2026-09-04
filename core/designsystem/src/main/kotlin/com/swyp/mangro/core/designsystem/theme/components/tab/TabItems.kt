@@ -68,7 +68,7 @@ fun MangroPillTabItem(
             )
             .padding(horizontal = 16.dp, vertical = 6.dp),
         color = contentColor,
-        style = if (isSelected) ConsumerMangroLabel.label02 else ConsumerMangroBody.body02,
+        style = if (isSelected) ConsumerMangroLabel.labelM else ConsumerMangroBody.bodyM,
         textAlign = TextAlign.Center,
         maxLines = 1,
         overflow = TextOverflow.Clip,
@@ -111,7 +111,7 @@ fun MangroTabItem(
             )
             .padding(horizontal = 12.dp, vertical = 8.dp),
         color = contentColor,
-        style = if (isSelected) ConsumerMangroLabel.label02 else ConsumerMangroBody.body02,
+        style = if (isSelected) ConsumerMangroLabel.labelM else ConsumerMangroBody.bodyM,
         textAlign = TextAlign.Center,
         maxLines = 1,
         overflow = TextOverflow.Clip,

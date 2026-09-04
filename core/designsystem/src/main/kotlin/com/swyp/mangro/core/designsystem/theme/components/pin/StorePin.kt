@@ -52,7 +52,7 @@ fun StorePin(
         Text(
             text = remainingCount.toString(),
             color = textColor,
-            style = ConsumerMangroLabel.label02,
+            style = ConsumerMangroLabel.labelM,
             maxLines = 1,
             overflow = TextOverflow.Clip,
         )

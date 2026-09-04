@@ -44,7 +44,7 @@ fun MangroLabel(
         Text(
             text = content,
             color = labelTheme.contentColor,
-            style = OwnerMangroTypography.caption.caption,
+            style = OwnerMangroTypography.caption.captionS,
         )
     }
 }

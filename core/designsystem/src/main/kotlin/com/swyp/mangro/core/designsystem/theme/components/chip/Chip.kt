@@ -99,9 +99,9 @@ private fun chipTextStyle(
     isOwner: Boolean,
     isSelected: Boolean,
 ): TextStyle = when {
-    isOwner -> OwnerMangroLabel.label03 ?: OwnerMangroLabel.label02
-    isSelected -> ConsumerMangroLabel.label02
-    else -> ConsumerMangroBody.body02
+    isOwner -> OwnerMangroLabel.labelS ?: OwnerMangroLabel.labelM
+    isSelected -> ConsumerMangroLabel.labelM
+    else -> ConsumerMangroBody.bodyM
 }
 
 @Preview(showBackground = true)

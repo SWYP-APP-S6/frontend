@@ -15,6 +15,7 @@ okhttp = "5.3.0"
 kotlinxSerialization = "1.9.0"
 kotlinxCoroutines = "1.10.2"
 hilt = "2.60.1"
+balloon = "1.7.6"
 
 [libraries]
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
@@ -44,6 +45,7 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
+balloon-compose = { group = "com.github.skydoves", name = "balloon-compose", version.ref = "balloon" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

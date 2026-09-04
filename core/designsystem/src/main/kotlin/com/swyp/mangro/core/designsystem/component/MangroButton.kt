@@ -85,6 +85,7 @@ fun MangroButton(
                 role = Role.Button,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
+                enabled = enabled,
                 onClick = onClick,
             )
             .padding(contentPadding),

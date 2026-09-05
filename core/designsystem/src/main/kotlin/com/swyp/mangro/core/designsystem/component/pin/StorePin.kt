@@ -1,4 +1,4 @@
-package com.swyp.mangro.core.designsystem.theme.components.pin
+package com.swyp.mangro.core.designsystem.component.pin
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

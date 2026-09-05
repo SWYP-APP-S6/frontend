@@ -15,10 +15,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.swyp.mangro.core.designsystem.component.appbar.BottomAppBar
+import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
+import com.swyp.mangro.core.designsystem.component.appbar.Menu
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
-import com.swyp.mangro.core.designsystem.theme.components.appbar.BottomAppBar
-import com.swyp.mangro.core.designsystem.theme.components.appbar.MangroDefaultStartAlignedTopAppBar
-import com.swyp.mangro.core.designsystem.theme.components.appbar.Menu
 import kotlinx.collections.immutable.toPersistentList
 
 class MainActivity : ComponentActivity() {

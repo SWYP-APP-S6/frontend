@@ -1,4 +1,4 @@
-package com.swyp.mangro.core.designsystem.theme.components.appbar
+package com.swyp.mangro.core.designsystem.component.appbar
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes

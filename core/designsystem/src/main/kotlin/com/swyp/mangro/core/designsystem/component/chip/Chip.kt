@@ -1,4 +1,4 @@
-package com.swyp.mangro.core.designsystem.theme.components.chip
+package com.swyp.mangro.core.designsystem.component.chip
 
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateColorAsState

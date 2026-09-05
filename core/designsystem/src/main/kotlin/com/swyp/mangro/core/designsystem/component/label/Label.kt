@@ -1,4 +1,4 @@
-package com.swyp.mangro.core.designsystem.theme.components.label
+package com.swyp.mangro.core.designsystem.component.label
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

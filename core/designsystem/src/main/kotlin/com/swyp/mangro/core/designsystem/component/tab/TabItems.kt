@@ -1,4 +1,4 @@
-package com.swyp.mangro.core.designsystem.theme.components.tab
+package com.swyp.mangro.core.designsystem.component.tab
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background

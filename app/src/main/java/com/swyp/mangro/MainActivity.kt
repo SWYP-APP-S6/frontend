@@ -6,8 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -15,6 +16,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
+import com.swyp.mangro.core.designsystem.theme.components.appbar.BottomAppBar
+import com.swyp.mangro.core.designsystem.theme.components.appbar.MangroDefaultStartAlignedTopAppBar
+import com.swyp.mangro.core.designsystem.theme.components.appbar.Menu
+import kotlinx.collections.immutable.toPersistentList
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,14 +35,31 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun MainScreen() {
-    Surface(
+    Scaffold(
         modifier = Modifier.fillMaxSize(),
-        color = MangroTheme.colors.surfaceNormal,
-    ) {
+        topBar = {
+            MangroDefaultStartAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "찜 내역",
+                        modifier = Modifier.fillMaxWidth(),
+                        style = MangroTheme.typography.heading.headingM,
+                    )
+                },
+            )
+        },
+        bottomBar = {
+            BottomAppBar(
+                menus = Menu.entries.toPersistentList(),
+                currentMenu = Menu.HOME,
+                onMenuClick = { /* TODO() */ },
+            )
+        },
+    ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .safeDrawingPadding(),
+                .padding(paddingValues),
             contentAlignment = Alignment.Center,
         ) {
             Greeting()

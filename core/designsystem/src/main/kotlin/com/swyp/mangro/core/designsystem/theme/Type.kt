@@ -36,6 +36,7 @@ data class Title(
 data class Body(
     val bodyL: TextStyle,
     val bodyM: TextStyle,
+    val body03: TextStyle,
 )
 
 @Immutable
@@ -131,6 +132,12 @@ val ConsumerMangroBody = Body(
         lineHeightPercent = 150,
         letterSpacingPercent = -3,
     ),
+    body03 = mangroTextStyle(
+        fontFamily = PretendardFont.Medium,
+        fontSize = 12.sp,
+        lineHeightPercent = 150,
+        letterSpacingPercent = -3,
+    ),
 )
 
 val ConsumerMangroCaption = Caption(
@@ -190,6 +197,12 @@ val OwnerMangroBody = Body(
         fontFamily = PretendardFont.Regular,
         fontSize = 16.sp,
         lineHeightPercent = 150,
+    ),
+    body03 = mangroTextStyle(
+        fontFamily = PretendardFont.Medium,
+        fontSize = 14.sp,
+        lineHeightPercent = 150,
+        letterSpacingPercent = -3,
     ),
 )
 

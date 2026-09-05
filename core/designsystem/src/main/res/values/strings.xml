@@ -3,4 +3,8 @@
     <string name="bottom_app_bar_wish_list">찜 내역</string>
     <string name="bottom_app_bar_my">마이</string>
     <string name="kakao_login">카카오로 시작하기</string>
+
+    <string name="expand_radius_title">주변에 마감상품이 없어요</string>
+    <string name="expand_radius_description">마감 상품은 보통 5시 이후에 가장 많이 올라와요</string>
+    <string name="expand_radius_action">반경 5km로 넓히기</string>
 </resources>

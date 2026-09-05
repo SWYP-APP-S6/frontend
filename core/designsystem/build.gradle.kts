@@ -10,4 +10,6 @@ android {
 dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.kotlinx.collections.immutable)
+
+    testImplementation(libs.junit)
 }

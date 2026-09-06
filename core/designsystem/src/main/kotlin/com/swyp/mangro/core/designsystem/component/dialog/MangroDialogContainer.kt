@@ -56,7 +56,7 @@ fun MangroDialogContainer(
 }
 
 @Composable
-fun MangroDialogContent(
+private fun MangroDialogContent(
     title: @Composable BoxScope.() -> Unit,
     actions: @Composable ColumnScope.() -> Unit,
     content: @Composable (BoxScope.() -> Unit)? = null,

@@ -28,7 +28,7 @@ import com.swyp.mangro.core.designsystem.theme.PretendardFont
 import com.swyp.mangro.core.designsystem.theme.utils.dropShadow
 
 @Composable
-fun RequestPermissionScreen(
+fun RequestLocationPermissionScreen(
     onAllowClick: () -> Unit,
     onLaterClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -109,9 +109,9 @@ fun RequestPermissionScreen(
 
 @Preview(name = "Consumer", widthDp = 360, heightDp = 800)
 @Composable
-private fun RequestPermissionScreenPreview() {
+private fun RequestLocationPermissionScreenPreview() {
     MangroTheme {
-        RequestPermissionScreen(
+        RequestLocationPermissionScreen(
             onAllowClick = {},
             onLaterClick = {},
         )

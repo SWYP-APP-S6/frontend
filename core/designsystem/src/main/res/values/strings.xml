@@ -3,4 +3,8 @@
     <string name="bottom_app_bar_wish_list">찜 내역</string>
     <string name="bottom_app_bar_my">마이</string>
     <string name="kakao_login">카카오로 시작하기</string>
+    <string name="request_permission_title">내 주변 상품을 찾으려면\n위치 권한이 필요해요</string>
+    <string name="request_permission_description">위치를 켜면 가까운 매장부터 보여드려요</string>
+    <string name="request_permission_allow">허용하기</string>
+    <string name="request_permission_later">나중에 하기</string>
 </resources>

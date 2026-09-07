@@ -21,4 +21,6 @@
     <string name="banner_new_like">새로운 찜이 생겼어요</string>
     <string name="banner_action_turn_on">켜기</string>
     <string name="banner_action_confirm">확인하기</string>
+    <string name="banner_payment_notice">매장에 직접 방문해서 결제하셔야 해요.</string>
+    <string name="banner_pickup_notice">15분 안에 매장에서 픽업하지 않으시면\n찜이 자동으로 취소돼요.</string>
 </resources>

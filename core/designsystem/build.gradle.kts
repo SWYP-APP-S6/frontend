@@ -11,4 +11,6 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.balloon.compose)
     implementation(libs.kotlinx.collections.immutable)
+
+    testImplementation(libs.junit)
 }

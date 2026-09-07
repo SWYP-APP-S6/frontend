@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +37,9 @@ fun RequestLocationPermissionScreen(
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        topBar = { Spacer(modifier = Modifier.size(85.dp)) },
+        topBar = {
+            Spacer(modifier = Modifier.statusBarsPadding().size(85.dp))
+        },
         bottomBar = {
             Column(
                 modifier = Modifier
@@ -47,7 +51,8 @@ fun RequestLocationPermissionScreen(
                         offsetY = 0.dp,
                     )
                     .background(MangroTheme.colors.surfaceNormal.copy(alpha = 0.8f))
-                    .padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 32.dp),
+                    .navigationBarsPadding()
+                    .padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 42.dp),
             ) {
                 MangroButton(
                     onClick = onAllowClick,
@@ -65,10 +70,7 @@ fun RequestLocationPermissionScreen(
                 MangroButton(
                     onClick = onLaterClick,
                     style = MangroButtonStyle.TEXT,
-                    modifier = Modifier
-                        .padding(top = 2.dp)
-                        .fillMaxWidth()
-                        .heightIn(min = 48.dp),
+                    modifier = Modifier.padding(top = 2.dp).fillMaxWidth(),
                 ) {
                     Text(
                         text = stringResource(R.string.request_permission_later),

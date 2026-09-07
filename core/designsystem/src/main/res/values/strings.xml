@@ -3,4 +3,8 @@
     <string name="bottom_app_bar_wish_list">찜 내역</string>
     <string name="bottom_app_bar_my">마이</string>
     <string name="kakao_login">카카오로 시작하기</string>
+    <string name="banner_location_permission">위치 권한이 꺼져 있어요.\n근처 상품을 확인하려면 설정해주세요.</string>
+    <string name="banner_new_like">새로운 찜이 생겼어요</string>
+    <string name="banner_action_turn_on">켜기</string>
+    <string name="banner_action_confirm">확인하기</string>
 </resources>

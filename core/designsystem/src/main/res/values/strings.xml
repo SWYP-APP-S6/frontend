@@ -3,4 +3,8 @@
     <string name="bottom_app_bar_wish_list">찜 내역</string>
     <string name="bottom_app_bar_my">마이</string>
     <string name="kakao_login">카카오로 시작하기</string>
+
+    <string name="unstable_network_connection_title">연결이 원활하지 않아요</string>
+    <string name="unstable_network_connection_description">잠시 후 다시 시도해 주세요</string>
+    <string name="unstable_network_connection_retry">다시 시도하기</string>
 </resources>

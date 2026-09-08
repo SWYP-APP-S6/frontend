@@ -29,4 +29,8 @@
     <string name="timer_card_badge_relaxed">여유있어요</string>
     <string name="timer_card_badge_urgent">서둘러주세요</string>
     <string name="timer_card_end_time">찜 종료</string>
+
+    <string name="recipe_difficulty_low">난이도 하</string>
+    <string name="recipe_difficulty_medium">난이도 중</string>
+    <string name="recipe_difficulty_high">난이도 상</string>
 </resources>

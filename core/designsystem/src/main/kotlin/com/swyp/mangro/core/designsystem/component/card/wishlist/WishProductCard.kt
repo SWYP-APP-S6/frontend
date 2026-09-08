@@ -37,7 +37,7 @@ data class WishedProduct(
 )
 
 @Composable
-fun WishedProductCard(
+fun WishProductCard(
     product: WishedProduct,
     modifier: Modifier = Modifier,
 ) {
@@ -129,11 +129,11 @@ private class WishedProductCardPreviewParamProvider : PreviewParameterProvider<W
 
 @Preview(showBackground = true)
 @Composable
-private fun WishedProductCardPreview(
+private fun WishProductCardPreview(
     @PreviewParameter(WishedProductCardPreviewParamProvider::class) product: WishedProduct,
 ) {
     MangroTheme {
-        WishedProductCard(
+        WishProductCard(
             product = product,
         )
     }

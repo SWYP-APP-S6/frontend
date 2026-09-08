@@ -218,7 +218,7 @@ fun ProductDetailCard(
         Spacer(modifier = Modifier.height(20.dp))
 
         NoticeBanner(
-            stringRes = R.string.banner_payment_notice,
+            text = stringResource(R.string.banner_payment_notice),
         )
     }
 }

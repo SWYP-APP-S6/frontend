@@ -49,6 +49,10 @@
     <string name="product_detail_distance_prefix">내 위치로부터 </string>
     <string name="product_detail_distance_value">%1$dm</string>
 
+    <string name="owner_product_card_remaining_prefix">남은 수량</string>
+    <string name="owner_product_card_expected_visit_prefix">방문 예정</string>
+    <string name="owner_product_card_unable_to_purchase">%1$d명은 제품 구매가 불가능해요</string>
+
     <string name="product_price">%,d원</string>
     <string name="product_quantity">%1$d개</string>
 </resources>

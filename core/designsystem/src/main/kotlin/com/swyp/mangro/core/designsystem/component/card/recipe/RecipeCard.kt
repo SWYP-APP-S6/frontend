@@ -1,4 +1,4 @@
-package com.swyp.mangro.core.designsystem.component.card
+package com.swyp.mangro.core.designsystem.component.card.recipe
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable

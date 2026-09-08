@@ -1,4 +1,4 @@
-package com.swyp.mangro.core.designsystem.component.card
+package com.swyp.mangro.core.designsystem.component.card.recipe
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +22,7 @@ import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.designsystem.theme.White
 
 @Composable
-fun IngredientItemCard(
+fun RecipeIngredientItemCard(
     thumbnailUrl: String,
     ingredientName: String,
     amount: String,
@@ -69,7 +69,7 @@ fun IngredientItemCard(
 
 @Preview(showBackground = true)
 @Composable
-private fun IngredientItemCardPreview() {
+private fun RecipeIngredientItemCardPreview() {
     MangroTheme {
         Box(
             modifier = Modifier
@@ -77,7 +77,7 @@ private fun IngredientItemCardPreview() {
                 .padding(20.dp),
             contentAlignment = Alignment.Center,
         ) {
-            IngredientItemCard(
+            RecipeIngredientItemCard(
                 thumbnailUrl = "",
                 ingredientName = "복숭아",
                 amount = "300g",

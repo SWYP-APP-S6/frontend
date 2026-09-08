@@ -71,6 +71,8 @@
     <string name="pickup_request_complete">픽업 완료했어요</string>
     <string name="pickup_request_completed">픽업 완료된 찜</string>
 
+    <string name="store_location_card_button">길찾기</string>
+
     <string name="product_price">%,d원</string>
     <string name="product_quantity">%1$d개</string>
 </resources>

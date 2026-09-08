@@ -32,14 +32,14 @@ enum class RecipeDifficulty {
     HIGH,
 }
 
-private data class RecipeDifficultyStyle(
+data class RecipeDifficultyStyle(
     @param:StringRes val labelTextRes: Int,
     val containerColor: Color,
     val contentColor: Color,
 )
 
 @Composable
-private fun RecipeDifficulty.toStyle(): RecipeDifficultyStyle = when (this) {
+fun RecipeDifficulty.toStyle(): RecipeDifficultyStyle = when (this) {
     RecipeDifficulty.LOW -> RecipeDifficultyStyle(
         labelTextRes = R.string.recipe_difficulty_low,
         containerColor = MangroTheme.colors.surfaceDisabled,

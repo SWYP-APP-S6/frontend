@@ -33,6 +33,8 @@
     <string name="recipe_difficulty_low">난이도 하</string>
     <string name="recipe_difficulty_medium">난이도 중</string>
     <string name="recipe_difficulty_high">난이도 상</string>
+    <string name="recipe_calorie">%1$dkcal</string>
+    <string name="recipe_cooking_time">%1$d분 소요</string>
 
     <string name="map_store_closing_time">%1$s 마감</string>
 

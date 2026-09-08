@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.swyp.mangro.core.designsystem.theme.Gray200
@@ -28,10 +29,11 @@ fun MangroLabel(
     contentColor: Color,
     containerColor: Color,
     modifier: Modifier = Modifier,
+    shape: Shape = RoundedCornerShape(4.dp),
 ) {
     Box(
         modifier = modifier
-            .clip(shape = RoundedCornerShape(4.dp))
+            .clip(shape)
             .background(
                 color = containerColor,
                 shape = RoundedCornerShape(4.dp),

@@ -30,6 +30,7 @@ data class Heading(
 data class Title(
     val titleL: TextStyle,
     val titleM: TextStyle,
+    val titleS: TextStyle? = null,
 )
 
 @Immutable
@@ -182,6 +183,12 @@ val OwnerMangroTitle = Title(
     titleM = mangroTextStyle(
         fontFamily = PretendardFont.Semibold,
         fontSize = 18.sp,
+        lineHeightPercent = 150,
+        letterSpacingPercent = -1,
+    ),
+    titleS = mangroTextStyle(
+        fontFamily = PretendardFont.Semibold,
+        fontSize = 16.sp,
         lineHeightPercent = 150,
         letterSpacingPercent = -1,
     ),

@@ -35,4 +35,13 @@
     <string name="recipe_difficulty_high">난이도 상</string>
 
     <string name="map_store_closing_time">%1$s 마감</string>
+
+    <string name="product_list_card_price">%,d원</string>
+    <string name="product_list_card_remaining_count">%1$d개 남음</string>
+    <string name="product_category_grains">곡류</string>
+    <string name="product_category_vegetables">과채류</string>
+    <string name="product_category_meat">육류</string>
+    <string name="product_category_seafood">어류</string>
+    <string name="product_category_nuts">견과류</string>
+    <string name="product_category_etc">기타</string>
 </resources>

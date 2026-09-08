@@ -1,4 +1,4 @@
-package com.swyp.mangro.core.designsystem.component.card
+package com.swyp.mangro.core.designsystem.component.card.timer
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

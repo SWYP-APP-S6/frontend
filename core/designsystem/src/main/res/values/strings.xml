@@ -44,4 +44,9 @@
     <string name="product_category_seafood">어류</string>
     <string name="product_category_nuts">견과류</string>
     <string name="product_category_etc">기타</string>
+
+    <string name="product_detail_seller_label">판매처</string>
+    <string name="product_detail_operating_hours_label">운영시간</string>
+    <string name="product_detail_distance_prefix">내 위치로부터 </string>
+    <string name="product_detail_distance_value">%1$dm</string>
 </resources>

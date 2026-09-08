@@ -36,7 +36,7 @@ enum class ProductCategory {
 }
 
 @Composable
-private fun ProductCategory.toLabelColors(): Pair<Color, Color> = when (this) {
+fun ProductCategory.toLabelColors(): Pair<Color, Color> = when (this) {
     ProductCategory.GRAINS -> MangroTheme.colors.grainsBg to MangroTheme.colors.grainsNormal
     ProductCategory.VEGETABLES -> MangroTheme.colors.vegetablesBg to MangroTheme.colors.vegetablesNormal
     ProductCategory.MEAT -> MangroTheme.colors.meatBg to MangroTheme.colors.meatNormal
@@ -45,7 +45,7 @@ private fun ProductCategory.toLabelColors(): Pair<Color, Color> = when (this) {
     ProductCategory.ETC -> MangroTheme.colors.surfaceDisabled to MangroTheme.colors.textSubtitle
 }
 
-private fun ProductCategory.toLabelTextRes(): Int = when (this) {
+fun ProductCategory.toLabelTextRes(): Int = when (this) {
     ProductCategory.GRAINS -> R.string.product_category_grains
     ProductCategory.VEGETABLES -> R.string.product_category_vegetables
     ProductCategory.MEAT -> R.string.product_category_meat

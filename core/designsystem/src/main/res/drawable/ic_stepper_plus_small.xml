@@ -1,0 +1,10 @@
+<!-- Glyph exported from Figma node 689:3439; original path and viewport preserved. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="36dp"
+    android:viewportWidth="36"
+    android:viewportHeight="36">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M16.8719 24.3603V19.1763H11.9999V17.1843H16.8719V12.0003H18.9839V17.1843H23.8559V19.1763H18.9839V24.3603H16.8719Z" />
+</vector>

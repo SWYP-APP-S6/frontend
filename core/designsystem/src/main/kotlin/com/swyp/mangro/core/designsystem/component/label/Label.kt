@@ -16,11 +16,39 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.swyp.mangro.core.designsystem.theme.Gray200
 import com.swyp.mangro.core.designsystem.theme.Gray700
+import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.designsystem.theme.Orange50
 import com.swyp.mangro.core.designsystem.theme.Orange900
-import com.swyp.mangro.core.designsystem.theme.OwnerMangroTypography
 import com.swyp.mangro.core.designsystem.theme.Red50
 import com.swyp.mangro.core.designsystem.theme.Red600
+
+@Composable
+fun MangroLabel(
+    content: String,
+    contentColor: Color,
+    containerColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .clip(shape = RoundedCornerShape(4.dp))
+            .background(
+                color = containerColor,
+                shape = RoundedCornerShape(4.dp),
+            )
+            .padding(
+                horizontal = 8.dp,
+                vertical = 2.dp,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = content,
+            color = contentColor,
+            style = MangroTheme.typography.caption.captionS,
+        )
+    }
+}
 
 @Composable
 fun MangroLabel(
@@ -44,7 +72,7 @@ fun MangroLabel(
         Text(
             text = content,
             color = labelTheme.contentColor,
-            style = OwnerMangroTypography.caption.captionS,
+            style = MangroTheme.typography.caption.captionS,
         )
     }
 }
@@ -75,6 +103,42 @@ fun MangroLabelPreview() {
         MangroLabel(
             "Label",
             MangroLabelTheme.DANGER,
+        )
+
+        MangroLabel(
+            content = "곡류",
+            contentColor = MangroTheme.colors.grainsNormal,
+            containerColor = MangroTheme.colors.grainsBg,
+        )
+
+        MangroLabel(
+            content = "과채류",
+            contentColor = MangroTheme.colors.vegetablesNormal,
+            containerColor = MangroTheme.colors.vegetablesBg,
+        )
+
+        MangroLabel(
+            content = "육류",
+            contentColor = MangroTheme.colors.meatNormal,
+            containerColor = MangroTheme.colors.meatBg,
+        )
+
+        MangroLabel(
+            content = "어류",
+            contentColor = MangroTheme.colors.seafoodNormal,
+            containerColor = MangroTheme.colors.seafoodBg,
+        )
+
+        MangroLabel(
+            content = "견과류",
+            contentColor = MangroTheme.colors.nutsNormal,
+            containerColor = MangroTheme.colors.nutsBg,
+        )
+
+        MangroLabel(
+            content = "기타",
+            contentColor = MangroTheme.colors.textSubtitle,
+            containerColor = MangroTheme.colors.surfaceDisabled,
         )
     }
 }

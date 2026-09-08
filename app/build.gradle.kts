@@ -1,6 +1,8 @@
 plugins {
     id("mangro.android.application")
     id("mangro.android.compose")
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -22,6 +24,9 @@ android {
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:utils"))
+
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)

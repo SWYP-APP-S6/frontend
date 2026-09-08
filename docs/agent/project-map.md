@@ -43,9 +43,9 @@
 ## 현재 확인된 제약
 
 - `:app`은 `:core:designsystem`, `:core:utils`에 의존하며, Feature와 Data 모듈은 아직 등록되지 않았다.
-- `:core:utils`에는 Coroutines 및 단위 테스트 의존성과 `ACCESS_NETWORK_STATE` 권한이 설정되어 있다. 네트워크 상태 관측 클래스는 아직 구현되지 않았다.
+- `:core:utils`의 `NetworkConnectivityManager`는 기본 네트워크 콜백으로 연결 상태를 관측한다. `MangroApplication`에서 필드 주입받아 앱 시작 시 인스턴스를 생성한다.
 - 앱의 실제 기능 소스는 아직 초기 상태이며 예제 테스트가 남아 있다.
-- Compose convention plugin은 `:app`, `:core:designsystem`에 적용되어 있다. DI 플러그인은 아직 앱과 Core 모듈에 적용되지 않았다.
+- Compose convention plugin은 `:app`, `:core:designsystem`에 적용되어 있다. Hilt 및 KSP 플러그인은 `:app`, `:core:network`, `:core:utils`에 적용되어 있으며, 앱의 Hilt 진입점은 `MangroApplication`이다.
 - 루트 `ktlintCheck`는 subproject를 집계하지만 included build인 `build-logic` 소스는 직접 검사하지 않는다.
 - `.github/workflows` 기반 CI는 아직 없다.
 

@@ -57,6 +57,12 @@
     <string name="wish_status_picked_up">수령완료</string>
     <string name="wish_status_expired">시간만료</string>
 
+    <string name="pickup_receipt_date">날짜</string>
+    <string name="pickup_receipt_store">상점</string>
+    <string name="pickup_receipt_product">품목</string>
+    <string name="pickup_receipt_quantity">구매 수량</string>
+    <string name="pickup_receipt_price">가격</string>
+
     <string name="product_price">%,d원</string>
     <string name="product_quantity">%1$d개</string>
 </resources>

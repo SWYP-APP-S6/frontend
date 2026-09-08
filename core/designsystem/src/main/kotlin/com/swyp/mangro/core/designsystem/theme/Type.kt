@@ -1,5 +1,6 @@
 package com.swyp.mangro.core.designsystem.theme
 
+import android.R.attr.fontFamily
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.TextStyle

@@ -17,6 +17,7 @@ kotlinxCoroutines = "1.10.2"
 kotlinxCollectionsImmutable = "0.4.0"
 hilt = "2.60.1"
 balloon = "1.7.6"
+coil = "3.4.0"
 
 [libraries]
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
@@ -50,6 +51,8 @@ kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collec
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
 balloon-compose = { group = "com.github.skydoves", name = "balloon-compose", version.ref = "balloon" }
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
+coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

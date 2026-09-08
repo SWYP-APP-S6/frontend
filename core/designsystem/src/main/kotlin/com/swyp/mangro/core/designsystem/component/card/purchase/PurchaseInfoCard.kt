@@ -1,4 +1,4 @@
-package com.swyp.mangro.core.designsystem.component.card.pickup
+package com.swyp.mangro.core.designsystem.component.card.purchase
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

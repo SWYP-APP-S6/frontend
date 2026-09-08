@@ -65,6 +65,12 @@
     <string name="pickup_receipt_quantity">구매 수량</string>
     <string name="pickup_receipt_price">가격</string>
 
+    <string name="pickup_consumer_name">%1$s님</string>
+    <string name="pickup_request_remaining_time">남은 시간</string>
+    <string name="pickup_request_expired">찜 만료</string>
+    <string name="pickup_request_complete">픽업 완료했어요</string>
+    <string name="pickup_request_completed">픽업 완료된 찜</string>
+
     <string name="product_price">%,d원</string>
     <string name="product_quantity">%1$d개</string>
 </resources>

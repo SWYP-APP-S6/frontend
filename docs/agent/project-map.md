@@ -30,7 +30,9 @@
 
 ## 주요 소스 위치
 
-- 앱 Manifest와 리소스: `app/src/main`
+- 공통 Activity, Manifest와 리소스: `app/src/main`
+- Flavor별 `MainScreen`: `app/src/consumer`, `app/src/owner`
+  - 동일한 패키지와 함수 시그니처를 사용하며, 빌드 대상 Flavor의 구현만 포함한다.
 - 로컬 단위 테스트: `app/src/test`
 - Android 계측 테스트: `app/src/androidTest`
 - application convention plugin: `MangroApplicationPlugin.kt`

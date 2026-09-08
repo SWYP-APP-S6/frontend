@@ -11,7 +11,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,37 +32,6 @@ data class WishDetailItem(
     val discountRate: Int?,
     val status: WishStatus,
 )
-
-enum class WishStatus {
-    IN_PROGRESS,
-    PICKED_UP,
-    EXPIRED,
-}
-
-private data class WishStatusStyle(
-    val labelTextRes: Int,
-    val containerColor: Color,
-    val contentColor: Color,
-)
-
-@Composable
-private fun WishStatus.toStyle(): WishStatusStyle = when (this) {
-    WishStatus.IN_PROGRESS -> WishStatusStyle(
-        labelTextRes = R.string.wish_status_in_progress,
-        containerColor = MangroTheme.colors.warningBg,
-        contentColor = MangroTheme.colors.primaryNormal,
-    )
-    WishStatus.PICKED_UP -> WishStatusStyle(
-        labelTextRes = R.string.wish_status_picked_up,
-        containerColor = MangroTheme.colors.dangerBg,
-        contentColor = MangroTheme.colors.dangerNormal,
-    )
-    WishStatus.EXPIRED -> WishStatusStyle(
-        labelTextRes = R.string.wish_status_expired,
-        containerColor = MangroTheme.colors.surfaceAlter,
-        contentColor = MangroTheme.colors.textCanceled,
-    )
-}
 
 @Composable
 fun WishDetailCard(

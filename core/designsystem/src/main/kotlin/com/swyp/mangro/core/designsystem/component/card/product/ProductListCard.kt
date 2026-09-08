@@ -104,14 +104,14 @@ fun ProductListCard(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(
-                    text = stringResource(R.string.product_list_card_price, product.price),
+                    text = stringResource(R.string.product_price, product.price),
                     color = MangroTheme.colors.textTitle,
                     style = MangroTheme.typography.label.labelL,
                 )
 
                 if (product.originalPrice != null) {
                     Text(
-                        text = stringResource(R.string.product_list_card_price, product.originalPrice),
+                        text = stringResource(R.string.product_price, product.originalPrice),
                         style = MangroTheme.typography.caption.captionS.copy(
                             textDecoration = TextDecoration.LineThrough,
                         ),

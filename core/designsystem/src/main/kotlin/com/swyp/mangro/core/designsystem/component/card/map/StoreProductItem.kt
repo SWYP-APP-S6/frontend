@@ -45,7 +45,7 @@ fun StoreProductItem(
         )
 
         Text(
-            text = stringResource(R.string.product_list_card_price, price),
+            text = stringResource(R.string.product_price, price),
             color = MangroTheme.colors.textTitle,
             style = MangroTheme.typography.label.labelM,
         )

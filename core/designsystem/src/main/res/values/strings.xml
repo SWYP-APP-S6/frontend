@@ -36,7 +36,6 @@
 
     <string name="map_store_closing_time">%1$s 마감</string>
 
-    <string name="product_list_card_price">%,d원</string>
     <string name="product_list_card_remaining_count">%1$d개 남음</string>
     <string name="product_category_grains">곡류</string>
     <string name="product_category_vegetables">과채류</string>
@@ -49,4 +48,7 @@
     <string name="product_detail_operating_hours_label">운영시간</string>
     <string name="product_detail_distance_prefix">내 위치로부터 </string>
     <string name="product_detail_distance_value">%1$dm</string>
+
+    <string name="product_price">%,d원</string>
+    <string name="product_quantity">%1$d개</string>
 </resources>

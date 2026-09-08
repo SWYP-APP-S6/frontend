@@ -110,7 +110,7 @@ fun ProductDetailCard(
 
             if (product.originalPrice != null) {
                 Text(
-                    text = stringResource(R.string.product_list_card_price, product.originalPrice),
+                    text = stringResource(R.string.product_price, product.originalPrice),
                     color = MangroTheme.colors.textCanceled,
                     style = (MangroTheme.typography.label.labelS ?: MangroTheme.typography.label.labelM).copy(
                         textDecoration = TextDecoration.LineThrough,
@@ -131,7 +131,7 @@ fun ProductDetailCard(
                 }
 
                 Text(
-                    text = stringResource(R.string.product_list_card_price, product.price),
+                    text = stringResource(R.string.product_price, product.price),
                     color = MangroTheme.colors.textTitle,
                     style = MangroTheme.typography.heading.headingM,
                 )

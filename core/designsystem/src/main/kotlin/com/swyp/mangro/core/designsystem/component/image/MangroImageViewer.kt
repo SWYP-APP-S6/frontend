@@ -157,7 +157,6 @@ private fun ImagePages(
     }
 }
 
-// Figma 1151:12112의 원본 이미지. Debug Preview에만 포함됩니다.
 @Preview(name = "Image viewer - Numbers", widthDp = 360, heightDp = 360)
 @Composable
 private fun ImageViewerNumbersPreview() {

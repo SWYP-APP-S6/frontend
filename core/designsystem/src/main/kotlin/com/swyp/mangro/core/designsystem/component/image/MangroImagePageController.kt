@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.swyp.mangro.core.designsystem.R
@@ -57,25 +58,19 @@ fun MangroImagePageNumbers(currentPage: Int, pageCount: Int, modifier: Modifier 
     if (pageCount <= 1) return
     require(currentPage in 0 until pageCount)
 
-    Row(
+    Text(
+        text = "${currentPage + 1} / $pageCount",
         modifier = modifier
             .widthIn(min = 45.dp)
             .background(MangroTheme.colors.grayScale700, CircleShape)
             .padding(horizontal = 10.dp, vertical = 2.dp),
-        horizontalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterHorizontally),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        listOf("${currentPage + 1}", "/", "$pageCount").forEach { text ->
-            Text(
-                text = text,
-                color = MangroTheme.colors.textOnBrandWhite,
-                style = MangroTheme.typography.label.labelM.copy(
-                    fontSize = 12.sp,
-                    lineHeight = 18.sp,
-                    letterSpacing = (-0.24).sp,
-                ),
-                maxLines = 1,
-            )
-        }
-    }
+        color = MangroTheme.colors.textOnBrandWhite,
+        style = MangroTheme.typography.label.labelM.copy(
+            fontSize = 12.sp,
+            lineHeight = 18.sp,
+            letterSpacing = (-0.24).sp,
+        ),
+        textAlign = TextAlign.Center,
+        maxLines = 1,
+    )
 }

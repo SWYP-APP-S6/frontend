@@ -14,13 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.swyp.mangro.core.designsystem.R
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 
 /** 0부터 시작하는 [currentPage]를 표시합니다. 이미지가 1장 이하면 표시하지 않습니다. */
@@ -28,9 +24,9 @@ import com.swyp.mangro.core.designsystem.theme.MangroTheme
 fun MangroImagePageDots(currentPage: Int, pageCount: Int, modifier: Modifier = Modifier) {
     if (pageCount <= 1) return
     require(currentPage in 0 until pageCount)
-    val description = stringResource(R.string.image_page_description, currentPage + 1, pageCount)
+
     Row(
-        modifier = modifier.clearAndSetSemantics { contentDescription = description },
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

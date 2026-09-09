@@ -17,20 +17,22 @@
 
 ## 현재 빌드 기준
 
-| 항목 | 현재 값 | 원본 |
-|---|---:|---|
+| 항목 |  현재 값 | 원본 |
+|---|------:|---|
 | Gradle | 9.4.1 | `gradle/wrapper/gradle-wrapper.properties` |
 | Android Gradle Plugin | 9.2.1 | `gradle/libs.versions.toml` |
-| Java | 17 | `build-logic/.../Constants.kt` |
-| minSdk | 28 | `build-logic/.../Constants.kt` |
-| targetSdk | 36 | `build-logic/.../Constants.kt` |
-| compileSdk | 36 | `build-logic/.../Constants.kt` |
+| Java |    17 | `build-logic/.../Constants.kt` |
+| minSdk |    28 | `build-logic/.../Constants.kt` |
+| targetSdk |    37 | `build-logic/.../Constants.kt` |
+| compileSdk |    37 | `build-logic/.../Constants.kt` |
 
 값을 변경할 때는 이 문서만 수정하지 말고 원본 설정을 먼저 변경한다.
 
 ## 주요 소스 위치
 
-- 앱 Manifest와 리소스: `app/src/main`
+- 공통 Activity, Manifest와 리소스: `app/src/main`
+- Flavor별 `MainScreen`: `app/src/consumer`, `app/src/owner`
+  - 동일한 패키지와 함수 시그니처를 사용하며, 빌드 대상 Flavor의 구현만 포함한다.
 - 로컬 단위 테스트: `app/src/test`
 - Android 계측 테스트: `app/src/androidTest`
 - application convention plugin: `MangroApplicationPlugin.kt`

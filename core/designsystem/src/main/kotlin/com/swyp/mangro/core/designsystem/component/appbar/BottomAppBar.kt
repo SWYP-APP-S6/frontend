@@ -11,9 +11,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -26,7 +27,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.swyp.mangro.core.designsystem.R
 import com.swyp.mangro.core.designsystem.theme.ConsumerMangroBody
@@ -53,7 +59,7 @@ fun BottomAppBar(
 }
 
 @Composable
-private fun BottomAppBarContainer(
+fun BottomAppBarContainer(
     modifier: Modifier = Modifier,
     tabs: @Composable (RowScope.() -> Unit),
 ) {
@@ -75,11 +81,13 @@ private fun BottomAppBarContainer(
 }
 
 @Composable
-private fun RowScope.BottomAppBarItem(
+fun RowScope.BottomAppBarItem(
     isSelected: Boolean,
     @DrawableRes drawResId: Int,
     @StringRes stringResId: Int,
     onClick: () -> Unit,
+    minHeight: Dp = 54.dp,
+    textStyle: TextStyle = ConsumerMangroBody.body03,
 ) {
     val tint by animateColorAsState(
         if (isSelected) defaultMangroColors.primaryNormal else defaultMangroColors.grayScale500,
@@ -88,10 +96,11 @@ private fun RowScope.BottomAppBarItem(
     Column(
         modifier = Modifier
             .weight(1f)
-            .height(54.dp)
+            .heightIn(min = minHeight)
             .padding(4.dp)
             .clip(RoundedCornerShape(4.dp))
-            .clickable(onClick = onClick),
+            .semantics { selected = isSelected }
+            .clickable(role = Role.Tab, onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -99,6 +108,7 @@ private fun RowScope.BottomAppBarItem(
             painter = painterResource(drawResId),
             tint = tint,
             contentDescription = null,
+            modifier = Modifier.size(24.dp),
         )
 
         Text(
@@ -106,7 +116,7 @@ private fun RowScope.BottomAppBarItem(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
             color = tint,
-            style = ConsumerMangroBody.body03,
+            style = textStyle,
         )
     }
 }

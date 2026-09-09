@@ -26,6 +26,7 @@ val Pink500 = Color(0xFFF6C5FF)
 
 val Cyan50 = Color(0xFFD5FBF3)
 val Cyan500 = Color(0xFF72F2D7)
+val Cyan900 = Color(0xFF00C299)
 
 val Brown50 = Color(0xFFE1DDD8)
 val Brown500 = Color(0xFF6B533E)
@@ -86,6 +87,7 @@ data class MangroColors(
     val meatNormal: Color,
     val meatBg: Color,
 
+    val seafoodShadow: Color,
     val seafoodNormal: Color,
     val seafoodBg: Color,
 
@@ -139,6 +141,7 @@ val defaultMangroColors = MangroColors(
     meatNormal = Pink500,
     meatBg = Pink50,
 
+    seafoodShadow = Cyan900,
     seafoodNormal = Cyan500,
     seafoodBg = Cyan50,
 

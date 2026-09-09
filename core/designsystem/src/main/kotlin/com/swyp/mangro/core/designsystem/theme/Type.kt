@@ -1,5 +1,6 @@
 package com.swyp.mangro.core.designsystem.theme
 
+import android.R.attr.fontFamily
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.TextStyle
@@ -52,6 +53,7 @@ data class Label(
     val labelL: TextStyle,
     val labelM: TextStyle,
     val labelS: TextStyle? = null,
+    val labelXS: TextStyle? = null,
 )
 
 @Immutable
@@ -156,6 +158,11 @@ val ConsumerMangroLabel = Label(
     labelM = mangroTextStyle(
         fontFamily = PretendardFont.Medium,
         fontSize = 14.sp,
+        lineHeightPercent = 150,
+    ),
+    labelXS = mangroTextStyle(
+        fontFamily = PretendardFont.Medium,
+        fontSize = 12.sp,
         lineHeightPercent = 150,
     ),
 )

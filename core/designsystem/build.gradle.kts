@@ -11,6 +11,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.balloon.compose)
     implementation(libs.kotlinx.collections.immutable)
-
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
     testImplementation(libs.junit)
 }

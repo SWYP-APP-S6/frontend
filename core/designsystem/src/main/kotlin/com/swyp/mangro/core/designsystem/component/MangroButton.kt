@@ -1,6 +1,7 @@
 package com.swyp.mangro.core.designsystem.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -35,6 +36,7 @@ enum class MangroButtonStyle {
     GHOST,
     SUBTLE,
     TEXT,
+    OUTLINED,
 }
 
 private val MangroButtonStyle.textColor: Color
@@ -43,6 +45,7 @@ private val MangroButtonStyle.textColor: Color
         MangroButtonStyle.DEFAULT -> MangroTheme.colors.textBody
         MangroButtonStyle.ACTIVE -> MangroTheme.colors.textOnBrandWhite
         MangroButtonStyle.GHOST -> MangroTheme.colors.textCanceled
+        MangroButtonStyle.OUTLINED -> MangroTheme.colors.textTitle
         else -> MangroTheme.colors.primaryNormal
     }
 
@@ -54,7 +57,12 @@ private val MangroButtonStyle.backgroundColor: Color
         MangroButtonStyle.GHOST -> MangroTheme.colors.textOnBrandWhite
         MangroButtonStyle.SUBTLE -> MangroTheme.colors.primaryLight
         MangroButtonStyle.TEXT -> Color.Transparent
+        MangroButtonStyle.OUTLINED -> MangroTheme.colors.surfaceNormal
     }
+
+private val MangroButtonStyle.borderColor: Color?
+    @Composable
+    get() = if (this == MangroButtonStyle.OUTLINED) MangroTheme.colors.borderFocus else null
 
 @Composable
 fun MangroButton(
@@ -70,6 +78,7 @@ fun MangroButton(
         else -> style.backgroundColor
     }
     val textColor = if (!enabled) MangroTheme.colors.textCanceled else style.textColor
+    val borderColor = if (enabled) style.borderColor else null
     val shape = RoundedCornerShape(12.dp)
     val contentPadding = if (style == MangroButtonStyle.TEXT) {
         PaddingValues(10.dp)
@@ -81,6 +90,18 @@ fun MangroButton(
         modifier = modifier
             .clip(shape)
             .background(backgroundColor)
+            .then(
+                if (borderColor != null) {
+                    Modifier
+                        .border(
+                            width = 1.dp,
+                            color = borderColor,
+                            shape = shape,
+                        )
+                } else {
+                    Modifier
+                },
+            )
             .clickable(
                 role = Role.Button,
                 interactionSource = remember { MutableInteractionSource() },

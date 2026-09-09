@@ -18,14 +18,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import coil3.compose.AsyncImage
-import com.swyp.mangro.core.designsystem.R
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.collections.immutable.ImmutableList
@@ -108,7 +106,7 @@ private fun ImagePages(
             val index = if (count == 1) 0 else Math.floorMod(page - 1, count)
             AsyncImage(
                 model = images[index],
-                contentDescription = stringResource(R.string.image_page_description, index + 1, count),
+                contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
                 placeholder = placeholder,

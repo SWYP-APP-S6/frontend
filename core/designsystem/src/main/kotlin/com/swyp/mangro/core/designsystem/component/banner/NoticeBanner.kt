@@ -1,6 +1,5 @@
 package com.swyp.mangro.core.designsystem.component.banner
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,7 +27,7 @@ import com.swyp.mangro.core.designsystem.theme.White
 
 @Composable
 fun NoticeBanner(
-    @StringRes stringRes: Int,
+    text: String,
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(4.dp)
@@ -51,7 +50,7 @@ fun NoticeBanner(
         Spacer(modifier = Modifier.width(8.dp))
 
         Text(
-            text = stringResource(stringRes),
+            text = text,
             color = MangroTheme.colors.dangerNormal,
             style = MangroTheme.typography.caption.captionM ?: MangroTheme.typography.caption.captionS,
         )
@@ -69,11 +68,11 @@ private fun NoticeBannerPreview() {
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             NoticeBanner(
-                stringRes = R.string.banner_payment_notice,
+                text = stringResource(R.string.banner_payment_notice),
             )
 
             NoticeBanner(
-                stringRes = R.string.banner_pickup_notice,
+                text = stringResource(R.string.banner_pickup_notice),
             )
         }
     }

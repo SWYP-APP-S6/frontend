@@ -23,4 +23,56 @@
     <string name="banner_action_confirm">확인하기</string>
     <string name="banner_payment_notice">매장에 직접 방문해서 결제하셔야 해요.</string>
     <string name="banner_pickup_notice">15분 안에 매장에서 픽업하지 않으시면\n찜이 자동으로 취소돼요.</string>
+
+    <string name="timer_card_active">매장 도착까지 남은 시간</string>
+    <string name="timer_card_expired">시간이 지나 자동 취소 됐어요</string>
+    <string name="timer_card_badge_relaxed">여유있어요</string>
+    <string name="timer_card_badge_urgent">서둘러주세요</string>
+    <string name="timer_card_end_time">찜 종료</string>
+
+    <string name="recipe_difficulty_low">난이도 하</string>
+    <string name="recipe_difficulty_medium">난이도 중</string>
+    <string name="recipe_difficulty_high">난이도 상</string>
+    <string name="recipe_calorie">%1$dkcal</string>
+    <string name="recipe_cooking_time">%1$d분 소요</string>
+
+    <string name="map_store_closing_time">%1$s 마감</string>
+
+    <string name="product_list_card_remaining_count">%1$d개 남음</string>
+    <string name="product_category_grains">곡류</string>
+    <string name="product_category_vegetables">과채류</string>
+    <string name="product_category_meat">육류</string>
+    <string name="product_category_seafood">어류</string>
+    <string name="product_category_nuts">견과류</string>
+    <string name="product_category_etc">기타</string>
+
+    <string name="product_detail_seller_label">판매처</string>
+    <string name="product_detail_operating_hours_label">운영시간</string>
+    <string name="product_detail_distance_prefix">내 위치로부터 </string>
+    <string name="product_detail_distance_value">%1$dm</string>
+
+    <string name="owner_product_card_remaining_prefix">남은 수량</string>
+    <string name="owner_product_card_expected_visit_prefix">방문 예정</string>
+    <string name="owner_product_card_unable_to_purchase">%1$d명은 제품 구매가 불가능해요</string>
+
+    <string name="wish_status_in_progress">찜하는중</string>
+    <string name="wish_status_picked_up">수령완료</string>
+    <string name="wish_status_expired">시간만료</string>
+
+    <string name="pickup_receipt_date">날짜</string>
+    <string name="pickup_receipt_store">상점</string>
+    <string name="pickup_receipt_product">품목</string>
+    <string name="pickup_receipt_quantity">구매 수량</string>
+    <string name="pickup_receipt_price">가격</string>
+
+    <string name="pickup_consumer_name">%1$s님</string>
+    <string name="pickup_request_remaining_time">남은 시간</string>
+    <string name="pickup_request_expired">찜 만료</string>
+    <string name="pickup_request_complete">픽업 완료했어요</string>
+    <string name="pickup_request_completed">픽업 완료된 찜</string>
+
+    <string name="store_location_card_button">길찾기</string>
+
+    <string name="product_price">%,d원</string>
+    <string name="product_quantity">%1$d개</string>
 </resources>

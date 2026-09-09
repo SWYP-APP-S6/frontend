@@ -18,6 +18,9 @@ kotlinxCollectionsImmutable = "0.4.0"
 hilt = "2.60.1"
 balloon = "1.7.6"
 coil = "3.4.0"
+naverMaps = "3.23.3"
+naverMapsCompose = "1.9.0"
+lifecycle = "2.11.0"
 
 [libraries]
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
@@ -51,8 +54,11 @@ kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collec
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
 balloon-compose = { group = "com.github.skydoves", name = "balloon-compose", version.ref = "balloon" }
-coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
-coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+naver-maps = { module = "com.naver.maps:map-sdk", version.ref = "naverMaps" }
+naver-maps-compose = { module = "io.github.fornewid:naver-map-compose", version.ref = "naverMapsCompose" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

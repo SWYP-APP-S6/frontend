@@ -60,3 +60,9 @@
 - SDK, Java, Build Type, Product Flavor 변경
 - 주요 테스트 진입점 변경
 - 프로젝트 최상위 디렉터리의 책임 변경
+
+## 점주 상품 화면
+
+- `:feature:owner:product`: 상품 등록 3단계, 미리보기, 목록·상세, 재고 재확인 UI.
+- `:app` Owner 소스셋에서만 의존하며 저장 및 찜 취소 진입은 호출부 콜백으로 연결한다.
+- 현재 API 연결 이전의 UI 호스트 범위이며 상세 계약과 미확정 디자인 기준은 `feature/owner/product/README.md`를 참고한다.

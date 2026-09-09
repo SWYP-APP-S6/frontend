@@ -1,68 +1,50 @@
 package com.swyp.mangro
 
-import androidx.compose.foundation.layout.Box
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import com.swyp.mangro.core.designsystem.component.appbar.BottomAppBar
-import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
-import com.swyp.mangro.core.designsystem.component.appbar.Menu
-import com.swyp.mangro.core.designsystem.theme.MangroTheme
-import kotlinx.collections.immutable.toPersistentList
+import androidx.compose.ui.unit.dp
+import com.swyp.mangro.core.designsystem.component.MangroButton
+import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
+import com.swyp.mangro.feature.owner.product.OwnerProduct
+import com.swyp.mangro.feature.owner.product.OwnerProductFlow
+import com.swyp.mangro.theme.MangroTheme
 
+/** Local UI host until the catalog and owner:pickup navigation are connected. */
 @Composable
 internal fun MainScreen() {
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            MangroDefaultStartAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "찜 내역",
-                        modifier = Modifier.fillMaxWidth(),
-                        style = MangroTheme.typography.heading.headingM,
-                    )
-                },
-            )
-        },
-        bottomBar = {
-            BottomAppBar(
-                menus = Menu.entries.toPersistentList(),
-                currentMenu = Menu.HOME,
-                onMenuClick = { /* TODO() */ },
-            )
-        },
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentAlignment = Alignment.Center,
-        ) {
-            Greeting()
-        }
-    }
-}
-
-@Composable
-private fun Greeting() {
-    Text(
-        text = stringResource(R.string.greeting_message),
-        color = MangroTheme.colors.primaryNormal,
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun MainScreenPreview() {
+    var products by rememberSaveable { mutableStateOf(emptyList<OwnerProduct>()) }
+    var cancellationProductIds by rememberSaveable { mutableStateOf(emptyList<String>()) }
     MangroTheme {
-        MainScreen()
+        if (cancellationProductIds.isEmpty()) {
+            OwnerProductFlow(
+                products = products,
+                storeClosingTime = "20:00",
+                onSaveProducts = { changed ->
+                    val ids = changed.map { it.id }.toSet()
+                    products = products.filterNot { it.id in ids } + changed
+                },
+                onCancelReservations = { cancellationProductIds = it },
+            )
+        } else {
+            BackHandler { cancellationProductIds = emptyList() }
+            Column(Modifier.fillMaxSize().padding(32.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
+                Text("찜 취소하기")
+                products.filter { it.id in cancellationProductIds }.forEach {
+                    Text("${it.name} · 부족 수량 ${it.shortageQuantity}개")
+                }
+                Text("찜 내역을 불러올 수 없어요. 잠시 후 다시 확인해주세요.")
+                MangroButton("돌아가기", { cancellationProductIds = emptyList() }, MangroButtonStyle.ACTIVE)
+            }
+        }
     }
 }

@@ -7,6 +7,9 @@
 | 경로 | 유형 | 책임 |
 |---|---|---|
 | `:app` | Android application 모듈 | 애플리케이션 패키징과 앱 진입점 |
+| `:core:network` | Android library 모듈 | 네트워크 계층용 모듈 골격 |
+| `:core:designsystem` | Android library 모듈 | Compose 테마와 공통 UI 컴포넌트 |
+| `:core:utils` | Android library 모듈 | 네트워크 상태 관측 등 공통 Android 유틸리티용 모듈 골격 |
 | `build-logic` | Gradle included build | Android application/library 공통 설정 |
 | `gradle/libs.versions.toml` | Version Catalog | 플러그인과 외부 라이브러리 버전 |
 | `.githooks` | Git hooks | 커밋 메시지와 커밋 전 ktlint 검사 |
@@ -41,9 +44,10 @@
 
 ## 현재 확인된 제약
 
-- `:app` 외 Feature, Core, Data 모듈은 아직 등록되지 않았다.
+- `:app`은 `:core:designsystem`, `:core:utils`에 의존하며, Feature와 Data 모듈은 아직 등록되지 않았다.
+- `:core:utils`의 `NetworkConnectivityManager`는 기본 네트워크 콜백으로 연결 상태를 관측한다. `MangroApplication`에서 필드 주입받아 앱 시작 시 인스턴스를 생성한다.
 - 앱의 실제 기능 소스는 아직 초기 상태이며 예제 테스트가 남아 있다.
-- Compose와 DI 관련 플러그인 및 MVVM Presentation 구현은 아직 적용되지 않았다.
+- Compose convention plugin은 `:app`, `:core:designsystem`에 적용되어 있다. Hilt 및 KSP 플러그인은 `:app`, `:core:network`, `:core:utils`에 적용되어 있으며, 앱의 Hilt 진입점은 `MangroApplication`이다.
 - 루트 `ktlintCheck`는 subproject를 집계하지만 included build인 `build-logic` 소스는 직접 검사하지 않는다.
 - `.github/workflows` 기반 CI는 아직 없다.
 

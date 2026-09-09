@@ -26,6 +26,8 @@ android {
 }
 
 dependencies {
+    add("ownerImplementation", project(":feature:owner:onboarding"))
+
     implementation(project(":core:designsystem"))
     implementation(project(":core:utils"))
 

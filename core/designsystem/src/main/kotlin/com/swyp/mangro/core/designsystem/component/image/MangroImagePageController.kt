@@ -2,7 +2,6 @@ package com.swyp.mangro.core.designsystem.component.image
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,7 +16,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.swyp.mangro.core.designsystem.R
@@ -71,21 +69,6 @@ fun MangroImagePageNumbers(currentPage: Int, pageCount: Int, modifier: Modifier 
                 ),
                 maxLines = 1,
             )
-        }
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFD9D9D9)
-@Composable
-private fun MangroImagePageControllerPreview() {
-    MangroTheme {
-        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
-            repeat(5) { page ->
-                Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.CenterVertically) {
-                    MangroImagePageNumbers(page, 5)
-                    MangroImagePageDots(page, 5)
-                }
-            }
         }
     }
 }

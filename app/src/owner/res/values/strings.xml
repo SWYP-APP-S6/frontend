@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">맹그로(점주용)</string>
     <string name="greeting_message">Hello Mangro Owner!</string>
+    <string name="owner_pickup_open">찜 현황</string>
+    <string name="owner_pickup_demo_notice">개발용 샘플 데이터입니다. 실제 취소·안내 발송은 하지 않습니다.</string>
 </resources>

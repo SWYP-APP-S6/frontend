@@ -1,18 +1,19 @@
 package com.swyp.mangro.core.designsystem.component.image
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -33,11 +34,18 @@ fun MangroImagePageDots(currentPage: Int, pageCount: Int, modifier: Modifier = M
         verticalAlignment = Alignment.CenterVertically,
     ) {
         repeat(pageCount) { page ->
-            Icon(
-                painter = painterResource(R.drawable.ic_image_page_dot),
-                contentDescription = null,
-                modifier = Modifier.size(8.dp),
-                tint = if (page == currentPage) MangroTheme.colors.grayScale700 else MangroTheme.colors.textOnBrandWhite,
+            val color by animateColorAsState(
+                targetValue = if (page == currentPage) {
+                    MangroTheme.colors.grayScale700
+                } else {
+                    MangroTheme.colors.textOnBrandWhite
+                },
+                label = "PageDotColor",
+            )
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .background(color, CircleShape),
             )
         }
     }
@@ -48,10 +56,9 @@ fun MangroImagePageDots(currentPage: Int, pageCount: Int, modifier: Modifier = M
 fun MangroImagePageNumbers(currentPage: Int, pageCount: Int, modifier: Modifier = Modifier) {
     if (pageCount <= 1) return
     require(currentPage in 0 until pageCount)
-    val description = stringResource(R.string.image_page_description, currentPage + 1, pageCount)
+
     Row(
         modifier = modifier
-            .clearAndSetSemantics { contentDescription = description }
             .widthIn(min = 45.dp)
             .background(MangroTheme.colors.grayScale700, CircleShape)
             .padding(horizontal = 10.dp, vertical = 2.dp),

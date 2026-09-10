@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.swyp.mangro.feature.splash"
+    namespace = "com.swyp.mangro.feature.auth"
 }
 
 dependencies {

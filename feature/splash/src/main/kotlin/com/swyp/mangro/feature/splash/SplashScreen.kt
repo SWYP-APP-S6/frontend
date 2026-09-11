@@ -15,6 +15,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -24,7 +27,6 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 
 @Composable
@@ -33,8 +35,6 @@ fun SplashRoute(
     navigateToHome: () -> Unit,
     viewModel: SplashViewModel = hiltViewModel(),
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
             when (event) {
@@ -44,14 +44,15 @@ fun SplashRoute(
         }
     }
 
-    SplashScreen(uiState = uiState)
+    SplashScreen()
 }
 
 @Composable
 fun SplashScreen(
-    uiState: SplashUiState,
     modifier: Modifier = Modifier,
 ) {
+    var iconVisible by remember { mutableStateOf(true) }
+
     val gradient = Brush.verticalGradient(
         colorStops = arrayOf(
             0.4045f to MangroTheme.colors.primaryStrong,
@@ -66,7 +67,7 @@ fun SplashScreen(
         contentAlignment = Alignment.Center,
     ) {
         AnimatedVisibility(
-            visible = uiState.iconVisible,
+            visible = iconVisible,
             exit = fadeOut(animationSpec = tween(durationMillis = 400)) +
                 slideOutVertically(
                     targetOffsetY = { fullHeight -> -fullHeight / 4 },
@@ -104,8 +105,6 @@ fun SplashScreen(
 @Composable
 private fun SplashScreenPreview() {
     MangroTheme {
-        SplashScreen(
-            uiState = SplashUiState(),
-        )
+        SplashScreen()
     }
 }

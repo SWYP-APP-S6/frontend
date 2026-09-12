@@ -102,6 +102,7 @@ internal fun OwnerOperatingInfoScreen(
         ) {
             Text(
                 text = stringResource(R.string.operating_intro),
+                color = MangroTheme.colors.textTitle,
                 style = MangroTheme.typography.heading.headingM.copy(lineHeight = 33.6.sp),
             )
         }

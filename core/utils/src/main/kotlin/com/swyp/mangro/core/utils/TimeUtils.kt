@@ -1,4 +1,4 @@
-package com.swyp.mangro.feature.owner.home.screen.utils
+package com.swyp.mangro.core.utils
 
 internal fun remainingPickupMinutes(deadlineMillis: Long, nowMillis: Long): Long {
     val remaining = (deadlineMillis - nowMillis).coerceAtLeast(0L)

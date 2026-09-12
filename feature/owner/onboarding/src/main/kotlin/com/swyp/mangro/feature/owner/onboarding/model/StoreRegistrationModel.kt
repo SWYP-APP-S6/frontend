@@ -1,21 +1,18 @@
-package com.swyp.mangro.feature.owner.onboarding
+package com.swyp.mangro.feature.owner.onboarding.model
 
-/** IDs are provided by the caller's category catalog, not inferred from display names. */
-data class StoreCategory(val id: String, val label: String)
-
-data class StoreAddress(val postalCode: String, val address: String)
+import java.io.Serializable
 
 /** Times are minutes since midnight. Overnight/24-hour hours await a product contract. */
-data class StoreRegistration(
+data class StoreRegistrationModel(
     val name: String,
-    val category: StoreCategory?,
-    val address: StoreAddress?,
+    val category: StoreCategoryModel?,
+    val address: StoreAddressModel?,
     val detailAddress: String,
     val phone: String,
     val openingMinutes: Int?,
     val closingMinutes: Int?,
     val businessDays: Set<Int>,
-) {
+) : Serializable {
     val isBasicInfoValid: Boolean
         get() = name.isNotBlank() &&
             category != null &&
@@ -29,7 +26,9 @@ data class StoreRegistration(
             closingMinutes != null &&
             openingMinutes in 0..1439 &&
             closingMinutes in 0..1439 &&
-            openingMinutes < closingMinutes
+            openingMinutes % 60 == 0 &&
+            closingMinutes % 60 == 0 &&
+            openingMinutes <= closingMinutes
 
     val isValid: Boolean
         get() = isBasicInfoValid &&

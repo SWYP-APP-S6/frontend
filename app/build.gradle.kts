@@ -36,11 +36,15 @@ dependencies {
 
     add("consumerImplementation", libs.naver.maps)
     add("consumerImplementation", libs.naver.maps.compose)
+    add("consumerImplementation", project(":feature:splash"))
+    add("consumerImplementation", project(":feature:auth"))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     implementation(libs.material)

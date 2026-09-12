@@ -22,6 +22,10 @@ coil = "3.4.0"
 naverMaps = "3.23.3"
 naverMapsCompose = "1.9.0"
 lifecycle = "2.11.0"
+core = "1.19.0"
+androidxCoreSplashscreen = "1.0.1"
+runtime = "1.12.1"
+navigationCompose = "2.9.0"
 
 [libraries]
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
@@ -60,6 +64,12 @@ coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" 
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 naver-maps = { module = "com.naver.maps:map-sdk", version.ref = "naverMaps" }
 naver-maps-compose = { module = "io.github.fornewid:naver-map-compose", version.ref = "naverMapsCompose" }
+androidx-core = { group = "androidx.core", name = "core", version.ref = "core" }
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "androidxCoreSplashscreen" }
+androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version = "1.2.0" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

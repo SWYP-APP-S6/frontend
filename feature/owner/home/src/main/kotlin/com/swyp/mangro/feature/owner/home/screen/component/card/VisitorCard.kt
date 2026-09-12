@@ -26,10 +26,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.swyp.mangro.core.designsystem.R as DesignR
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
+import com.swyp.mangro.core.utils.remainingPickupMinutes
 import com.swyp.mangro.feature.owner.home.R
 import com.swyp.mangro.feature.owner.home.screen.OwnerHomeAction
 import com.swyp.mangro.feature.owner.home.screen.OwnerHomeVisitor
-import com.swyp.mangro.feature.owner.home.screen.utils.remainingPickupMinutes
 
 @Composable
 internal fun VisitorCard(

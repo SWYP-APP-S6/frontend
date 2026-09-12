@@ -145,7 +145,8 @@ fun OwnerHomeScreen(
                                     indication = null,
                                     interactionSource = remember { MutableInteractionSource() },
                                     onClick = { onAction(OwnerHomeAction.ViewNewPickups) },
-                                ).padding(8.dp),
+                                )
+                                .padding(8.dp),
                         )
                     }
                 }

@@ -75,4 +75,6 @@
 
     <string name="product_price">%,d원</string>
     <string name="product_quantity">%1$d개</string>
+    <string name="pickup_request_unavailable">픽업불가</string>
+    <string name="pickup_request_canceled">찜 취소</string>
 </resources>

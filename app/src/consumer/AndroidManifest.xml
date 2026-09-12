@@ -4,5 +4,9 @@
         <meta-data
             android:name="com.naver.maps.map.NCP_KEY_ID"
             android:value="${NCP_MAP_CLIENT_ID}" />
+
+        <activity
+            android:name=".MainActivity"
+            android:theme="@style/Theme.Mangro.Splash" />
     </application>
 </manifest>

@@ -28,7 +28,6 @@ android {
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:utils"))
-    add("ownerImplementation", project(":feature:owner:pickup"))
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

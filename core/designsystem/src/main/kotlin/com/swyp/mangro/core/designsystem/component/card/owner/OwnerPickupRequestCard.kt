@@ -34,7 +34,7 @@ import com.swyp.mangro.core.designsystem.component.progress.MangroCircularProgre
 import com.swyp.mangro.core.designsystem.theme.Gray500
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 
-enum class OwnerPickupRequestStatus { EXPIRED, IN_PROGRESS, COMPLETED, UNAVAILABLE, CANCELED }
+enum class OwnerPickupRequestStatus { EXPIRED, IN_PROGRESS, COMPLETED }
 
 data class OwnerPickupRequestItem(
     val id: String,
@@ -54,8 +54,6 @@ fun OwnerPickupRequestCard(
     onConsumerClick: () -> Unit,
     onButtonClick: () -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    completeEnabled: Boolean = true,
 ) {
     val timerState = if (item.requestTimeMillis != null && item.endTimeMillis != null) {
         rememberTimerCardState(item.requestTimeMillis, item.endTimeMillis)
@@ -92,7 +90,6 @@ fun OwnerPickupRequestCard(
                 Row(
                     modifier = Modifier
                         .clickable(
-                            enabled = enabled,
                             onClick = onConsumerClick,
                         ),
                     verticalAlignment = Alignment.CenterVertically,
@@ -184,15 +181,6 @@ fun OwnerPickupRequestCard(
         Spacer(modifier = Modifier.height(24.dp))
 
         when (item.status) {
-            OwnerPickupRequestStatus.UNAVAILABLE, OwnerPickupRequestStatus.CANCELED ->
-                MangroButton(
-                    text = stringResource(if (item.status == OwnerPickupRequestStatus.UNAVAILABLE) R.string.pickup_request_unavailable else R.string.pickup_request_canceled),
-                    onClick = onButtonClick,
-                    style = MangroButtonStyle.DEFAULT,
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = false,
-                )
-
             OwnerPickupRequestStatus.EXPIRED ->
                 MangroButton(
                     text = stringResource(R.string.pickup_request_expired),
@@ -208,7 +196,6 @@ fun OwnerPickupRequestCard(
                     onClick = onButtonClick,
                     style = MangroButtonStyle.OUTLINED,
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = enabled && completeEnabled,
                 )
 
             OwnerPickupRequestStatus.COMPLETED ->

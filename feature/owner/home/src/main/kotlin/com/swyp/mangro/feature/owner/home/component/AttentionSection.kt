@@ -1,4 +1,4 @@
-package com.swyp.mangro.feature.owner.home.screen.component
+package com.swyp.mangro.feature.owner.home.component
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Column
@@ -12,8 +12,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.owner.home.R
+import com.swyp.mangro.feature.owner.home.component.card.AttentionCard
 import com.swyp.mangro.feature.owner.home.screen.OwnerHomeAction
-import com.swyp.mangro.feature.owner.home.screen.component.card.AttentionCard
 
 @Composable
 fun AttentionSection(

@@ -1,4 +1,4 @@
-package com.swyp.mangro.feature.owner.home.screen.component
+package com.swyp.mangro.feature.owner.home.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column

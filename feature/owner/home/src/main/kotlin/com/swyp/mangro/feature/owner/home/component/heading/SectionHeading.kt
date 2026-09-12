@@ -1,4 +1,4 @@
-package com.swyp.mangro.feature.owner.home.screen.component.heading
+package com.swyp.mangro.feature.owner.home.component.heading
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource

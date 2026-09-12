@@ -51,11 +51,11 @@ import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProductCard
 import com.swyp.mangro.core.designsystem.component.label.MangroLabel
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.owner.home.R
-import com.swyp.mangro.feature.owner.home.screen.component.AttentionSection
-import com.swyp.mangro.feature.owner.home.screen.component.RegisterNewProductSection
-import com.swyp.mangro.feature.owner.home.screen.component.card.DashboardCard
-import com.swyp.mangro.feature.owner.home.screen.component.card.VisitorCard
-import com.swyp.mangro.feature.owner.home.screen.component.heading.SectionHeading
+import com.swyp.mangro.feature.owner.home.component.AttentionSection
+import com.swyp.mangro.feature.owner.home.component.RegisterNewProductSection
+import com.swyp.mangro.feature.owner.home.component.card.DashboardCard
+import com.swyp.mangro.feature.owner.home.component.card.VisitorCard
+import com.swyp.mangro.feature.owner.home.component.heading.SectionHeading
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
 

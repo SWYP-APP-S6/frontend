@@ -1,4 +1,4 @@
-package com.swyp.mangro.feature.owner.home.screen.component.card
+package com.swyp.mangro.feature.owner.home.component.card
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image

@@ -42,11 +42,11 @@ import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.designsystem.theme.OwnerMangroTypography
+import com.swyp.mangro.feature.owner.home.component.card.VisitorCard
 import com.swyp.mangro.feature.owner.home.screen.OwnerHomeAction
 import com.swyp.mangro.feature.owner.home.screen.OwnerHomeScreen
 import com.swyp.mangro.feature.owner.home.screen.OwnerHomeUiState
 import com.swyp.mangro.feature.owner.home.screen.OwnerHomeViewModel
-import com.swyp.mangro.feature.owner.home.screen.component.card.VisitorCard
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

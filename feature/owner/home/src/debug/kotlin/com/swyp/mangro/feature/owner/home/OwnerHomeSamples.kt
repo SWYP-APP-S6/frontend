@@ -30,9 +30,9 @@ object OwnerHomeSamples {
             OwnerHomeVisitor("pickup-3", "망그로", "콩나물 한 바구니", 2, nowMillis + 12 * 60_000),
         ),
         products = persistentListOf(
-            OwnerProduct("product-1", "android.resource://com.swyp.mangro.feature.owner.home/${R.drawable.sample_spinach}", "시금치 한 단", 4_000, 6, 4, 2),
-            OwnerProduct("product-2", "android.resource://com.swyp.mangro.feature.owner.home/${R.drawable.sample_zucchini}", "애호박", 4_000, 2, 3, 0),
-            OwnerProduct("product-3", "android.resource://com.swyp.mangro.feature.owner.home/${R.drawable.sample_sprouts}", "콩나물 한 바구니", 4_000, 4, 3, 2),
+            OwnerProduct("product-1", "https://picsum.photos/400/400?random=1", "시금치 한 단", 4_000, 6, 4, 2),
+            OwnerProduct("product-2", "https://picsum.photos/400/400?random=2", "애호박", 4_000, 2, 3, 0),
+            OwnerProduct("product-3", "https://picsum.photos/400/400?random=3", "콩나물 한 바구니", 4_000, 4, 3, 2),
         ),
     )
 }

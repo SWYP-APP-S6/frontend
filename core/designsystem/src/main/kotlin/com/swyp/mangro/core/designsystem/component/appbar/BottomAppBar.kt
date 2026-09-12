@@ -36,15 +36,43 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.swyp.mangro.core.designsystem.R
 import com.swyp.mangro.core.designsystem.theme.ConsumerMangroBody
+import com.swyp.mangro.core.designsystem.theme.OwnerMangroTypography
 import com.swyp.mangro.core.designsystem.theme.defaultMangroColors
 import com.swyp.mangro.core.designsystem.theme.utils.dropShadow
 import kotlinx.collections.immutable.PersistentList
 
 @Composable
-fun BottomAppBar(
-    menus: PersistentList<Menu>,
-    currentMenu: Menu,
-    onMenuClick: (Menu) -> Unit,
+fun OwnerBottomAppBar(
+    currentMenu: OwnerMenu,
+    onMenuClick: (OwnerMenu) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    BottomAppBarContainer(modifier) {
+        OwnerMenu.entries.forEach { menu ->
+            BottomAppBarItem(
+                isSelected = currentMenu == menu,
+                drawResId = when (menu) {
+                    OwnerMenu.HOME -> R.drawable.ic_home
+                    OwnerMenu.STORE -> R.drawable.ic_owner_manage
+                    OwnerMenu.SETTINGS -> R.drawable.ic_owner_settings
+                },
+                stringResId = when (menu) {
+                    OwnerMenu.HOME -> R.string.bottom_app_bar_home
+                    OwnerMenu.STORE -> R.string.owner_bottom_store
+                    OwnerMenu.SETTINGS -> R.string.owner_bottom_settings
+                },
+                onClick = { onMenuClick(menu) },
+                textStyle = OwnerMangroTypography.title.titleS ?: OwnerMangroTypography.title.titleM,
+            )
+        }
+    }
+}
+
+@Composable
+fun ConsumerBottomAppBar(
+    menus: PersistentList<ConsumerMenu>,
+    currentMenu: ConsumerMenu,
+    onMenuClick: (ConsumerMenu) -> Unit,
 ) {
     BottomAppBarContainer {
         menus.forEach { menu ->
@@ -121,18 +149,20 @@ fun RowScope.BottomAppBarItem(
     }
 }
 
-enum class Menu { HOME, WISH_LIST, MY }
+enum class ConsumerMenu { HOME, WISH_LIST, MY }
+
+enum class OwnerMenu { HOME, STORE, SETTINGS }
 
 @DrawableRes
-private fun Menu.iconResId(): Int = when (this) {
-    Menu.HOME -> R.drawable.ic_home
-    Menu.WISH_LIST -> R.drawable.ic_alarm_on_24px
-    Menu.MY -> R.drawable.ic_local_library
+private fun ConsumerMenu.iconResId(): Int = when (this) {
+    ConsumerMenu.HOME -> R.drawable.ic_home
+    ConsumerMenu.WISH_LIST -> R.drawable.ic_alarm_on_24px
+    ConsumerMenu.MY -> R.drawable.ic_local_library
 }
 
 @StringRes
-private fun Menu.stringResId(): Int = when (this) {
-    Menu.HOME -> R.string.bottom_app_bar_home
-    Menu.WISH_LIST -> R.string.bottom_app_bar_wish_list
-    Menu.MY -> R.string.bottom_app_bar_my
+private fun ConsumerMenu.stringResId(): Int = when (this) {
+    ConsumerMenu.HOME -> R.string.bottom_app_bar_home
+    ConsumerMenu.WISH_LIST -> R.string.bottom_app_bar_wish_list
+    ConsumerMenu.MY -> R.string.bottom_app_bar_my
 }

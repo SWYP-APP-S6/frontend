@@ -29,17 +29,22 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:utils"))
     add("ownerImplementation", project(":feature:owner:home"))
+    add("ownerImplementation", project(":feature:owner:pickup"))
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
     add("consumerImplementation", libs.naver.maps)
     add("consumerImplementation", libs.naver.maps.compose)
+    add("consumerImplementation", project(":feature:splash"))
+    add("consumerImplementation", project(":feature:auth"))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     implementation(libs.material)

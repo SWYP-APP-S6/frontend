@@ -11,6 +11,7 @@
 | `:core:designsystem` | Android library 모듈 | Compose 테마와 공통 UI 컴포넌트 |
 | `:core:utils` | Android library 모듈 | 네트워크 상태 관측 등 공통 Android 유틸리티용 모듈 골격 |
 | `:feature:owner:home` | Android library 모듈 | 점주 홈 UI, 운영 현황과 외부 화면 진입 액션 |
+| `:feature:owner:pickup` | Android library 모듈 | 점주 찜 현황·상세·재고 부족 취소 UI와 상태/배정 로직 |
 | `build-logic` | Gradle included build | Android application/library 공통 설정 |
 | `gradle/libs.versions.toml` | Version Catalog | 플러그인과 외부 라이브러리 버전 |
 | `.githooks` | Git hooks | 커밋 메시지와 커밋 전 ktlint 검사 |
@@ -45,6 +46,7 @@
 
 ## 현재 확인된 제약
 
+- `:app`은 `:core:designsystem`, `:core:utils`에 의존하며, Owner Flavor는 `:feature:owner:pickup`에 의존한다. Data/API 구현은 아직 없다.
 - `:app`은 `:core:designsystem`, `:core:utils`에 의존하며, Owner Flavor만 `:feature:owner:home`에 의존한다. Data 모듈은 아직 등록되지 않았다.
 - 점주 홈은 최초 안내·빈 상태·운영 현황을 표시한다. Owner Debug 진입점은 Figma 샘플 데이터를 사용하며 Release는 최초 안내를 표시한다. 실제 데이터 조회와 목적지 연결은 아직 없다.
 - `:core:utils`의 `NetworkConnectivityManager`는 기본 네트워크 콜백으로 연결 상태를 관측한다. `MangroApplication`에서 필드 주입받아 앱 시작 시 인스턴스를 생성한다.

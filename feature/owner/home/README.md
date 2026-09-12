@@ -5,22 +5,25 @@
 
 - 홈 화면과 전용 구성요소: `src/main/.../OwnerHomeScreen.kt`
 - 화면 상태·외부 액션: `src/main/.../OwnerHomeUiState.kt`
-- 세 상태의 Preview·예제 데이터: `src/debug/.../OwnerHomeSamples.kt`
+- 예제 데이터: `src/main/.../OwnerHomeSamples.kt`
+- 세 상태의 Preview: `src/debug/.../OwnerHomePreview.kt`
 - Owner 앱 조립: `app/src/owner/.../MainScreen.kt`
-- Owner Debug는 운영 중 샘플, Owner Release는 최초 안내 상태로 시작한다. 데이터 계층 연결 전 UI 검토용이며 로그인·매장 등록·운영 현황을 실제 조회하지 않는다.
+- Owner Debug와 Release 모두 운영 중 샘플 상태로 시작한다. 데이터 계층 연결 전의 임시 구성으로, 로그인·매장 등록·운영 현황을 실제 조회하지 않는다. Preview만 Debug에 포함한다.
 
 ## 연결 계약
 
-| 액션 | 담당 기능 |
-| --- | --- |
-| RegisterProduct / ViewProducts / ViewProduct(productId) | #65 등록·상품 목록·관리 상세 |
-| ViewPickups / ViewNewPickups / ViewCompletedPickups | #66 찜 목록과 해당 필터 |
+| 액션                                                               | 담당 기능              |
+|------------------------------------------------------------------|--------------------|
+| RegisterProduct / ViewProducts / ViewProduct(productId)          | #65 등록·상품 목록·관리 상세 |
+| ViewPickups / ViewNewPickups / ViewCompletedPickups              | #66 찜 목록과 해당 필터    |
 | ViewPickup(pickupId) / CompletePickup(pickupId) / ConfirmPickups | #66 상세·픽업 처리·수령 확인 |
-| ViewCancellations | #66 취소 대상 확인 |
-| DismissAttention | 호출자가 안내 표시 상태 변경 |
-| ViewNotifications | 목적지 명세 확인 필요 |
+| ViewCancellations                                                | #66 취소 대상 확인       |
+| DismissAttention                                                 | 호출자가 안내 표시 상태 변경   |
+| ViewNotifications                                                | 목적지 명세 확인 필요       |
 
-실제 내비게이션은 #56에서 조립한다. 현재 앱은 미구현 목적지에 대해 준비 중 Snackbar를 표시하며, 가짜 픽업 성공이나 재고 변경을 수행하지 않는다. 설정 화면의 디자인·담당 이슈도 확정이 필요하다.
+실제 내비게이션은 #56에서 조립한다. 현재 목적지 이동과 픽업 완료·취소 처리는 미연결이며, 클릭해도 Snackbar나 처리 결과를 표시하지 않는다. 홈 외 하단 메뉴도 아직 화면을 전환하지 않는다.
+
+샘플 화면 확인을 위해 `RegisterProduct`는 등록 이력 표시를 전환하고, `ViewNewPickups`는 신규 찜 배너를 토글한다. 실제 등록·조회 동작 연결 시 교체해야 한다.
 
 ## 상태 처리
 
@@ -35,12 +38,14 @@
 Figma 파일: `hqglQXERCwjFx1W4amjPHI`
 
 - 운영 현황 `1318:26022`, 빈 홈 `1318:25961`, 최초 안내 `1318:25950`
-- 환영 일러스트: `1318:25958` PNG export
+- 환영 일러스트: `src/main/res/drawable/welcome_store.xml`
 - 빈 상태 일러스트: `1288:24267`, `1288:24306`의 원본 SVG를 Android `Svg2Vector`로 변환
-- 상품 사진은 해당 프레임의 원본 이미지를 Debug 리소스로만 저장했다.
+- 상품 사진은 Picsum 랜덤 이미지 URL을 사용하며 실제 상품과 무관하다. 네트워크와 이미지 캐시 상태에 따라 사진 또는 로딩 배경이 표시될 수 있다.
 - 추가된 `ic_owner_*` 벡터는 Figma의 원본 SVG path와 색상을 기계적으로 VectorDrawable로 변환했다.
 
 ## 검증
 
 모듈 단위 테스트와 Compose 계측 테스트는 `testDebugUnitTest`, `connectedDebugAndroidTest`로 실행한다.
 앱 검증은 `testOwnerDebugUnitTest`, `testConsumerDebugUnitTest`, `lintOwnerDebug`, `lintConsumerDebug`, `assembleOwnerDebug`, `assembleConsumerDebug`처럼 Flavor를 명시한다.
+
+`OwnerHomeScreenTest`는 최초 안내·빈 상태·운영 상태, 안내 닫기, 기본 글꼴에서 카드 크기·시간 정렬, 만료 후 클릭 차단, 1.3배 글꼴을 검증한다. `additionalTestOutputDir` 계측 인자를 전달하면 테스트에서 캡처한 PNG를 Gradle 추가 산출물로 수집할 수 있다. 캡처는 수동 시각 검토용이며 기준 이미지와 자동 비교하는 테스트는 아니다.

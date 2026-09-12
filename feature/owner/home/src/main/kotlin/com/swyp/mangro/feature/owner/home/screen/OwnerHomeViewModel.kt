@@ -12,16 +12,11 @@ import kotlinx.coroutines.flow.update
 
 @HiltViewModel
 class OwnerHomeViewModel @Inject constructor() : ViewModel() {
-    private val _uiState = MutableStateFlow(OwnerHomeUiState())
+    private val _uiState = MutableStateFlow(OwnerHomeSamples.operating())
     val uiState = _uiState.asStateFlow()
 
     private val _event = Channel<OwnerHomeEvent>(Channel.BUFFERED)
     val event = _event.receiveAsFlow()
-
-    // TODO - 초기화
-    init {
-        _uiState.update { OwnerHomeSamples.operating() }
-    }
 
     fun handleAction(action: OwnerHomeAction) {
         when (action) {

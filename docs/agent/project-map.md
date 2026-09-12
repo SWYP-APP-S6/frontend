@@ -46,7 +46,7 @@
 ## 현재 확인된 제약
 
 - `:app`은 `:core:designsystem`, `:core:utils`에 의존하며, Owner Flavor만 `:feature:owner:home`에 의존한다. Data 모듈은 아직 등록되지 않았다.
-- 점주 홈은 최초 안내·빈 상태·운영 현황을 표시한다. Owner Debug 진입점은 Figma 샘플 데이터를 사용하며 Release는 최초 안내를 표시한다. 실제 데이터 조회와 목적지 연결은 아직 없다.
+- 점주 홈은 최초 안내·빈 상태·운영 현황을 표시한다. Owner Debug와 Release 모두 공통 샘플 데이터로 운영 현황을 표시하는 임시 구성이다. Preview는 Debug 전용이며 실제 데이터 조회와 목적지 연결은 아직 없다.
 - `:core:utils`의 `NetworkConnectivityManager`는 기본 네트워크 콜백으로 연결 상태를 관측한다. `MangroApplication`에서 필드 주입받아 앱 시작 시 인스턴스를 생성한다.
 - 앱의 실제 기능 소스는 아직 초기 상태이며 예제 테스트가 남아 있다.
 - Compose convention plugin은 `:app`, `:core:designsystem`, `:feature:owner:home`에 적용되어 있다. Hilt 및 KSP 플러그인은 `:app`, `:core:network`, `:core:utils`, `:feature:owner:home`에 적용되어 있으며, 앱의 Hilt 진입점은 `MangroApplication`이다.

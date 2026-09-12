@@ -8,7 +8,6 @@ sealed interface OwnerBasicInfoAction {
     data class DetailedAddressChanged(val value: String) : OwnerBasicInfoAction
     data class CategorySelected(val value: StoreCategoryModel) : OwnerBasicInfoAction
     data class AddressSelected(val value: StoreAddressModel) : OwnerBasicInfoAction
-    data class CategoriesReceived(val values: List<StoreCategoryModel>) : OwnerBasicInfoAction
     data object NextClicked : OwnerBasicInfoAction
     data object AddressSearchClicked : OwnerBasicInfoAction
     data object NavigationBackClicked : OwnerBasicInfoAction

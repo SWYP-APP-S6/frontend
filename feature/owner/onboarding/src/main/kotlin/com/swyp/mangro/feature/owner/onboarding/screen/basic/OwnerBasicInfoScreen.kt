@@ -16,7 +16,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +36,7 @@ import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.owner.onboarding.R
 import com.swyp.mangro.feature.owner.onboarding.components.OwnerOnboardingField
 import com.swyp.mangro.feature.owner.onboarding.components.OwnerOnboardingScaffold
+import com.swyp.mangro.feature.owner.onboarding.model.StoreAddressModel
 import com.swyp.mangro.feature.owner.onboarding.model.StoreBasicInfoModel
 import com.swyp.mangro.feature.owner.onboarding.model.StoreCategoryModel
 import kotlinx.serialization.Serializable
@@ -50,16 +50,18 @@ internal fun OwnerBasicInfoRoute(
     navigateBack: () -> Unit,
     navigateToAddressSearch: () -> Unit,
     viewModel: OwnerBasicInfoViewModel = hiltViewModel(),
+    addressResult: StoreAddressModel? = null,
+    onAddressResultConsumed: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val categories = remember {
-        listOf("곡류", "과채류", "육류", "어류", "견과류", "기타").mapIndexed { index, label -> StoreCategoryModel("debug-$index", label) }
+    LaunchedEffect(addressResult) {
+        if (addressResult != null) {
+            viewModel.handleAction(OwnerBasicInfoAction.AddressSelected(addressResult))
+            onAddressResultConsumed()
+        }
     }
 
-    LaunchedEffect(viewModel, categories) {
-        viewModel.handleAction(OwnerBasicInfoAction.CategoriesReceived(categories))
-    }
     BackHandler { viewModel.handleAction(OwnerBasicInfoAction.NavigationBackClicked) }
 
     LaunchedEffect(Unit) {
@@ -139,10 +141,10 @@ internal fun OwnerBasicInfoScreen(
             hint = stringResource(R.string.category_hint),
         ) {
             MangroDropdownField(
-                options = uiState.categories.map { it.label },
+                options = StoreCategoryModel.options.map { it.label },
                 selectedOption = uiState.category?.label,
                 onOptionSelected = { label ->
-                    onAction(OwnerBasicInfoAction.CategorySelected(uiState.categories.first { it.label == label }))
+                    onAction(OwnerBasicInfoAction.CategorySelected(StoreCategoryModel.options.first { it.label == label }))
                 },
                 placeholder = stringResource(R.string.category_placeholder),
                 modifier = Modifier.fillMaxWidth(),

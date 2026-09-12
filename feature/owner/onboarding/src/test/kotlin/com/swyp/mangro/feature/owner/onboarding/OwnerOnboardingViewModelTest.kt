@@ -5,16 +5,12 @@ import androidx.lifecycle.ViewModelStore
 import com.swyp.mangro.feature.owner.onboarding.model.StoreAddressModel
 import com.swyp.mangro.feature.owner.onboarding.model.StoreBasicInfoModel
 import com.swyp.mangro.feature.owner.onboarding.model.StoreCategoryModel
-import com.swyp.mangro.feature.owner.onboarding.model.StoreRegistrationModel
 import com.swyp.mangro.feature.owner.onboarding.screen.basic.OwnerBasicInfoAction
 import com.swyp.mangro.feature.owner.onboarding.screen.basic.OwnerBasicInfoEvent
 import com.swyp.mangro.feature.owner.onboarding.screen.basic.OwnerBasicInfoViewModel
 import com.swyp.mangro.feature.owner.onboarding.screen.operating.OwnerOperatingInfoAction
 import com.swyp.mangro.feature.owner.onboarding.screen.operating.OwnerOperatingInfoDialog
-import com.swyp.mangro.feature.owner.onboarding.screen.operating.OwnerOperatingInfoEvent
 import com.swyp.mangro.feature.owner.onboarding.screen.operating.OwnerOperatingInfoViewModel
-import com.swyp.mangro.feature.owner.onboarding.util.StoreRegistrationSubmitter
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
@@ -36,7 +32,7 @@ import org.junit.Test
 class OwnerOnboardingViewModelTest {
     private val dispatcher = StandardTestDispatcher()
     private val store = ViewModelStore()
-    private val category = StoreCategoryModel("fruit", "과채류")
+    private val category = StoreCategoryModel.options[1]
     private val basicInfo =
         StoreBasicInfoModel("청과마을", category, StoreAddressModel("03965", "서울 마포구 망원로 12"), "1층")
 
@@ -49,10 +45,8 @@ class OwnerOnboardingViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun operating(handle: SavedStateHandle = SavedStateHandle(), onboardingState: SavedStateHandle = SavedStateHandle(mapOf(Constants.BASIC_INFO to basicInfo)), submit: suspend (StoreRegistrationModel) -> Unit = {}): OwnerOperatingInfoViewModel = OwnerOperatingInfoViewModel(
+    private fun operating(handle: SavedStateHandle = SavedStateHandle(mapOf(Constants.BASIC_INFO to basicInfo))): OwnerOperatingInfoViewModel = OwnerOperatingInfoViewModel(
         handle,
-        StoreRegistrationSubmitter(submit),
-        onboardingState,
     ).also { store.put("operating", it) }
 
     private fun fill(model: OwnerOperatingInfoViewModel) {
@@ -62,16 +56,16 @@ class OwnerOnboardingViewModelTest {
         model.handleAction(OwnerOperatingInfoAction.BusinessDayClicked(1))
     }
 
-    @Test fun basicStateUsesSnapshotsAndCopiesCategoryCollection() = runTest {
+    @Test fun fixedCategoryCanBeSelectedWithoutInitializationAndUnknownCategoryIsRejected() = runTest {
         val model = OwnerBasicInfoViewModel(SavedStateHandle()).also { store.put("basic", it) }
         val before = model.uiState.value
-        val categories = mutableListOf(category)
-        model.handleAction(OwnerBasicInfoAction.CategoriesReceived(categories))
-        categories.clear()
+        model.handleAction(OwnerBasicInfoAction.CategorySelected(category))
+        assertEquals(category, model.uiState.value.category)
+        model.handleAction(OwnerBasicInfoAction.CategorySelected(StoreCategoryModel("unknown", "미등록")))
         model.handleAction(OwnerBasicInfoAction.NameChanged("가게"))
         assertEquals("", before.name)
         assertEquals("가게", model.uiState.value.name)
-        assertEquals(listOf(category), model.uiState.value.categories)
+        assertEquals(category, model.uiState.value.category)
     }
 
     @Test fun invalidBasicInfoCannotNavigateAndInputRestores() = runTest {
@@ -82,7 +76,6 @@ class OwnerOnboardingViewModelTest {
         runCurrent()
         assertFalse(event.isCompleted)
         model.handleAction(OwnerBasicInfoAction.NameChanged("  청과마을  "))
-        model.handleAction(OwnerBasicInfoAction.CategoriesReceived(listOf(category)))
         model.handleAction(OwnerBasicInfoAction.CategorySelected(category))
         model.handleAction(OwnerBasicInfoAction.AddressSelected(basicInfo.address!!))
         advanceUntilIdle()
@@ -98,7 +91,6 @@ class OwnerOnboardingViewModelTest {
 
     @Test fun nextEventContainsOnlyTheLatestValidatedSnapshot() = runTest {
         val model = OwnerBasicInfoViewModel(SavedStateHandle()).also { store.put("basic", it) }
-        model.handleAction(OwnerBasicInfoAction.CategoriesReceived(listOf(category)))
         model.handleAction(OwnerBasicInfoAction.CategorySelected(category))
         model.handleAction(OwnerBasicInfoAction.AddressSelected(basicInfo.address!!))
         model.handleAction(OwnerBasicInfoAction.NameChanged("  첫 가게  "))
@@ -114,19 +106,13 @@ class OwnerOnboardingViewModelTest {
     }
 
     @Test fun changedBasicInfoReplacesSnapshotWithoutLosingOperatingInputAndRestores() = runTest {
-        val handle = SavedStateHandle()
-        val onboardingState = SavedStateHandle(mapOf(Constants.BASIC_INFO to basicInfo))
-        val model = operating(handle, onboardingState)
+        val handle = SavedStateHandle(mapOf(Constants.BASIC_INFO to basicInfo))
+        val model = operating(handle)
         assertEquals(basicInfo, model.uiState.value.basicInfo)
         fill(model)
         val edited = basicInfo.copy(name = "수정한 가게", detailedAddress = "2층")
-        onboardingState[Constants.BASIC_INFO] = edited
-        runCurrent()
-        assertEquals(edited, model.uiState.value.basicInfo)
-        val restored = operating(
-            SavedStateHandle(handle.keys().associateWith { handle.get<Any?>(it) }),
-            SavedStateHandle(onboardingState.keys().associateWith { onboardingState.get<Any?>(it) }),
-        )
+        handle[Constants.BASIC_INFO] = edited
+        val restored = operating(SavedStateHandle(handle.keys().associateWith { handle.get<Any?>(it) }))
         assertEquals("수정한 가게", restored.uiState.value.registration.name)
         assertEquals("2층", restored.uiState.value.registration.detailAddress)
         assertEquals("02-1234-5678", restored.uiState.value.phoneNumber)
@@ -135,73 +121,35 @@ class OwnerOnboardingViewModelTest {
     }
 
     @Test fun latestNavigationInfoTakesPriorityOverRestoredRegistration() = runTest {
-        val handle = SavedStateHandle()
+        val handle = SavedStateHandle(mapOf(Constants.BASIC_INFO to basicInfo))
         fill(operating(handle))
         val edited = basicInfo.copy(name = "다시 수정한 가게")
-        val restored = operating(
-            handle,
-            SavedStateHandle(mapOf(Constants.BASIC_INFO to edited)),
-        )
+        handle[Constants.BASIC_INFO] = edited
+        val restored = operating(handle)
         assertEquals(edited, restored.uiState.value.basicInfo)
         assertEquals(540, restored.uiState.value.openingMinutes)
         assertEquals(1200, restored.uiState.value.closingMinutes)
         assertEquals("02-1234-5678", restored.uiState.value.phoneNumber)
     }
 
-    @Test fun invalidSubmissionDoesNotCallService() = runTest {
-        var calls = 0
-        val model = operating { calls++ }
+    @Test fun invalidSubmissionLeavesStateUnchanged() = runTest {
+        val model = operating()
+        val before = model.uiState.value
         model.handleAction(OwnerOperatingInfoAction.SubmitClicked)
-        advanceUntilIdle()
-        assertEquals(0, calls)
-        assertFalse(model.uiState.value.isLoading)
+        assertEquals(before, model.uiState.value)
     }
 
-    @Test fun failureRetainsInputAndRetrySubmitsNormalizedRequest() = runTest {
-        var calls = 0
-        var request: StoreRegistrationModel? = null
-        val model = operating {
-            if (++calls == 1) error("failure")
-            request = it
-        }
+    @Test fun unconnectedRegistrationKeepsInputAndDoesNotReportSuccess() = runTest {
+        val model = operating()
         fill(model)
+        val registration = model.uiState.value.registration
         model.handleAction(OwnerOperatingInfoAction.SubmitClicked)
-        advanceUntilIdle()
         assertEquals(OwnerOperatingInfoDialog.Error, model.uiState.value.dialog)
-        assertEquals("02-1234-5678", model.uiState.value.phoneNumber)
+        assertEquals(registration, model.uiState.value.registration)
         model.handleAction(OwnerOperatingInfoAction.DialogDismissed)
         model.handleAction(OwnerOperatingInfoAction.SubmitClicked)
-        advanceUntilIdle()
-        assertEquals("0212345678", request?.phone)
-        assertEquals(basicInfo.address, request?.address)
-        assertEquals(OwnerOperatingInfoDialog.Submitted, model.uiState.value.dialog)
-    }
-
-    @Test fun pendingSubmissionBlocksDuplicateAndBackAndCompletionIsSingle() = runTest {
-        val pending = CompletableDeferred<Unit>()
-        var calls = 0
-        val model = operating {
-            calls++
-            pending.await()
-        }
-        fill(model)
-        val event = async { model.event.first() }
-        model.handleAction(OwnerOperatingInfoAction.SubmitClicked)
-        model.handleAction(OwnerOperatingInfoAction.SubmitClicked)
-        model.handleAction(OwnerOperatingInfoAction.NavigationBackClicked)
-        runCurrent()
-        assertEquals(1, calls)
-        assertFalse(event.isCompleted)
-        pending.complete(Unit)
-        advanceUntilIdle()
-        model.handleAction(OwnerOperatingInfoAction.CompletionConfirmed)
-        model.handleAction(OwnerOperatingInfoAction.CompletionConfirmed)
-        advanceUntilIdle()
-        assertEquals(OwnerOperatingInfoEvent.CompleteOnboarding, event.await())
-        val duplicate = async { model.event.first() }
-        runCurrent()
-        assertFalse(duplicate.isCompleted)
-        duplicate.cancel()
+        assertEquals(OwnerOperatingInfoDialog.Error, model.uiState.value.dialog)
+        assertFalse(model.uiState.value.isLoading)
     }
 
     @Test fun hourlySelectionRejectsEarlierEndAndClearsEndWhenStartMovesPastIt() = runTest {
@@ -223,7 +171,7 @@ class OwnerOnboardingViewModelTest {
     }
 
     @Test fun operatingInputRestoresThroughSavedState() = runTest {
-        val handle = SavedStateHandle()
+        val handle = SavedStateHandle(mapOf(Constants.BASIC_INFO to basicInfo))
         val model = operating(handle)
         fill(model)
         val restored = operating(SavedStateHandle(handle.keys().associateWith { handle.get<Any?>(it) }))

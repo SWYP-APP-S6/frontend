@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalDensity
@@ -30,16 +31,13 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.swyp.mangro.feature.owner.onboarding.model.StoreAddressModel
 import com.swyp.mangro.feature.owner.onboarding.model.StoreBasicInfoModel
 import com.swyp.mangro.feature.owner.onboarding.model.StoreCategoryModel
-import com.swyp.mangro.feature.owner.onboarding.model.StoreRegistrationModel
 import com.swyp.mangro.feature.owner.onboarding.screen.basic.OwnerBasicInfoAction
 import com.swyp.mangro.feature.owner.onboarding.screen.basic.OwnerBasicInfoRoute
 import com.swyp.mangro.feature.owner.onboarding.screen.basic.OwnerBasicInfoViewModel
 import com.swyp.mangro.feature.owner.onboarding.screen.operating.OwnerOperatingInfoAction
 import com.swyp.mangro.feature.owner.onboarding.screen.operating.OwnerOperatingInfoRoute
 import com.swyp.mangro.feature.owner.onboarding.screen.operating.OwnerOperatingInfoViewModel
-import com.swyp.mangro.feature.owner.onboarding.util.StoreRegistrationSubmitter
 import java.io.File
-import kotlinx.coroutines.CompletableDeferred
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -53,13 +51,9 @@ class OwnerOnboardingScreenTest {
     private val modelStore = ViewModelStore()
     private val address = StoreAddressModel("03965", "서울 마포구 망원로 12")
 
-    private fun createModels(submit: suspend (StoreRegistrationModel) -> Unit = {}) {
+    private fun createModels() {
         basicModel = OwnerBasicInfoViewModel(SavedStateHandle())
-        operatingModel = OwnerOperatingInfoViewModel(
-            SavedStateHandle(),
-            StoreRegistrationSubmitter(submit),
-            SavedStateHandle(mapOf(Constants.BASIC_INFO to StoreBasicInfoModel("청과마을", StoreCategoryModel("fruit", "과채류"), address))),
-        )
+        operatingModel = OwnerOperatingInfoViewModel(SavedStateHandle(mapOf(Constants.BASIC_INFO to StoreBasicInfoModel("청과마을", StoreCategoryModel("fruit", "과채류"), address))))
         modelStore.put("basic", basicModel)
         modelStore.put("operating", operatingModel)
     }
@@ -79,7 +73,7 @@ class OwnerOnboardingScreenTest {
     private fun fillBasic() {
         compose.runOnIdle {
             basicModel.handleAction(OwnerBasicInfoAction.NameChanged("청과마을"))
-            basicModel.handleAction(OwnerBasicInfoAction.CategorySelected(basicModel.uiState.value.categories.first()))
+            basicModel.handleAction(OwnerBasicInfoAction.CategorySelected(StoreCategoryModel.options.first()))
             basicModel.handleAction(OwnerBasicInfoAction.AddressSelected(address))
         }
     }
@@ -89,12 +83,11 @@ class OwnerOnboardingScreenTest {
         OwnerOperatingInfoRoute({}, onBack, operatingModel)
     }
 
-    private fun show(submit: suspend (StoreRegistrationModel) -> Unit = {}) {
-        createModels(submit)
+    private fun show() {
+        createModels()
         basicModel.handleAction(OwnerBasicInfoAction.NameChanged("청과마을"))
         basicModel.handleAction(OwnerBasicInfoAction.AddressSelected(address))
-        basicModel.handleAction(OwnerBasicInfoAction.CategoriesReceived(listOf(StoreCategoryModel("fruit", "과채류"))))
-        basicModel.handleAction(OwnerBasicInfoAction.CategorySelected(basicModel.uiState.value.categories.first()))
+        basicModel.handleAction(OwnerBasicInfoAction.CategorySelected(StoreCategoryModel.options.first()))
         compose.setContent { OperatingRoute() }
     }
 
@@ -145,6 +138,39 @@ class OwnerOnboardingScreenTest {
     }
 
     @Test
+    fun routeAppliesAddressResultAndConsumesItOnce() {
+        createModels()
+        val result = mutableStateOf<StoreAddressModel?>(null)
+        var consumed = 0
+        compose.setContent {
+            OwnerBasicInfoRoute(
+                navigateNext = {},
+                navigateBack = {},
+                navigateToAddressSearch = {},
+                viewModel = basicModel,
+                addressResult = result.value,
+                onAddressResultConsumed = {
+                    consumed++
+                    result.value = null
+                },
+            )
+        }
+        compose.runOnIdle { result.value = address }
+        compose.onNodeWithText(address.address).assertExists()
+        compose.runOnIdle {
+            assertEquals(address, basicModel.uiState.value.address)
+            assertEquals(1, consumed)
+            assertEquals(null, result.value)
+            basicModel.handleAction(OwnerBasicInfoAction.DetailedAddressChanged("2층"))
+        }
+        compose.runOnIdle {
+            assertEquals(1, consumed)
+            result.value = address
+        }
+        compose.runOnIdle { assertEquals(2, consumed) }
+    }
+
+    @Test
     fun basicToolbarAndSystemBackCallNavigation() {
         var backs = 0
         showBasic(onBack = { backs++ })
@@ -167,45 +193,16 @@ class OwnerOnboardingScreenTest {
         compose.runOnIdle { assertEquals(null, operatingModel.uiState.value.closingMinutes) }
     }
 
-    @Test fun failureRetainsInputAndRetrySendsWholeRequest() {
-        var attempts = 0
-        var request: StoreRegistrationModel? = null
-        show { value ->
-            attempts++
-            if (attempts == 1) error("test failure")
-            request = value
-        }
+    @Test fun unconnectedRegistrationShowsErrorAndKeepsInput() {
+        show()
         operating()
         compose.onNodeWithText("등록 신청").performClick()
         compose.onNodeWithText("등록 신청을 완료하지 못했어요").assertExists()
+        compose.onNodeWithText("등록 신청이 접수됐어요").assertDoesNotExist()
         compose.onNodeWithText("확인").performClick()
         compose.onNodeWithTag("phone").assertTextContains("02-1234-5678")
         compose.onNodeWithText("등록 신청").performClick()
-        compose.onNodeWithText("등록 신청이 접수됐어요").assertExists()
-        compose.runOnIdle {
-            assertEquals(2, attempts)
-            assertEquals("0212345678", request?.phone)
-            assertEquals(address, request?.address)
-            assertEquals(setOf(1, 2, 3, 4, 5), request?.businessDays)
-        }
-    }
-
-    @Test fun pendingRequestCannotBeSubmittedTwice() {
-        val pending = CompletableDeferred<Unit>()
-        var calls = 0
-        show {
-            calls++
-            pending.await()
-        }
-        operating()
-        compose.onNodeWithText("등록 신청").performClick()
-        compose.onNodeWithText("등록 신청 중이에요").assertExists()
-        compose.runOnIdle {
-            assertEquals(1, calls)
-            pending.complete(Unit)
-        }
-        compose.onNodeWithText("등록 신청이 접수됐어요").assertExists()
-        compose.runOnIdle { assertEquals(1, calls) }
+        compose.onNodeWithText("등록 신청을 완료하지 못했어요").assertExists()
     }
 
     @Test

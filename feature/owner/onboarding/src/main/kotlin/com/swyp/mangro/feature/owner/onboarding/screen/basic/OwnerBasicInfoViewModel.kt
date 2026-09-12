@@ -4,9 +4,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.swyp.mangro.feature.owner.onboarding.model.StoreBasicInfoModel
+import com.swyp.mangro.feature.owner.onboarding.model.StoreCategoryModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,11 +34,9 @@ class OwnerBasicInfoViewModel @Inject constructor(
 
             is OwnerBasicInfoAction.DetailedAddressChanged -> updateState(state.copy(detailedAddress = action.value))
 
-            is OwnerBasicInfoAction.CategorySelected -> if (action.value in state.categories) updateState(state.copy(category = action.value))
+            is OwnerBasicInfoAction.CategorySelected -> if (action.value in StoreCategoryModel.options) updateState(state.copy(category = action.value))
 
             is OwnerBasicInfoAction.AddressSelected -> updateState(state.copy(address = action.value))
-
-            is OwnerBasicInfoAction.CategoriesReceived -> updateState(state.copy(categories = action.values.toPersistentList()))
 
             OwnerBasicInfoAction.NextClicked -> if (state.isNextEnabled) {
                 sendEvent(

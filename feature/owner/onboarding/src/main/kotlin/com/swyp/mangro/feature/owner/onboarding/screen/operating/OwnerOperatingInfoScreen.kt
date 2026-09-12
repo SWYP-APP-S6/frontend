@@ -38,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.swyp.mangro.core.designsystem.component.MangroButton
 import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
@@ -58,7 +59,7 @@ data object OwnerOperatingInfoDestination
 internal fun OwnerOperatingInfoRoute(
     onComplete: () -> Unit,
     navigateBack: () -> Unit,
-    viewModel: OwnerOperatingInfoViewModel,
+    viewModel: OwnerOperatingInfoViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 

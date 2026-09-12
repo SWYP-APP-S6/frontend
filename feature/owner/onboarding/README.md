@@ -6,9 +6,9 @@ Figma [Step1](https://www.figma.com/design/hqglQXERCwjFx1W4amjPHI?node-id=1172-1
 
 `OwnerOnboardingNavigation`은 `navController`, `onComplete`, `onBack`을 받는 Navigation 진입점이다. 각 입력 화면은 자신의 Hilt ViewModel만 사용한다. 뒤로 갔다 다시 진입해도 입력을 유지하도록 각 ViewModel의 수명은 온보딩 그래프 범위로 유지한다.
 
-- 기본 정보 Route의 `debug-*` 가게 종류 ID는 샘플이며 실제 서버 코드가 아니다.
+- `StoreCategoryModel.options`의 `debug-*` 가게 종류 ID는 샘플이며 실제 서버 코드가 아니다.
 - 주소 검색: 등록 폼을 대신하는 별도 화면으로 카카오 우편번호 WebView를 표시한다. Dialog를 사용하지 않으며, 취소 또는 시스템 뒤로가기로 등록 폼에 복귀한다. 선택한 주소 종류에 따라 도로명/지번 주소와 5자리 우편번호를 반영하며, 상세 주소는 기존 네이티브 필드에서 입력한다. 취소하면 기존 입력을 유지한다. Navigation에서 `AddressSearchWebView`를 직접 호출한다. Route의 화면 이동 콜백과 WebView의 주소 결과 전달은 각각 계측 테스트로 검증한다.
-- `StoreRegistrationSubmitter.submit(registration)`: 실제 접수에 성공했을 때만 정상 반환한다. 예외는 재시도 안내, 코루틴 취소는 상위로 전파한다. 이름/상세 주소 앞뒤 공백을 제거하고 연락처는 숫자만 전달한다.
+- 등록 Repository/API는 미연결이다. 등록 버튼을 누르면 입력값을 유지한 채 오류 안내를 표시하며, 실제 요청이나 샘플 성공 처리는 하지 않는다.
 - `onComplete`: 성공 안내의 확인 버튼에서 앱 경로 이동 요청. 승인 완료를 의미하지 않는다. 실제 심사 상태별 분기는 #56에서 연결한다.
 - `onBack`: Step1에서만 외부로 전달. Step2에서는 입력을 보존하며 Step1로 돌아간다.
 
@@ -24,7 +24,7 @@ Figma [Step1](https://www.figma.com/design/hqglQXERCwjFx1W4amjPHI?node-id=1172-1
 
 ## 앱 조립
 
-`:app`은 `ownerImplementation`으로 이 모듈에 의존한다. `ownerDebug/MainScreen`은 실제 카카오 주소 검색과 샘플 등록 신청으로 UI를 실행한다. 검색어는 카카오 서비스로 전송되지만 등록 신청은 전송되지 않는다. 진입 안내에서도 이를 구분한다. 완료 확인은 Debug Activity를 종료한다.
+`:app`은 `ownerImplementation`으로 이 모듈에 의존한다. `ownerDebug/MainScreen`은 실제 카카오 주소 검색과 등록 폼 UI를 실행한다. 검색어는 카카오 서비스로 전송되지만 등록 신청은 전송되지 않는다. 진입 안내에서도 이를 구분한다. 완료 확인은 Debug Activity를 종료한다.
 
 `ownerRelease/MainScreen`은 기존 Owner 진입 화면을 유지한다. Consumer 진입 코드는 변경하지 않는다. 기존 `feat/owner-home`과 합칠 때 두 Feature 의존성/등록을 유지하고 MainScreen 선택은 #56에서 조립해야 한다.
 
@@ -46,18 +46,19 @@ Figma [Step1](https://www.figma.com/design/hqglQXERCwjFx1W4amjPHI?node-id=1172-1
 - `OwnerBasicInfoScreen.kt`: 상호·가게 종류·주소 입력, 다음 단계 및 주소 검색 요청.
 - `OwnerOperatingInfoScreen.kt`: 연락처·영업 시간·요일 입력, 등록 신청과 실패 재시도·성공 안내.
 - `components/OwnerOnboardingScaffold.kt`: 두 입력 화면의 공통 상단 바·버튼·스크롤 영역과 필드 레이아웃.
-- 기본 정보 ViewModel은 다음 선택 시 검증된 `StoreBasicInfoModel`를 이벤트로 전달한다. Navigation은 온보딩 그래프 엔트리의 `SavedStateHandle`에 `java.io.Serializable` 객체로 저장하고, 운영 ViewModel은 생성 시 연결받은 그래프 `SavedStateHandle`에서 기본 정보를 읽어 초기 상태를 만들고 변경을 관찰한다. Navigation과 Route에서는 기본 정보를 읽거나 초기화 Action을 전달하지 않는다. 운영 입력 복원은 ViewModel 자체 `SavedStateHandle`을 사용한다. 다른 화면의 ViewModel이나 uiState를 구독하지 않는다.
-- 주소 검색 결과는 이전 Navigation 엔트리의 `SavedStateHandle`에 `java.io.Serializable` 객체로 저장한 뒤 복귀한다. 기본 화면이 RESUMED 상태에서 결과를 자신의 ViewModel에 반영하고 소비한 값을 비운다. Navigation 엔트리의 handle과 ViewModel의 handle은 별개다.
+- 기본 정보 ViewModel은 다음 선택 시 검증된 `StoreBasicInfoModel`를 이벤트로 전달한다. Navigation은 기본 정보를 `Bundle`에 `java.io.Serializable` 객체로 담아 운영 화면 인자로 전달한다. 운영 ViewModel은 주입받은 자신의 `SavedStateHandle`에서 기본 정보를 읽어 초기 상태를 만든다. Navigation과 Route에서는 기본 정보를 읽거나 초기화 Action을 전달하지 않는다. 운영 입력 복원은 ViewModel 자체 `SavedStateHandle`을 사용한다. 다른 화면의 ViewModel이나 uiState를 구독하지 않는다.
+- 주소 검색 결과는 이전 Navigation 엔트리의 `SavedStateHandle`에 `java.io.Serializable` 객체로 저장한 뒤 복귀한다. Navigation은 기본 화면이 RESUMED 상태일 때 결과를 Route에 전달한다. Route가 자신의 ViewModel에 반영한 뒤 결과 소비 콜백으로 값을 비운다. ViewModel은 각 Route의 기본 `hiltViewModel()`에서만 생성한다. Navigation 엔트리의 handle과 ViewModel의 handle은 별개다.
+- 각 ViewModel은 해당 화면의 백스택 엔트리에 속한다. 운영 화면을 뒤로가기로 제거하면 운영 ViewModel도 해제되며, 재진입 시 최신 기본 정보로 새 운영 화면을 만든다.
 - 운영 정보에서 뒤로가면 기본 정보로, 기본 정보에서 뒤로가면 호스트 `onBack`으로 전달한다. 제출 중에는 뒤로가기를 막는다.
 
 ## 화면별 State·Action·Event 바인딩
 
 - `screen/basic`: `OwnerBasicInfoState`, `OwnerBasicInfoAction`, `OwnerBasicInfoEvent`, ViewModel, Route, Screen.
 - `screen/operating`: `OwnerOperatingInfoState`, `OwnerOperatingInfoAction`, `OwnerOperatingInfoEvent`, ViewModel, Route, Screen.
-- State는 기본값이 있는 `data class`와 `val`로 선언하고 `copy`로 교체한다. 문자열 입력을 사용하며 카테고리·요일 컬렉션은 persistent collection으로 노출한다. `TextFieldState`, Compose mutable state, 콜백을 포함하지 않는다.
-- 화면의 입력·선택한 시간·등록 로딩·오류·접수 안내는 ViewModel이 관리한다. 운영 ViewModel이 그래프 `SavedStateHandle`의 불변 `StoreBasicInfoModel` 값을 최종 등록 데이터와 결합한다.
+- State는 기본값이 있는 `data class`와 `val`로 선언하고 `copy`로 교체한다. 문자열 입력을 사용하며 요일 컬렉션은 persistent collection으로 노출한다. 카테고리는 `StoreCategoryModel.options`의 고정 메뉴(곡류·과채류·육류·어류·견과류·기타)를 사용하고, State에는 선택값만 보관한다. `TextFieldState`, Compose mutable state, 콜백을 포함하지 않는다.
+- 화면의 입력·선택한 시간·등록 로딩·오류·접수 안내는 ViewModel이 관리한다. 운영 ViewModel이 자신의 `SavedStateHandle`에 전달된 불변 `StoreBasicInfoModel` 값을 최종 등록 데이터와 결합한다.
 - Navigation 입력은 Action → ViewModel의 Event → Route → NavGraph 순서로 처리한다. 주소 검색 결과만 기본 정보 Action으로 전달하며, 취소는 결과 변경 없이 백스택을 되돌린다.
-- 제출 동작은 앱의 `OwnerRegistrationModule`에서 주입한다. Owner Debug는 기존 500ms 샘플 성공을 유지한다. Owner Release는 API 미연결 오류를 반환하며 성공으로 가장하지 않는다.
+- 등록 연동 시 운영 ViewModel에서 Repository를 직접 호출한다.
 - `MangroTextField`에 `value`/`onValueChange` 오버로드를 추가했다. 기존 TextFieldState API와 장식 레이아웃을 공유하며, 화면은 입력을 별도 Compose 상태로 복제하지 않는다.
 
 ## UI 모델

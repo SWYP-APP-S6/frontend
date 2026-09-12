@@ -1,0 +1,8 @@
+<resources>
+    <string name="login_greeting">손님!</string>
+    <string name="login_message_prefix">오늘 필요한</string>
+    <string name="login_message_suffix">식자재</string>
+    <string name="login_message_closing">여기서 사세요</string>
+    <string name="login_browse_without_login_button">로그인 없이 둘러보기</string>
+    <string name="login_privacy_policy">개인정보처리방침</string>
+</resources>

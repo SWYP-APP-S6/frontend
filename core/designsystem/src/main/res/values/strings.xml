@@ -77,4 +77,6 @@
     <string name="product_quantity">%1$d개</string>
     <string name="stepper_decrease">수량 감소</string>
     <string name="stepper_increase">수량 증가</string>
+    <string name="owner_bottom_store">점포 관리</string>
+    <string name="owner_bottom_settings">설정</string>
 </resources>

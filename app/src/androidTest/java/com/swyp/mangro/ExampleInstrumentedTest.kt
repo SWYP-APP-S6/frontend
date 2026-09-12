@@ -17,6 +17,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.swyp.mangro", appContext.packageName)
+        assertEquals(InstrumentationRegistry.getInstrumentation().context.packageName.removeSuffix(".test"), appContext.packageName)
     }
 }

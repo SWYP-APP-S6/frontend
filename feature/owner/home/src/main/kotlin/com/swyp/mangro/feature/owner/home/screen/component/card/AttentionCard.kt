@@ -26,7 +26,7 @@ import com.swyp.mangro.core.designsystem.R as DesignR
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.designsystem.theme.Red100
 import com.swyp.mangro.feature.owner.home.R
-import com.swyp.mangro.feature.owner.home.screen.model.OwnerHomeAction
+import com.swyp.mangro.feature.owner.home.screen.OwnerHomeAction
 
 @Composable
 internal fun AttentionCard(

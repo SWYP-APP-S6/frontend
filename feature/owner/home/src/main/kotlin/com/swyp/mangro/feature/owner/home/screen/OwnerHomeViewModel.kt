@@ -2,9 +2,6 @@ package com.swyp.mangro.feature.owner.home.screen
 
 import androidx.lifecycle.ViewModel
 import com.swyp.mangro.feature.owner.home.OwnerHomeSamples
-import com.swyp.mangro.feature.owner.home.screen.model.OwnerHomeAction
-import com.swyp.mangro.feature.owner.home.screen.model.OwnerHomeEvent
-import com.swyp.mangro.feature.owner.home.screen.model.OwnerHomeUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel

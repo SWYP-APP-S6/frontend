@@ -1,4 +1,4 @@
-package com.swyp.mangro.feature.owner.home.screen.model
+package com.swyp.mangro.feature.owner.home.screen
 
 sealed interface OwnerHomeAction {
     data object RegisterProduct : OwnerHomeAction

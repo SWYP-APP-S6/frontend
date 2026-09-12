@@ -56,9 +56,6 @@ import com.swyp.mangro.feature.owner.home.screen.component.RegisterNewProductSec
 import com.swyp.mangro.feature.owner.home.screen.component.card.DashboardCard
 import com.swyp.mangro.feature.owner.home.screen.component.card.VisitorCard
 import com.swyp.mangro.feature.owner.home.screen.component.heading.SectionHeading
-import com.swyp.mangro.feature.owner.home.screen.model.OwnerHomeAction
-import com.swyp.mangro.feature.owner.home.screen.model.OwnerHomeEvent
-import com.swyp.mangro.feature.owner.home.screen.model.OwnerHomeUiState
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
 

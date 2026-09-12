@@ -8,8 +8,8 @@ import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProduct
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.designsystem.theme.OwnerMangroTypography
 import com.swyp.mangro.feature.owner.home.screen.OwnerHomeScreen
-import com.swyp.mangro.feature.owner.home.screen.model.OwnerHomeUiState
-import com.swyp.mangro.feature.owner.home.screen.model.OwnerHomeVisitor
+import com.swyp.mangro.feature.owner.home.screen.OwnerHomeUiState
+import com.swyp.mangro.feature.owner.home.screen.OwnerHomeVisitor
 import kotlinx.collections.immutable.persistentListOf
 
 /** UI handoff fixtures only. Not packaged in release builds. */

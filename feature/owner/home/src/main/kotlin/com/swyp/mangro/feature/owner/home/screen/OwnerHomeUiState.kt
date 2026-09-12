@@ -1,4 +1,4 @@
-package com.swyp.mangro.feature.owner.home.screen.model
+package com.swyp.mangro.feature.owner.home.screen
 
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProduct
 import kotlinx.collections.immutable.PersistentList

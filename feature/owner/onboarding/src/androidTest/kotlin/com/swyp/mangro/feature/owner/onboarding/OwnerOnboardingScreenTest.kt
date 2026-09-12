@@ -206,6 +206,25 @@ class OwnerOnboardingScreenTest {
     }
 
     @Test
+    fun restoredSuccessConfirmationCompletesOnce() {
+        createModels()
+        operatingModel = OwnerOperatingInfoViewModel(
+            SavedStateHandle(
+                mapOf(
+                    Constants.BASIC_INFO to StoreBasicInfoModel("가게", StoreCategoryModel.options.first(), address),
+                    "dialog" to "Submitted",
+                ),
+            ),
+        )
+        modelStore.put("operating", operatingModel)
+        var completed = 0
+        compose.setContent { OwnerOperatingInfoRoute({ completed++ }, {}, operatingModel) }
+        compose.onNodeWithText("확인").assertIsEnabled().performClick()
+        compose.runOnIdle { assertEquals(1, completed) }
+        compose.onNodeWithText("확인").assertIsNotEnabled()
+    }
+
+    @Test
     fun hourlyDropdownFiltersEndAndClearsInvalidSelection() {
         show()
         compose.onNodeWithText("종료 시간").performScrollTo().assertIsNotEnabled()

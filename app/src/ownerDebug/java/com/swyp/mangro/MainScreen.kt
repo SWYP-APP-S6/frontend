@@ -7,7 +7,7 @@ import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.designsystem.theme.OwnerMangroTypography
 import com.swyp.mangro.feature.owner.onboarding.navigation.OwnerOnboardingNavigation
 
-/** Address search uses Kakao; categories and registration submission remain Debug fixtures. */
+/** Address search uses Kakao; store registration API is not connected. */
 @Composable
 internal fun MainScreen() {
     val activity = LocalActivity.current

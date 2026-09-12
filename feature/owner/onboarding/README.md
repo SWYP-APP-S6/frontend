@@ -4,13 +4,13 @@ Figma [Step1](https://www.figma.com/design/hqglQXERCwjFx1W4amjPHI?node-id=1172-1
 
 ## 호출 계약
 
-`OwnerOnboardingNavigation`은 `navController`, `onComplete`, `onBack`을 받는 Navigation 진입점이다. 각 입력 화면은 자신의 Hilt ViewModel만 사용한다. 뒤로 갔다 다시 진입해도 입력을 유지하도록 각 ViewModel의 수명은 온보딩 그래프 범위로 유지한다.
+`OwnerOnboardingNavigation`은 `navController`, `onComplete`, `onBack`을 받는 Navigation 진입점이다. 각 입력 화면은 자신의 Hilt ViewModel만 사용한다. 각 Route에서 화면 백스택 엔트리 범위의 ViewModel을 생성한다.
 
 - `StoreCategoryModel.options`의 `debug-*` 가게 종류 ID는 샘플이며 실제 서버 코드가 아니다.
 - 주소 검색: 등록 폼을 대신하는 별도 화면으로 카카오 우편번호 WebView를 표시한다. Dialog를 사용하지 않으며, 취소 또는 시스템 뒤로가기로 등록 폼에 복귀한다. 선택한 주소 종류에 따라 도로명/지번 주소와 5자리 우편번호를 반영하며, 상세 주소는 기존 네이티브 필드에서 입력한다. 취소하면 기존 입력을 유지한다. Navigation에서 `AddressSearchWebView`를 직접 호출한다. Route의 화면 이동 콜백과 WebView의 주소 결과 전달은 각각 계측 테스트로 검증한다.
 - 등록 Repository/API는 미연결이다. 등록 버튼을 누르면 입력값을 유지한 채 오류 안내를 표시하며, 실제 요청이나 샘플 성공 처리는 하지 않는다.
 - `onComplete`: 성공 안내의 확인 버튼에서 앱 경로 이동 요청. 승인 완료를 의미하지 않는다. 실제 심사 상태별 분기는 #56에서 연결한다.
-- `onBack`: Step1에서만 외부로 전달. Step2에서는 입력을 보존하며 Step1로 돌아간다.
+- `onBack`: Step1에서만 외부로 전달. Step2에서는 Step1로 돌아가며 운영 정보 ViewModel은 해제된다.
 
 ## 현재 UI 정책과 제한
 
@@ -20,11 +20,11 @@ Figma [Step1](https://www.figma.com/design/hqglQXERCwjFx1W4amjPHI?node-id=1172-1
 - 요일은 일요일 0~토요일 6의 집합이며 초기 미선택, 최소 하루가 필수다.
 - 시간 선택은 공통 드롭다운의 목록을 사용한다. 주소 검색/오류/접수 안내는 제공되지 않은 추가 시안의 대체 UI다.
 - 입력과 다이얼로그는 각 ViewModel의 `SavedStateHandle`로 복원하고 현재 화면은 Navigation 백스택으로 복원한다. 앱 재실행용 영구 임시저장 기능은 없다.
-- 주소 검색을 닫으면 WebView를 해제하고, 온보딩 그래프의 ViewModel이 해제되면 진행 중 제출 코루틴은 취소된다. 실제 API 연결 시 서버의 접수 여부 조회/멱등성 계약을 연결해야 하며, UI의 중복 클릭 방지만으로 서버 중복 접수 방지가 보장되지는 않는다.
+- 주소 검색을 닫으면 WebView를 해제하고, ViewModel은 해당 화면의 백스택 엔트리가 제거될 때 해제된다. 실제 API 연결 시 서버의 접수 여부 조회/멱등성 계약을 연결해야 하며, UI의 중복 클릭 방지만으로 서버 중복 접수 방지가 보장되지는 않는다.
 
 ## 앱 조립
 
-`:app`은 `ownerImplementation`으로 이 모듈에 의존한다. `ownerDebug/MainScreen`은 실제 카카오 주소 검색과 등록 폼 UI를 실행한다. 검색어는 카카오 서비스로 전송되지만 등록 신청은 전송되지 않는다. 진입 안내에서도 이를 구분한다. 완료 확인은 Debug Activity를 종료한다.
+`:app`은 `ownerImplementation`으로 이 모듈에 의존한다. `ownerDebug/MainScreen`은 실제 카카오 주소 검색과 등록 폼 UI를 실행한다. 검색어는 카카오 서비스로 전송되지만 등록 신청은 전송되지 않는다. 완료 확인은 Debug Activity를 종료한다.
 
 `ownerRelease/MainScreen`은 기존 Owner 진입 화면을 유지한다. Consumer 진입 코드는 변경하지 않는다. 기존 `feat/owner-home`과 합칠 때 두 Feature 의존성/등록을 유지하고 MainScreen 선택은 #56에서 조립해야 한다.
 
@@ -38,7 +38,7 @@ Figma [Step1](https://www.figma.com/design/hqglQXERCwjFx1W4amjPHI?node-id=1172-1
 - `assets/postcode/index.html`을 `WebViewAssetLoader`의 HTTPS 앱 자산 URL로 로드한다. 공식 CDN 스크립트와 검색 iframe은 네트워크로 불러오며 카카오 로고를 유지한다.
 - `WebMessageListener`는 앱 자산 origin의 메인 프레임에만 허용한다. 외부 iframe에는 네이티브 결과 전달 객체를 노출하지 않는다. 파일/콘텐츠 접근과 외부 메인 프레임 이동은 허용하지 않는다.
 - 기존 앱의 `INTERNET` 권한을 사용한다. 위치 권한은 필요하지 않다. 주소의 좌표 변환 및 실제 매장 등록 API는 별도 연결 대상이다.
-- 초기 로딩 실패/20초 타임아웃에는 재시도 및 취소를 제공한다. 지원되지 않는 오래된 WebView에서도 오류 안내를 표시한다. 재시도하면 WebView를 새로 생성한다.
+- 초기 로딩 오류에는 공통 네트워크 오류 화면에서 재시도를 제공하며 상단 뒤로가기로 취소할 수 있다. 별도 로딩 타임아웃은 없다. 지원되지 않는 오래된 WebView에서도 오류 안내를 표시한다. 재시도하면 WebView를 새로 생성한다.
 
 ## 화면과 Navigation
 

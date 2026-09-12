@@ -317,9 +317,9 @@ internal fun OwnerOperatingInfoScreen(
         },
         actions = {
             MangroButton(
-                onClick = { onAction(OwnerOperatingInfoAction.DialogDismissed) },
+                onClick = { onAction(OwnerOperatingInfoAction.CompletionConfirmed) },
                 style = MangroButtonStyle.ACTIVE,
-                enabled = uiState.isCompletionHandled,
+                enabled = !uiState.isCompletionHandled,
                 modifier = Modifier.fillMaxWidth(),
                 content = {
                     Text(

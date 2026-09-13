@@ -10,7 +10,6 @@
 | `:core:network` | Android library 모듈 | 네트워크 계층용 모듈 골격 |
 | `:core:designsystem` | Android library 모듈 | Compose 테마와 공통 UI 컴포넌트 |
 | `:core:utils` | Android library 모듈 | 네트워크 상태 관측 등 공통 Android 유틸리티용 모듈 골격 |
-| `:feature:owner:home` | Android library 모듈 | 점주 홈 UI, 운영 현황과 외부 화면 진입 액션 |
 | `build-logic` | Gradle included build | Android application/library 공통 설정 |
 | `gradle/libs.versions.toml` | Version Catalog | 플러그인과 외부 라이브러리 버전 |
 | `.githooks` | Git hooks | 커밋 메시지와 커밋 전 ktlint 검사 |
@@ -45,11 +44,10 @@
 
 ## 현재 확인된 제약
 
-- `:app`은 `:core:designsystem`, `:core:utils`에 의존하며, Owner Flavor만 `:feature:owner:home`에 의존한다. Data 모듈은 아직 등록되지 않았다.
-- 점주 홈은 최초 안내·빈 상태·운영 현황을 표시한다. Owner Debug와 Release 모두 공통 샘플 데이터로 운영 현황을 표시하는 임시 구성이다. Preview는 Debug 전용이며 실제 데이터 조회는 미연결이며 상품 목록·상세·등록 목적지는 Owner Navigation으로 연결한다.
+- `:app`은 `:core:designsystem`, `:core:utils`에 의존하며, Feature와 Data 모듈은 아직 등록되지 않았다.
 - `:core:utils`의 `NetworkConnectivityManager`는 기본 네트워크 콜백으로 연결 상태를 관측한다. `MangroApplication`에서 필드 주입받아 앱 시작 시 인스턴스를 생성한다.
 - 앱의 실제 기능 소스는 아직 초기 상태이며 예제 테스트가 남아 있다.
-- Compose convention plugin은 `:app`, `:core:designsystem`, `:feature:owner:home`에 적용되어 있다. Hilt 및 KSP 플러그인은 `:app`, `:core:network`, `:core:utils`, `:feature:owner:home`에 적용되어 있으며, 앱의 Hilt 진입점은 `MangroApplication`이다.
+- Compose convention plugin은 `:app`, `:core:designsystem`에 적용되어 있다. Hilt 및 KSP 플러그인은 `:app`, `:core:network`, `:core:utils`에 적용되어 있으며, 앱의 Hilt 진입점은 `MangroApplication`이다.
 - 루트 `ktlintCheck`는 subproject를 집계하지만 included build인 `build-logic` 소스는 직접 검사하지 않는다.
 - `.github/workflows` 기반 CI는 아직 없다.
 
@@ -62,9 +60,3 @@
 - SDK, Java, Build Type, Product Flavor 변경
 - 주요 테스트 진입점 변경
 - 프로젝트 최상위 디렉터리의 책임 변경
-
-## 점주 상품 화면
-
-- `:feature:owner:product`: 상품 등록 3단계, 미리보기, 목록·상세, 재고 재확인 UI.
-- `:app` Owner 소스셋에서만 의존하며 `OwnerNavHost`가 홈과 상품 Navigation 그래프를 조립한다. 저장 및 찜 취소 진입은 호출부 콜백으로 연결한다.
-- 현재 API 연결 이전의 UI 호스트 범위이며 상세 계약과 미확정 디자인 기준은 `feature/owner/product/README.md`를 참고한다.

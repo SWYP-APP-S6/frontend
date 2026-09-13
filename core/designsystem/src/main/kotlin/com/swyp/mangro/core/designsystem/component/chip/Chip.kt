@@ -39,9 +39,8 @@ fun MangroChip(
     onClick: () -> Unit,
 ) {
     val colors = LocalMangroColors.current
-    val selectedColor = if (isOwner) colors.grayScale900 else colors.grayScale700
     val containerColor by animateColorAsState(
-        targetValue = if (isSelected) selectedColor else colors.surfaceNormal,
+        targetValue = if (isSelected) colors.grayScale700 else colors.surfaceNormal,
         label = "ChipContainerColor",
     )
     val contentColor by animateColorAsState(
@@ -53,7 +52,7 @@ fun MangroChip(
         label = "ChipContentColor",
     )
     val borderColor by animateColorAsState(
-        targetValue = if (isSelected) selectedColor else colors.borderDefault,
+        targetValue = if (isSelected) colors.grayScale700 else colors.borderDefault,
         label = "ChipBorderColor",
     )
 

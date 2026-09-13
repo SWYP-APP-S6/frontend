@@ -1,12 +1,10 @@
 package com.swyp.mangro.core.designsystem.component.card.owner
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,7 +34,7 @@ import com.swyp.mangro.core.designsystem.component.progress.MangroCircularProgre
 import com.swyp.mangro.core.designsystem.theme.Gray500
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 
-enum class OwnerPickupRequestStatus { EXPIRED, IN_PROGRESS, COMPLETED, UNAVAILABLE, CANCELLED }
+enum class OwnerPickupRequestStatus { EXPIRED, IN_PROGRESS, COMPLETED }
 
 data class OwnerPickupRequestItem(
     val id: String,
@@ -48,7 +46,6 @@ data class OwnerPickupRequestItem(
     val status: OwnerPickupRequestStatus,
     val requestTimeMillis: Long? = null,
     val endTimeMillis: Long? = null,
-    val isNew: Boolean = false,
 )
 
 @Composable
@@ -68,7 +65,6 @@ fun OwnerPickupRequestCard(
         modifier = modifier
             .fillMaxWidth()
             .background(MangroTheme.colors.surfaceNormal)
-            .then(if (item.isNew) Modifier.border(1.dp, MangroTheme.colors.primaryNormal) else Modifier)
             .padding(
                 vertical = 20.dp,
                 horizontal = 24.dp,
@@ -99,14 +95,8 @@ fun OwnerPickupRequestCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    if (item.isNew) {
-                        Box(Modifier.size(6.dp).background(MangroTheme.colors.primaryNormal, androidx.compose.foundation.shape.CircleShape))
-                    }
                     Text(
                         text = stringResource(R.string.pickup_consumer_name, item.consumerName),
-                        modifier = Modifier.weight(1f, fill = false),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
                         color = MangroTheme.colors.textTitle,
                         style = MangroTheme.typography.heading.headingXXS,
                     )
@@ -168,7 +158,7 @@ fun OwnerPickupRequestCard(
                     ) {
                         MangroCircularProgress(
                             progress = 1f - timerState.progress,
-                            isActive = timerState.remainingMillis > 0,
+                            isActive = item.status == OwnerPickupRequestStatus.IN_PROGRESS,
                             modifier = Modifier.fillMaxSize(),
                         )
 
@@ -197,9 +187,6 @@ fun OwnerPickupRequestCard(
                     onClick = onButtonClick,
                     style = MangroButtonStyle.DEFAULT,
                     modifier = Modifier.fillMaxWidth(),
-                    textStyle = MangroTheme.typography.title.titleS ?: MangroTheme.typography.title.titleM,
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-                    disabledContainerColor = MangroTheme.colors.surfaceAlter,
                     enabled = false,
                 )
 
@@ -209,21 +196,6 @@ fun OwnerPickupRequestCard(
                     onClick = onButtonClick,
                     style = MangroButtonStyle.OUTLINED,
                     modifier = Modifier.fillMaxWidth(),
-                    textStyle = MangroTheme.typography.title.titleS ?: MangroTheme.typography.title.titleM,
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-                    disabledContainerColor = MangroTheme.colors.surfaceAlter,
-                )
-
-            OwnerPickupRequestStatus.UNAVAILABLE, OwnerPickupRequestStatus.CANCELLED ->
-                MangroButton(
-                    text = stringResource(if (item.status == OwnerPickupRequestStatus.UNAVAILABLE) R.string.pickup_request_unavailable else R.string.pickup_request_cancelled),
-                    onClick = onButtonClick,
-                    style = MangroButtonStyle.DEFAULT,
-                    modifier = Modifier.fillMaxWidth(),
-                    textStyle = MangroTheme.typography.title.titleS ?: MangroTheme.typography.title.titleM,
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-                    disabledContainerColor = MangroTheme.colors.surfaceAlter,
-                    enabled = false,
                 )
 
             OwnerPickupRequestStatus.COMPLETED ->
@@ -232,9 +204,6 @@ fun OwnerPickupRequestCard(
                     onClick = onButtonClick,
                     style = MangroButtonStyle.DEFAULT,
                     modifier = Modifier.fillMaxWidth(),
-                    textStyle = MangroTheme.typography.title.titleS ?: MangroTheme.typography.title.titleM,
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-                    disabledContainerColor = MangroTheme.colors.surfaceAlter,
                     enabled = false,
                 )
         }

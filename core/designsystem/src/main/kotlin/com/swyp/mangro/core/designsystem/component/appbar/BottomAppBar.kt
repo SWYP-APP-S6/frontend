@@ -11,10 +11,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -27,53 +26,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.swyp.mangro.core.designsystem.R
 import com.swyp.mangro.core.designsystem.theme.ConsumerMangroBody
-import com.swyp.mangro.core.designsystem.theme.OwnerMangroTypography
 import com.swyp.mangro.core.designsystem.theme.defaultMangroColors
 import com.swyp.mangro.core.designsystem.theme.utils.dropShadow
 import kotlinx.collections.immutable.PersistentList
 
 @Composable
-fun OwnerBottomAppBar(
-    currentMenu: OwnerMenu,
-    onMenuClick: (OwnerMenu) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    BottomAppBarContainer(modifier) {
-        OwnerMenu.entries.forEach { menu ->
-            BottomAppBarItem(
-                isSelected = currentMenu == menu,
-                drawResId = when (menu) {
-                    OwnerMenu.HOME -> R.drawable.ic_home
-                    OwnerMenu.STORE -> R.drawable.ic_owner_manage
-                    OwnerMenu.SETTINGS -> R.drawable.ic_owner_settings
-                },
-                stringResId = when (menu) {
-                    OwnerMenu.HOME -> R.string.bottom_app_bar_home
-                    OwnerMenu.STORE -> R.string.owner_bottom_store
-                    OwnerMenu.SETTINGS -> R.string.owner_bottom_settings
-                },
-                onClick = { onMenuClick(menu) },
-                minHeight = 66.dp,
-                textStyle = OwnerMangroTypography.title.titleS ?: OwnerMangroTypography.title.titleM,
-            )
-        }
-    }
-}
-
-@Composable
-fun ConsumerBottomAppBar(
-    menus: PersistentList<ConsumerMenu>,
-    currentMenu: ConsumerMenu,
-    onMenuClick: (ConsumerMenu) -> Unit,
+fun BottomAppBar(
+    menus: PersistentList<Menu>,
+    currentMenu: Menu,
+    onMenuClick: (Menu) -> Unit,
 ) {
     BottomAppBarContainer {
         menus.forEach { menu ->
@@ -88,7 +53,7 @@ fun ConsumerBottomAppBar(
 }
 
 @Composable
-fun BottomAppBarContainer(
+private fun BottomAppBarContainer(
     modifier: Modifier = Modifier,
     tabs: @Composable (RowScope.() -> Unit),
 ) {
@@ -110,13 +75,11 @@ fun BottomAppBarContainer(
 }
 
 @Composable
-fun RowScope.BottomAppBarItem(
+private fun RowScope.BottomAppBarItem(
     isSelected: Boolean,
     @DrawableRes drawResId: Int,
     @StringRes stringResId: Int,
     onClick: () -> Unit,
-    minHeight: Dp = 54.dp,
-    textStyle: TextStyle = ConsumerMangroBody.body03,
 ) {
     val tint by animateColorAsState(
         if (isSelected) defaultMangroColors.primaryNormal else defaultMangroColors.grayScale500,
@@ -125,11 +88,10 @@ fun RowScope.BottomAppBarItem(
     Column(
         modifier = Modifier
             .weight(1f)
-            .heightIn(min = minHeight)
+            .height(54.dp)
             .padding(4.dp)
             .clip(RoundedCornerShape(4.dp))
-            .semantics { selected = isSelected }
-            .clickable(role = Role.Tab, onClick = onClick),
+            .clickable(onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -137,7 +99,6 @@ fun RowScope.BottomAppBarItem(
             painter = painterResource(drawResId),
             tint = tint,
             contentDescription = null,
-            modifier = Modifier.size(24.dp),
         )
 
         Text(
@@ -145,25 +106,23 @@ fun RowScope.BottomAppBarItem(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
             color = tint,
-            style = textStyle,
+            style = ConsumerMangroBody.body03,
         )
     }
 }
 
-enum class ConsumerMenu { HOME, WISH_LIST, MY }
-
-enum class OwnerMenu { HOME, STORE, SETTINGS }
+enum class Menu { HOME, WISH_LIST, MY }
 
 @DrawableRes
-private fun ConsumerMenu.iconResId(): Int = when (this) {
-    ConsumerMenu.HOME -> R.drawable.ic_home
-    ConsumerMenu.WISH_LIST -> R.drawable.ic_alarm_on_24px
-    ConsumerMenu.MY -> R.drawable.ic_local_library
+private fun Menu.iconResId(): Int = when (this) {
+    Menu.HOME -> R.drawable.ic_home
+    Menu.WISH_LIST -> R.drawable.ic_alarm_on_24px
+    Menu.MY -> R.drawable.ic_local_library
 }
 
 @StringRes
-private fun ConsumerMenu.stringResId(): Int = when (this) {
-    ConsumerMenu.HOME -> R.string.bottom_app_bar_home
-    ConsumerMenu.WISH_LIST -> R.string.bottom_app_bar_wish_list
-    ConsumerMenu.MY -> R.string.bottom_app_bar_my
+private fun Menu.stringResId(): Int = when (this) {
+    Menu.HOME -> R.string.bottom_app_bar_home
+    Menu.WISH_LIST -> R.string.bottom_app_bar_wish_list
+    Menu.MY -> R.string.bottom_app_bar_my
 }

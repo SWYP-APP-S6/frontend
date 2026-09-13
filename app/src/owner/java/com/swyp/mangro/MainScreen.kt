@@ -1,27 +1,68 @@
 package com.swyp.mangro
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
-import com.swyp.mangro.navigation.OwnerNavHost
-import com.swyp.mangro.theme.MangroTheme
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import com.swyp.mangro.core.designsystem.component.appbar.BottomAppBar
+import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
+import com.swyp.mangro.core.designsystem.component.appbar.Menu
+import com.swyp.mangro.core.designsystem.theme.MangroTheme
+import kotlinx.collections.immutable.toPersistentList
 
-/** Local UI host until the catalog repository is connected. */
 @Composable
 internal fun MainScreen() {
-    var products by rememberSaveable { mutableStateOf(emptyList<OwnerProductModel>()) }
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            MangroDefaultStartAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "찜 내역",
+                        modifier = Modifier.fillMaxWidth(),
+                        style = MangroTheme.typography.heading.headingM,
+                    )
+                },
+            )
+        },
+        bottomBar = {
+            BottomAppBar(
+                menus = Menu.entries.toPersistentList(),
+                currentMenu = Menu.HOME,
+                onMenuClick = { /* TODO() */ },
+            )
+        },
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentAlignment = Alignment.Center,
+        ) {
+            Greeting()
+        }
+    }
+}
+
+@Composable
+private fun Greeting() {
+    Text(
+        text = stringResource(R.string.greeting_message),
+        color = MangroTheme.colors.primaryNormal,
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun MainScreenPreview() {
     MangroTheme {
-        OwnerNavHost(
-            products = products,
-            storeClosingTime = "20:00",
-            storeOpeningTime = "09:00",
-            onSaveProducts = { changed ->
-                val ids = changed.map { it.id }.toSet()
-                products = products.filterNot { it.id in ids } + changed
-            },
-        )
+        MainScreen()
     }
 }

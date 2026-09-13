@@ -7,7 +7,6 @@ import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,7 +41,6 @@ fun MangroTextField(
     onKeyboardAction: ((ImeAction) -> Unit)? = null,
     inputTransformation: InputTransformation? = null,
     outputTransformation: OutputTransformation? = null,
-    leadingIcon: @Composable (() -> Unit)? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
@@ -73,7 +71,7 @@ fun MangroTextField(
         outputTransformation = outputTransformation,
         modifier = modifier,
         decorator = { innerTextField ->
-            Row(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(shape)
@@ -84,22 +82,18 @@ fun MangroTextField(
                         shape = shape,
                     )
                     .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                contentAlignment = Alignment.CenterStart,
             ) {
-                leadingIcon?.invoke()
-                Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
-                    if (state.text.isEmpty()) {
-                        Text(
-                            text = placeholder,
-                            style = MangroTheme.typography.body.bodyM,
-                            color = MangroTheme.colors.textCanceled,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                    innerTextField()
+                if (state.text.isEmpty()) {
+                    Text(
+                        text = placeholder,
+                        style = MangroTheme.typography.body.bodyM,
+                        color = MangroTheme.colors.textCanceled,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                 }
+                innerTextField()
             }
         },
     )

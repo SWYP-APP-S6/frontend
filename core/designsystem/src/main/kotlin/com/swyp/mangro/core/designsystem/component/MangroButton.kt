@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -71,18 +70,21 @@ fun MangroButton(
     style: MangroButtonStyle,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    contentPadding: PaddingValues = if (style == MangroButtonStyle.TEXT) PaddingValues(10.dp) else PaddingValues(16.dp),
-    disabledContainerColor: Color = MangroTheme.colors.surfaceDisabled,
-    shape: Shape = RoundedCornerShape(12.dp),
     content: @Composable RowScope.() -> Unit,
 ) {
     val backgroundColor = when {
         style == MangroButtonStyle.TEXT -> Color.Transparent
-        !enabled -> disabledContainerColor
+        !enabled -> MangroTheme.colors.surfaceDisabled
         else -> style.backgroundColor
     }
     val textColor = if (!enabled) MangroTheme.colors.textCanceled else style.textColor
     val borderColor = if (enabled) style.borderColor else null
+    val shape = RoundedCornerShape(12.dp)
+    val contentPadding = if (style == MangroButtonStyle.TEXT) {
+        PaddingValues(10.dp)
+    } else {
+        PaddingValues(16.dp)
+    }
 
     Box(
         modifier = modifier
@@ -131,18 +133,12 @@ fun MangroButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     textStyle: TextStyle = MangroTheme.typography.title.titleM,
-    contentPadding: PaddingValues = if (style == MangroButtonStyle.TEXT) PaddingValues(10.dp) else PaddingValues(16.dp),
-    disabledContainerColor: Color = MangroTheme.colors.surfaceDisabled,
-    shape: Shape = RoundedCornerShape(12.dp),
 ) {
     MangroButton(
         onClick = onClick,
         style = style,
         modifier = modifier,
         enabled = enabled,
-        contentPadding = contentPadding,
-        disabledContainerColor = disabledContainerColor,
-        shape = shape,
     ) {
         Text(
             text = text,

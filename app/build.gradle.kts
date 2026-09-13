@@ -5,7 +5,6 @@ plugins {
     id("mangro.android.compose")
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -29,8 +28,6 @@ android {
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:utils"))
-    add("ownerImplementation", project(":feature:owner:product"))
-    add("ownerImplementation", project(":feature:owner:home"))
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
@@ -46,7 +43,6 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.kotlinx.serialization.json)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     implementation(libs.material)

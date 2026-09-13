@@ -3,7 +3,6 @@ package com.swyp.mangro.remote.consumer
 import com.swyp.mangro.core.network.BearerTokenInterceptor
 import com.swyp.mangro.core.network.NetworkClient
 import com.swyp.mangro.core.network.readHttpError
-import com.swyp.mangro.remote.auth.di.AuthServices
 import com.swyp.mangro.remote.auth.model.ExchangeConsumerCodeRequest
 import com.swyp.mangro.remote.auth.model.ExchangeOwnerCodeRequest
 import com.swyp.mangro.remote.auth.model.IssueGuestTokenRequest
@@ -12,8 +11,9 @@ import com.swyp.mangro.remote.auth.model.RefreshUserAuthKeyRequest
 import com.swyp.mangro.remote.auth.model.RegisterUserRequest
 import com.swyp.mangro.remote.auth.model.VerifyConsumerKakaoTokenAndLoginRequest
 import com.swyp.mangro.remote.auth.model.VerifyOwnerKakaoTokenAndLoginRequest
-import com.swyp.mangro.remote.consumer.di.ConsumerServices
-import com.swyp.mangro.remote.owner.di.OwnerServices
+import com.swyp.mangro.remote.auth.service.AuthServices
+import com.swyp.mangro.remote.consumer.serivce.ConsumerServices
+import com.swyp.mangro.remote.owner.service.OwnerServices
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.runBlocking

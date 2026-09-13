@@ -2,12 +2,11 @@ package com.swyp.mangro.remote.consumer
 
 import com.swyp.mangro.core.network.NetworkClient
 import com.swyp.mangro.core.network.readHttpError
-import com.swyp.mangro.remote.consumer.di.ConsumerServices
 import com.swyp.mangro.remote.consumer.model.RecipeSummaryResponse
+import com.swyp.mangro.remote.consumer.serivce.ConsumerServices
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.decodeFromString
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.Assert.assertEquals

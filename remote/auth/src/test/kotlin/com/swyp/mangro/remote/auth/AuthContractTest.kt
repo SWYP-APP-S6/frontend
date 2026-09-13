@@ -2,13 +2,12 @@ package com.swyp.mangro.remote.auth
 
 import com.swyp.mangro.core.network.NetworkClient
 import com.swyp.mangro.core.network.readHttpError
-import com.swyp.mangro.remote.auth.di.AuthServices
 import com.swyp.mangro.remote.auth.model.LogoutRequest
 import com.swyp.mangro.remote.auth.model.RefreshUserAuthKeyRequest
 import com.swyp.mangro.remote.auth.model.RegisterUserRequest
+import com.swyp.mangro.remote.auth.service.AuthServices
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.mockwebserver.MockResponse

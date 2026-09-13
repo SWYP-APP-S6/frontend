@@ -1,16 +1,15 @@
 package com.swyp.mangro.remote.consumer
 
 import com.swyp.mangro.core.network.NetworkClient
-import com.swyp.mangro.remote.consumer.di.ConsumerServices
 import com.swyp.mangro.remote.consumer.model.DeleteDeviceTokenRequest
 import com.swyp.mangro.remote.consumer.model.HoldDetailResponse
 import com.swyp.mangro.remote.consumer.model.HoldSummaryResponse
 import com.swyp.mangro.remote.consumer.model.RecipeSummaryResponse
 import com.swyp.mangro.remote.consumer.model.RegisterDeviceTokenRequest
 import com.swyp.mangro.remote.consumer.model.RegisterHoldRequest
+import com.swyp.mangro.remote.consumer.serivce.ConsumerServices
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.mockwebserver.MockResponse

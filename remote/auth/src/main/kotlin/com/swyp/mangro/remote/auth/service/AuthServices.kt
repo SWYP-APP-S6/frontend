@@ -1,6 +1,5 @@
-package com.swyp.mangro.remote.auth.di
+package com.swyp.mangro.remote.auth.service
 
-import com.swyp.mangro.remote.auth.service.AuthService
 import retrofit2.Retrofit
 
 /** Service instances share the caller-supplied network configuration. */

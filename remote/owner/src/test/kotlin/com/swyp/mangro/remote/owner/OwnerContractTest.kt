@@ -1,16 +1,15 @@
 package com.swyp.mangro.remote.owner
 
 import com.swyp.mangro.core.network.NetworkClient
-import com.swyp.mangro.remote.owner.di.OwnerServices
 import com.swyp.mangro.remote.owner.model.AnswerStockReconfirmRequest
 import com.swyp.mangro.remote.owner.model.PreviewProductRequest
 import com.swyp.mangro.remote.owner.model.ProductDetailResponse
 import com.swyp.mangro.remote.owner.model.RegisterProductRequest
 import com.swyp.mangro.remote.owner.model.UpdateStockRequest
+import com.swyp.mangro.remote.owner.service.OwnerServices
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.decodeFromString
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody

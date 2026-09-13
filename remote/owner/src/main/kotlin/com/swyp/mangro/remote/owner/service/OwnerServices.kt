@@ -1,9 +1,5 @@
-package com.swyp.mangro.remote.owner.di
+package com.swyp.mangro.remote.owner.service
 
-import com.swyp.mangro.remote.owner.service.HoldService
-import com.swyp.mangro.remote.owner.service.HomeService
-import com.swyp.mangro.remote.owner.service.ProductService
-import com.swyp.mangro.remote.owner.service.StoreService
 import retrofit2.Retrofit
 
 /** Service instances share the caller-supplied network configuration. */

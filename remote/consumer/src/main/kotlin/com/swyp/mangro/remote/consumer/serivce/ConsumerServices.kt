@@ -1,4 +1,4 @@
-package com.swyp.mangro.remote.consumer.di
+package com.swyp.mangro.remote.consumer.serivce
 
 import com.swyp.mangro.remote.consumer.service.HealthService
 import com.swyp.mangro.remote.consumer.service.HoldService

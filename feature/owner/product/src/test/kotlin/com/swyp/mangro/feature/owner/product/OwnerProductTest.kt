@@ -1,5 +1,12 @@
 package com.swyp.mangro.feature.owner.product
 
+import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
+import com.swyp.mangro.feature.owner.product.util.addProductTag
+import com.swyp.mangro.feature.owner.product.util.discountPercent
+import com.swyp.mangro.feature.owner.product.util.isValidPrice
+import com.swyp.mangro.feature.owner.product.util.isValidProductName
+import com.swyp.mangro.feature.owner.product.util.mergedProductPhotos
+import com.swyp.mangro.feature.owner.product.util.parseQuantity
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -52,7 +59,7 @@ class OwnerProductTest {
 
     @Test
     fun `physical stock includes reservations and never exposes negative availability`() {
-        val product = OwnerProduct("1", "복숭아", listOf("photo"), 10000, 4000, 10, 5, 3, 2, "20:00")
+        val product = OwnerProductModel("1", "복숭아", listOf("photo"), 10000, 4000, 10, 5, 3, 2, "20:00")
         assertEquals(2, product.availableQuantity)
         assertTrue(product.isVisibleToCustomers)
         val shortage = product.copy(remainingQuantity = 1)

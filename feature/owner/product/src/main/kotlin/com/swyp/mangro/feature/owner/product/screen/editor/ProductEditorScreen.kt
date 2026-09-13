@@ -1,4 +1,4 @@
-package com.swyp.mangro.feature.owner.product
+package com.swyp.mangro.feature.owner.product.screen.editor
 
 import android.app.TimePickerDialog
 import android.content.Intent
@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -51,15 +52,28 @@ import com.swyp.mangro.core.designsystem.component.card.product.ProductListCard
 import com.swyp.mangro.core.designsystem.component.dropdown.MangroDropdownField
 import com.swyp.mangro.core.designsystem.component.stepper.MangroStepper
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
+import com.swyp.mangro.feature.owner.product.R
+import com.swyp.mangro.feature.owner.product.component.OwnerProductConfirmationBottomSheet
+import com.swyp.mangro.feature.owner.product.component.OwnerProductLabel
+import com.swyp.mangro.feature.owner.product.component.OwnerProductScaffold
+import com.swyp.mangro.feature.owner.product.component.OwnerProductSheetBottomSheet
+import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
+import com.swyp.mangro.feature.owner.product.util.OwnerProductLimits
+import com.swyp.mangro.feature.owner.product.util.addProductTag
+import com.swyp.mangro.feature.owner.product.util.discountPercent
+import com.swyp.mangro.feature.owner.product.util.formatAmount
+import com.swyp.mangro.feature.owner.product.util.isValidPrice
+import com.swyp.mangro.feature.owner.product.util.isValidProductName
+import com.swyp.mangro.feature.owner.product.util.mergedProductPhotos
 import java.util.Locale
 import java.util.UUID
 
 @Composable
-internal fun ProductEditor(
-    product: OwnerProduct?,
+internal fun ProductEditorScreen(
+    product: OwnerProductModel?,
     storeClosingTime: String,
     onBack: () -> Unit,
-    onSave: (OwnerProduct) -> Unit,
+    onSave: (OwnerProductModel) -> Unit,
 ) {
     var step by rememberSaveable { mutableIntStateOf(1) }
     var photos by rememberSaveable { mutableStateOf(product?.photos ?: emptyList<String>()) }
@@ -98,7 +112,7 @@ internal fun ProductEditor(
         else -> tag.text.isBlank() || (tags.size < OwnerProductLimits.TAG_COUNT && tag.text.toString().trim() !in tags)
     }
     val currentDraft = {
-        OwnerProduct(
+        OwnerProductModel(
             id = productId,
             name = name.text.toString().trim(),
             photos = photos,
@@ -112,12 +126,12 @@ internal fun ProductEditor(
             tags = tags,
         )
     }
-    ProductPage(
-        title = if (product == null) "상품 등록" else "상품 정보 수정",
+    OwnerProductScaffold(
+        title = if (product == null) stringResource(R.string.owner_product_register_title) else stringResource(R.string.owner_product_edit_title),
         onBack = goBack,
-        bottom = {
-            ProductCta(
-                text = if (step == 3) "등록하기" else "다음",
+        bottomBarContent = {
+            MangroButton(
+                text = if (step == 3) stringResource(R.string.owner_product_register) else stringResource(R.string.owner_product_next),
                 onClick = {
                     if (step < 3) {
                         step++
@@ -127,14 +141,19 @@ internal fun ProductEditor(
                         preview = true
                     }
                 },
+                style = MangroButtonStyle.ACTIVE,
+                modifier = Modifier.fillMaxWidth(),
                 enabled = valid,
             )
         },
     ) {
         when (step) {
             1 -> {
-                ProductHeading("오늘은 어떤 상품을\n판매하실 건가요?")
-                ProductLabel("사진 *", "최대 ${OwnerProductLimits.PHOTO_COUNT}장까지 올릴 수 있어요.")
+                Text(stringResource(R.string.owner_product_editor_name_heading), style = MangroTheme.typography.heading.headingM, color = MangroTheme.colors.textTitle)
+                OwnerProductLabel(
+                    text = stringResource(R.string.owner_product_photos_label),
+                    hint = stringResource(R.string.owner_product_photos_hint, OwnerProductLimits.PHOTO_COUNT),
+                )
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     item {
                         Column(
@@ -142,58 +161,70 @@ internal fun ProductEditor(
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             IconButton(onClick = openPhotos, enabled = photos.size < OwnerProductLimits.PHOTO_COUNT) {
-                                Icon(painterResource(DesignR.drawable.ic_camera_add), "사진 추가", Modifier.size(24.dp))
+                                Icon(painterResource(DesignR.drawable.ic_camera_add), stringResource(R.string.owner_product_photo_add), Modifier.size(24.dp))
                             }
-                            ProductHint("${photos.size} / ${OwnerProductLimits.PHOTO_COUNT}")
+                            Text(stringResource(R.string.owner_product_photo_count, photos.size, OwnerProductLimits.PHOTO_COUNT), style = MangroTheme.typography.caption.captionS, color = MangroTheme.colors.textSubtitle)
                         }
                     }
                     items(photos, key = { it }) { photo ->
                         Box(Modifier.size(66.dp)) {
-                            AsyncImage(photo, "선택한 상품 사진", Modifier.size(66.dp).clip(RoundedCornerShape(4.dp)), contentScale = ContentScale.Crop)
+                            AsyncImage(photo, stringResource(R.string.owner_product_photo_selected), Modifier.size(66.dp).clip(RoundedCornerShape(4.dp)), contentScale = ContentScale.Crop)
                             IconButton(onClick = { photos = photos - photo }, modifier = Modifier.align(Alignment.TopEnd).size(28.dp)) {
-                                Icon(painterResource(DesignR.drawable.ic_x_circle), "사진 삭제", Modifier.size(20.dp))
+                                Icon(painterResource(DesignR.drawable.ic_x_circle), stringResource(R.string.owner_product_photo_delete), Modifier.size(20.dp))
                             }
                         }
                     }
                 }
-                MangroButton("사진 올리기", openPhotos, MangroButtonStyle.DEFAULT, Modifier.fillMaxWidth(), photos.size < OwnerProductLimits.PHOTO_COUNT)
-                if (photoError) ProductHint("사진을 불러오지 못했어요. 다른 사진을 선택해주세요.")
-                MangroInputBox("품목명", "판매하실 상품명·중량 등을 입력해주세요. (최대 25자)", name, "품목명 입력")
-                if (name.text.isNotEmpty() && !validName) ProductHint("품목명은 공백을 제외한 내용이 있어야 하며 최대 25자예요.")
+                MangroButton(stringResource(R.string.owner_product_photo_upload), openPhotos, MangroButtonStyle.DEFAULT, Modifier.fillMaxWidth(), photos.size < OwnerProductLimits.PHOTO_COUNT)
+                if (photoError) Text(stringResource(R.string.owner_product_photo_error), style = MangroTheme.typography.caption.captionS, color = MangroTheme.colors.textSubtitle)
+                MangroInputBox(stringResource(R.string.owner_product_name_label), stringResource(R.string.owner_product_name_hint), name, stringResource(R.string.owner_product_name_placeholder))
+                if (name.text.isNotEmpty() && !validName) Text(stringResource(R.string.owner_product_name_error), style = MangroTheme.typography.caption.captionS, color = MangroTheme.colors.textSubtitle)
             }
+
             2 -> {
-                ProductHeading("어떤 가격에,\n얼마나 판매할까요?")
+                Text(stringResource(R.string.owner_product_editor_price_heading), style = MangroTheme.typography.heading.headingM, color = MangroTheme.colors.textTitle)
                 // Existing products edit stock in the detail screen so shortage confirmation cannot be bypassed.
                 if (product == null) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        ProductLabel("수량 *", "판매 가능한 개수를 입력해주세요.", Modifier.weight(1f))
+                        OwnerProductLabel(
+                            text = stringResource(R.string.owner_product_quantity_required),
+                            hint = stringResource(R.string.owner_product_quantity_hint),
+                            modifier = Modifier.weight(1f),
+                        )
                         MangroStepper(quantity, { quantity = it })
                     }
                 } else {
-                    ProductLabel("매장에 남은 수량 ${quantity}개", "수량은 상품 관리 상세에서 변경할 수 있어요.")
+                    OwnerProductLabel(
+                        text = stringResource(R.string.owner_product_remaining_quantity_count, quantity),
+                        hint = stringResource(R.string.owner_product_quantity_edit_hint),
+                    )
                 }
-                MangroInputBox("정가", "기존 가격을 입력해주세요.", originalPrice, "정가 입력", keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-                MangroInputBox("할인가", "판매하실 가격을 입력해주세요.", salePrice, "할인가 입력", keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                MangroInputBox(stringResource(R.string.owner_product_original_price), stringResource(R.string.owner_product_original_price_hint), originalPrice, stringResource(R.string.owner_product_original_price_placeholder), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                MangroInputBox(stringResource(R.string.owner_product_sale_price), stringResource(R.string.owner_product_sale_price_hint), salePrice, stringResource(R.string.owner_product_sale_price_placeholder), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
                 val original = originalPrice.text.toString().toIntOrNull() ?: 0
                 val sale = salePrice.text.toString().toIntOrNull() ?: 0
                 Row(
                     Modifier.fillMaxWidth().background(MangroTheme.colors.primaryLight, RoundedCornerShape(8.dp)).padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    Text("최종 할인율", color = MangroTheme.colors.primaryNormal)
-                    Text("${discountPercent(original, sale)}%", style = MangroTheme.typography.title.titleL)
+                    Text(stringResource(R.string.owner_product_final_discount), color = MangroTheme.colors.primaryNormal)
+                    Text(stringResource(R.string.owner_product_discount_percent, discountPercent(original, sale)), style = MangroTheme.typography.title.titleL)
                 }
                 if (validPrices) {
-                    Text("${(original - sale).won()}이 저렴해져요", Modifier.fillMaxWidth(), color = MangroTheme.colors.primaryNormal, textAlign = TextAlign.End)
+                    Text(stringResource(R.string.owner_product_savings, stringResource(R.string.owner_product_price, (original - sale).formatAmount())), Modifier.fillMaxWidth(), color = MangroTheme.colors.primaryNormal, textAlign = TextAlign.End)
                 } else if (salePrice.text.isNotEmpty()) {
-                    ProductHint("가격은 1원 이상이며, 할인가는 정가 이하여야 해요.")
+                    Text(stringResource(R.string.owner_product_price_error), style = MangroTheme.typography.caption.captionS, color = MangroTheme.colors.textSubtitle)
                 }
             }
+
             3 -> {
-                ProductHeading("판매에 필요한 정보를\n더 알려주세요.")
-                ProductLabel("픽업 종료시간", "미입력 시 기존 운영 시간으로 설정됩니다.")
+                Text(stringResource(R.string.owner_product_editor_info_heading), style = MangroTheme.typography.heading.headingM, color = MangroTheme.colors.textTitle)
+                OwnerProductLabel(
+                    text = stringResource(R.string.owner_product_pickup_end),
+                    hint = stringResource(R.string.owner_product_pickup_end_hint),
+                )
                 MangroDropdownField(
-                    text = "오늘 ${pickupTime ?: storeClosingTime}",
+                    text = stringResource(R.string.owner_product_pickup_today, pickupTime ?: storeClosingTime),
                     onClick = {
                         val parts = (pickupTime ?: storeClosingTime).split(":")
                         TimePickerDialog(context, { _, hour, minute -> pickupTime = String.format(Locale.ROOT, "%02d:%02d", hour, minute) }, parts[0].toInt(), parts[1].toInt(), true).show()
@@ -202,12 +233,12 @@ internal fun ProductEditor(
                     isPlaceholder = pickupTime == null,
                     textAlign = TextAlign.Center,
                 )
-                if (pickupTime != null) MangroButton("운영시간 적용", { pickupTime = null }, MangroButtonStyle.TEXT)
+                if (pickupTime != null) MangroButton(stringResource(R.string.owner_product_apply_store_hours), { pickupTime = null }, MangroButtonStyle.TEXT)
                 MangroInputBox(
-                    "식자재 태그",
-                    "최대 ${OwnerProductLimits.TAG_COUNT}개까지 입력할 수 있어요. 첫 태그가 대표 태그예요.",
+                    stringResource(R.string.owner_product_tags_label),
+                    stringResource(R.string.owner_product_tags_hint, OwnerProductLimits.TAG_COUNT),
                     tag,
-                    "태그 입력",
+                    stringResource(R.string.owner_product_tag_placeholder),
                     isRequired = false,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     onKeyboardAction = {
@@ -219,7 +250,7 @@ internal fun ProductEditor(
                     },
                 )
                 MangroButton(
-                    "태그 추가",
+                    stringResource(R.string.owner_product_tag_add),
                     {
                         tags = addProductTag(tags, tag.text.toString())
                         tag.edit { replace(0, length, "") }
@@ -230,36 +261,48 @@ internal fun ProductEditor(
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     tags.forEach { item ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            ProductHint(item)
+                            Text(item, style = MangroTheme.typography.caption.captionS, color = MangroTheme.colors.textSubtitle)
                             IconButton(onClick = { tags = tags - item }) {
-                                Icon(painterResource(DesignR.drawable.ic_x_20px), "$item 태그 삭제", Modifier.size(20.dp))
+                                Icon(painterResource(DesignR.drawable.ic_x_20px), stringResource(R.string.owner_product_tag_delete, item), Modifier.size(20.dp))
                             }
                         }
                     }
                 }
-                if (!valid) ProductHint("중복 태그를 지우거나, 태그를 최대 5개로 맞춰주세요.")
+                if (!valid) Text(stringResource(R.string.owner_product_tags_error), style = MangroTheme.typography.caption.captionS, color = MangroTheme.colors.textSubtitle)
             }
         }
     }
     if (preview && validName && validPrices) {
         val draft = currentDraft()
-        ProductSheet({ preview = false }) {
-            ProductLabel("상품 미리보기", "손님께는 이렇게 보여요.")
+        OwnerProductSheetBottomSheet(
+            onDismiss = { preview = false },
+            bottomBar = {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    MangroButton(stringResource(R.string.owner_product_edit), {
+                        preview = false
+                        step = 1
+                    }, MangroButtonStyle.OUTLINED)
+                    MangroButton(
+                        text = if (product == null) stringResource(R.string.owner_product_register) else stringResource(R.string.owner_product_save),
+                        onClick = { onSave(draft) },
+                        style = MangroButtonStyle.ACTIVE,
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                    )
+                }
+            },
+        ) {
+            OwnerProductLabel(
+                text = stringResource(R.string.owner_product_preview_title),
+                hint = stringResource(R.string.owner_product_preview_hint),
+            )
             ProductListCard(
                 Product(draft.id, draft.photos.first(), draft.discountPercent, draft.name, draft.salePrice, draft.originalPrice, ProductCategory.ETC, draft.availableQuantity),
                 Modifier.border(1.dp, MangroTheme.colors.borderDefault, RoundedCornerShape(12.dp)).padding(12.dp),
             )
-            ProductHint("픽업 종료 오늘 ${draft.pickupEndTime} · ${draft.tags.joinToString(" · ")}")
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                MangroButton("수정하기", {
-                    preview = false
-                    step = 1
-                }, MangroButtonStyle.OUTLINED)
-                ProductCta(if (product == null) "등록하기" else "저장하기", { onSave(draft) }, Modifier.weight(1f))
-            }
+            Text(stringResource(R.string.owner_product_preview_summary, draft.pickupEndTime, draft.tags.joinToString(" · ")), style = MangroTheme.typography.caption.captionS, color = MangroTheme.colors.textSubtitle)
         }
     }
     if (discard) {
-        ProductConfirmation("작성을 그만둘까요?", "입력한 내용은 저장되지 않아요.", { discard = false }, onBack)
+        OwnerProductConfirmationBottomSheet(stringResource(R.string.owner_product_discard_title), stringResource(R.string.owner_product_discard_description), { discard = false }, onBack)
     }
 }

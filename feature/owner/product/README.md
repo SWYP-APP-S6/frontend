@@ -1,6 +1,17 @@
 # 점주 상품 UI (#65)
 
-`OwnerProductFlow`는 등록 3단계, 사진 선택·삭제, 상품 미리보기·수정, 목록·상세, 재고 재확인과 직접 입력을 제공한다. `app`의 Owner 소스셋에서 연결하며 Consumer에는 의존하지 않는다.
+`ownerProductNavGraph`는 등록 3단계, 사진 선택·삭제, 상품 미리보기·수정, 목록·상세, 재고 재확인과 직접 입력을 제공한다. `app`의 Owner `OwnerNavHost`에서 홈과 연결하며 Consumer에는 의존하지 않는다.
+
+## 패키지와 Navigation
+
+- `screen/list`, `screen/detail`, `screen/editor`, `screen/stock`: 화면별 UI와 입력 상태.
+- `component`: 상품 화면에서 함께 사용하는 UI.
+- `model`: 복원 가능한 `OwnerProductModel`.
+- `util`: 가격·품목명·사진·태그·수량 검증.
+- `navigation`: 타입 기반 목적지와 `NavGraphBuilder.ownerProductNavGraph`. 상품 식별자만 경로 인자로 전달하며 상품 데이터는 호출부에서 제공한다.
+- 홈의 점포 관리 메뉴·상품 목록 액션은 목록으로, 상품 카드는 상세로, 등록 액션은 등록 화면으로 이동한다. 홈도 같은 상품 목록을 표시한다.
+- 수정 저장/취소는 이전 상세 화면으로, 목록에서 등록 후에는 목록으로 복귀한다. 시스템 뒤로가기와 상단 뒤로가기는 Navigation 백스택을 사용하며 등록 단계 뒤로가기·작성 취소 확인은 유지한다.
+- 찜 취소 안내도 별도 목적지로 열어 돌아오면 재고 입력 상태를 유지한다. 실제 찜 취소 API는 아직 연결하지 않았다.
 
 - 호출부가 `products`, `storeClosingTime(HH:mm)`을 제공한다. `onSaveProducts`에는 변경된 상품들만 전달한다. 호출부는 ID로 병합해야 한다.
 - 재고 부족 시 `onCancelReservations`에 해당 상품 ID를 전달한다. 찜 취소 실행·선착순 주문 배정·안내 발송은 #66의 `:feature:owner:pickup` 책임이다. 상품 UI는 부족 수량을 주문 건수로 추정하지 않는다.
@@ -31,3 +42,10 @@
 - `:app:connectedOwnerDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.swyp.mangro.OwnerProductFlowTest`: Pixel 10 API 37에서 6개 통과. 필수 입력, 수정/미리보기, 재고 0 확인, 직접 입력 보류, 부족 재고 콜백, 저장 상태 복원을 확인했다.
 - 수동 확인: 시스템 사진 선택기에서 이미지 선택 → 썸네일 → 품목명/가격 입력 → 60% 할인율 → 입력 중 태그를 포함한 미리보기.
 - 미실행: Release 빌드, 실기기, Consumer 계측, 전체 앱 계측, 서버 업로드/저장 및 실제 찜 취소. O-050/O-051의 원본 디자인과 시각 비교도 미실행이다.
+
+### Navigation 리팩터링 검증 (2026-09-13)
+
+- 전체 `ktlintCheck`, 상품 단위 테스트 6개·홈 4개·앱 Flavor별 1개, Consumer/Owner Debug 조립·lint: 통과.
+- `:app:connectedOwnerDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.swyp.mangro.OwnerProductFlowTest,com.swyp.mangro.OwnerNavigationTest`: Samsung SM-F711N / Android 15에서 8개 통과, 건너뜀 없음.
+- 홈 → 점포 관리와 상단/시스템 뒤로가기, 작성 취소 확인, 수정 저장 후 상세 복귀, 재고 확인·보류, 입력 상태 복원을 검증했다.
+- 미실행: Release 빌드, Consumer 계측, 실제 서버 저장·업로드·찜 취소.

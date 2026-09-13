@@ -28,6 +28,7 @@ android {
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:utils"))
+    add("ownerImplementation", project(":feature:owner:home"))
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

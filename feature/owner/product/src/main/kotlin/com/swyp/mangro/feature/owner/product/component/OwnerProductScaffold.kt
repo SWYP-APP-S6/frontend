@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.swyp.mangro.core.designsystem.R as DesignR
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
@@ -36,6 +37,7 @@ internal fun OwnerProductScaffold(
     title: String,
     onBack: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    contentSpacing: Dp = 32.dp,
     bottomBarContent: @Composable BoxScope.() -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -84,7 +86,7 @@ internal fun OwnerProductScaffold(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(32.dp),
+            verticalArrangement = Arrangement.spacedBy(contentSpacing),
             content = content,
         )
     }

@@ -1,96 +1,60 @@
 package com.swyp.mangro.feature.owner.product.navigation
 
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
-import com.swyp.mangro.core.designsystem.theme.MangroTheme
-import com.swyp.mangro.feature.owner.product.R
-import com.swyp.mangro.feature.owner.product.component.OwnerProductScaffold
+import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
+import com.swyp.mangro.feature.owner.product.model.OwnerPickupModel
 import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
+import com.swyp.mangro.feature.owner.product.screen.detail.OwnerProductDetailDestination
 import com.swyp.mangro.feature.owner.product.screen.detail.ProductDetailRoute
-import com.swyp.mangro.feature.owner.product.screen.editor.ProductEditorScreen
-import com.swyp.mangro.feature.owner.product.screen.list.ProductListScreen
-import com.swyp.mangro.feature.owner.product.screen.stock.ProductStockScreen
+import com.swyp.mangro.feature.owner.product.screen.list.OwnerProductListDestination
+import com.swyp.mangro.feature.owner.product.screen.list.ProductListRoute
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object OwnerProductListDestination
-
-@Serializable
-data class OwnerProductDetailDestination(val productId: String)
-
-@Serializable
-data class OwnerProductEditorDestination(val productId: String? = null)
-
-@Serializable
-data object OwnerProductStockDestination
+data object OwnerProductEditorDestination
 
 fun NavGraphBuilder.ownerProductNavGraph(
     navController: NavHostController,
     products: List<OwnerProductModel>,
     storeClosingTime: String,
+    storeOpeningTime: String,
     onSaveProducts: (List<OwnerProductModel>) -> Unit,
     onCancelReservations: (List<String>) -> Unit,
+    onMenuClick: (OwnerMenu) -> Unit,
+    onPickupClick: (String) -> Unit,
+    onCompletePickup: (String) -> Unit,
+    pickups: List<OwnerPickupModel> = emptyList(),
 ) {
     composable<OwnerProductListDestination> {
-        ProductListScreen(
+        ProductListRoute(
             products = products,
-            onBack = { navController.popBackStack() },
-            onAdd = { navController.navigate(OwnerProductEditorDestination()) },
+            pickups = pickups,
+            onMenuClick = onMenuClick,
+            onPickupClick = onPickupClick,
+            onCompletePickup = onCompletePickup,
             onSelect = { navController.navigate(OwnerProductDetailDestination(it)) },
-            onStock = { navController.navigate(OwnerProductStockDestination) },
             onCancelReservations = onCancelReservations,
         )
     }
-    composable<OwnerProductDetailDestination> { entry ->
-        val productId = entry.toRoute<OwnerProductDetailDestination>().productId
-        val product = products.find { it.id == productId }
-        if (product == null) {
-            MissingProductScreen { navController.popBackStack() }
-        } else {
-            ProductDetailRoute(
-                product = product,
-                onBack = { navController.popBackStack() },
-                onEdit = { navController.navigate(OwnerProductEditorDestination(productId)) },
-                onSave = { onSaveProducts(listOf(it)) },
-                onCancelReservations = { onCancelReservations(listOf(productId)) },
-            )
-        }
-    }
-    composable<OwnerProductEditorDestination> { entry ->
-        val productId = entry.toRoute<OwnerProductEditorDestination>().productId
-        val product = products.find { it.id == productId }
-        if (productId != null && product == null) {
-            MissingProductScreen { navController.popBackStack() }
-        } else {
-            ProductEditorScreen(
-                product = product,
-                storeClosingTime = storeClosingTime,
-                onBack = { navController.popBackStack() },
-                onSave = {
-                    onSaveProducts(listOf(it))
-                    navController.popBackStack()
-                },
-            )
-        }
-    }
-    composable<OwnerProductStockDestination> {
-        ProductStockScreen(
+    composable<OwnerProductDetailDestination> {
+        ProductDetailRoute(
             products = products,
             onBack = { navController.popBackStack() },
-            onSave = onSaveProducts,
-            onCancelReservations = onCancelReservations,
+            onSave = { onSaveProducts(listOf(it)) },
+            onCancelReservations = { onCancelReservations(listOf(it)) },
         )
     }
-}
-
-@Composable
-private fun MissingProductScreen(onBack: () -> Unit) {
-    OwnerProductScaffold(stringResource(R.string.owner_product_management_title), onBack) {
-        Text(stringResource(R.string.owner_product_product_missing), style = MangroTheme.typography.caption.captionS, color = MangroTheme.colors.textSubtitle)
+    composable<OwnerProductEditorDestination> {
+        ProductEditorNavHost(
+            storeClosingTime = storeClosingTime,
+            storeOpeningTime = storeOpeningTime,
+            onBack = { navController.popBackStack() },
+            onSave = {
+                onSaveProducts(listOf(it))
+                navController.popBackStack()
+            },
+        )
     }
 }

@@ -2,6 +2,7 @@ package com.swyp.mangro.feature.owner.product.screen.detail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.navigation.toRoute
 import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -12,12 +13,19 @@ import kotlinx.coroutines.flow.receiveAsFlow
 class ProductDetailViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
+    private val productId = savedStateHandle.toRoute<OwnerProductDetailDestination>().productId
+
     val uiState = savedStateHandle.getStateFlow(STATE, ProductDetailState())
 
     private val _event = Channel<ProductDetailEvent>(Channel.BUFFERED)
     val event = _event.receiveAsFlow()
 
-    fun updateProduct(product: OwnerProductModel) {
+    fun updateProducts(products: List<OwnerProductModel>) {
+        val product = products.find { it.id == productId }
+        if (product == null) {
+            updateState { ProductDetailState() }
+            return
+        }
         val current = uiState.value
         val previous = current.product
         updateState {
@@ -39,7 +47,8 @@ class ProductDetailViewModel @Inject constructor(
                     updateState { it.copy(quantity = action.quantity) }
                 }
             }
-            ProductDetailAction.Save -> {
+
+            ProductDetailAction.SaveClicked -> {
                 val state = uiState.value
                 val product = state.product ?: return
                 if (!state.canSave || state.showSaveConfirmation) return
@@ -49,19 +58,24 @@ class ProductDetailViewModel @Inject constructor(
                     save()
                 }
             }
-            ProductDetailAction.ConfirmSave -> if (uiState.value.showSaveConfirmation) save()
-            ProductDetailAction.DismissConfirmation -> updateState { it.copy(showSaveConfirmation = false) }
-            ProductDetailAction.DismissSaved -> updateState { it.copy(showSaved = false) }
-            ProductDetailAction.CompleteSave -> {
+
+            ProductDetailAction.SaveConfirmClicked -> if (uiState.value.showSaveConfirmation) save()
+
+            ProductDetailAction.SaveConfirmationDismissed -> updateState { it.copy(showSaveConfirmation = false) }
+
+            ProductDetailAction.SaveResultDismissed -> updateState { it.copy(showSaved = false) }
+
+            ProductDetailAction.SaveResultConfirmClicked -> {
                 if (!uiState.value.showSaved || uiState.value.savedShortage > 0) return
                 updateState { it.copy(showSaved = false) }
                 _event.trySend(ProductDetailEvent.NavigateBack)
             }
-            ProductDetailAction.NavigateBack -> _event.trySend(ProductDetailEvent.NavigateBack)
-            ProductDetailAction.EditProduct -> _event.trySend(ProductDetailEvent.NavigateToEdit)
-            ProductDetailAction.CancelReservations -> {
+
+            ProductDetailAction.NavigationBackClicked -> _event.trySend(ProductDetailEvent.NavigateBack)
+
+            ProductDetailAction.ReservationsCancelClicked -> {
                 updateState { it.copy(showSaved = false) }
-                _event.trySend(ProductDetailEvent.NavigateToCancellations)
+                _event.trySend(ProductDetailEvent.NavigateToCancellations(productId))
             }
         }
     }

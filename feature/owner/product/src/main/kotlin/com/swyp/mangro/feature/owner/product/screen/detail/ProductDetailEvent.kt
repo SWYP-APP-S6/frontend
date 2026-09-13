@@ -5,6 +5,5 @@ import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 sealed interface ProductDetailEvent {
     data class SaveProduct(val product: OwnerProductModel) : ProductDetailEvent
     data object NavigateBack : ProductDetailEvent
-    data object NavigateToEdit : ProductDetailEvent
-    data object NavigateToCancellations : ProductDetailEvent
+    data class NavigateToCancellations(val productId: String) : ProductDetailEvent
 }

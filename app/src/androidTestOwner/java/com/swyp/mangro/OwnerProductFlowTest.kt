@@ -1,5 +1,6 @@
 package com.swyp.mangro
 
+import android.graphics.Bitmap
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -8,81 +9,54 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.StateRestorationTester
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextReplacement
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import androidx.test.platform.app.InstrumentationRegistry
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.designsystem.theme.OwnerMangroTypography
 import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
-import com.swyp.mangro.feature.owner.product.navigation.OwnerProductListDestination
+import com.swyp.mangro.feature.owner.product.navigation.OwnerProductEditorDestination
 import com.swyp.mangro.feature.owner.product.navigation.ownerProductNavGraph
+import com.swyp.mangro.feature.owner.product.screen.list.OwnerProductListDestination
+import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 
 class OwnerProductFlowTest {
     @get:Rule
-    val compose = createComposeRule()
+    val compose = createAndroidComposeRule<ProductTestActivity>()
 
     private var saved = emptyList<OwnerProductModel>()
     private var cancellations = emptyList<String>()
 
-    private fun show(initial: List<OwnerProductModel> = listOf(sample())) {
+    private fun show(initial: List<OwnerProductModel> = listOf(sample()), startInEditor: Boolean = false) {
         compose.setContent {
             var products by remember { mutableStateOf(initial) }
             MangroTheme(typography = OwnerMangroTypography) {
                 ProductTestNavHost(products, "20:00", { changes ->
                     saved = changes
                     products = products.map { old -> changes.find { it.id == old.id } ?: old }
-                }, { cancellations = it })
+                }, { cancellations = it }, startInEditor)
             }
         }
     }
 
     @Test
     fun emptyCatalogAndRequiredRegistrationFields() {
-        show(emptyList())
-        compose.onNodeWithText("등록된 상품이 없어요").assertIsDisplayed()
-        compose.onNodeWithText("상품 등록").performClick()
+        show(listOf(), startInEditor = true)
         compose.onNodeWithText("다음").assertIsNotEnabled()
-        compose.onNodeWithText("품목명 입력").performScrollTo()
+        compose.onNodeWithText("예시) 복숭아 4입").performScrollTo()
         compose.onAllNodes(hasSetTextAction())[0].performTextReplacement("복숭아 4입")
         compose.onNodeWithText("다음").assertIsNotEnabled()
-    }
-
-    @Test
-    fun editingPreservesDraftAndSavesPreview() {
-        show()
-        compose.onNodeWithText("복숭아 4입").performClick()
-        compose.onNodeWithText("상품 정보 수정").performScrollTo().performClick()
-        compose.onAllNodes(hasSetTextAction())[0].performScrollTo().performTextReplacement("복숭아 6입")
-        compose.onNodeWithText("다음").performClick()
-        compose.onAllNodes(hasSetTextAction())[1].performScrollTo().performTextReplacement("3000")
-        compose.onNodeWithText("다음").performClick()
-        compose.onNodeWithText("등록하기").performClick()
-        compose.onNodeWithText("상품 미리보기").assertIsDisplayed()
-        compose.onNodeWithText("수정하기").performClick()
-        compose.onNodeWithText("복숭아 6입").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("다음").performClick()
-        compose.onNodeWithText("다음").performClick()
-        compose.onNodeWithText("등록하기").performClick()
-        compose.onNodeWithText("저장하기").performClick()
-        compose.runOnIdle {
-            assertEquals("복숭아 6입", saved.single().name)
-            assertEquals(3000, saved.single().salePrice)
-            assertEquals("20:00", saved.single().pickupEndTime)
-        }
-        compose.onNodeWithText("상품 관리 상세").assertIsDisplayed()
-        compose.onNodeWithText("복숭아 6입").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithContentDescription("뒤로").performClick()
-        compose.onNodeWithText("점포 관리").assertIsDisplayed()
     }
 
     @Test
@@ -91,10 +65,14 @@ class OwnerProductFlowTest {
         compose.onNodeWithText("복숭아 4입").performClick()
         compose.onAllNodesWithContentDescription("수량 감소")[0].performScrollTo().performClick()
         compose.onNodeWithText("저장하기").performClick()
+        compose.onNodeWithText("지금 판매 가능한 수량이\n0개가 맞나요?").assertIsDisplayed()
+        captureSheet("quantity-zero")
         compose.onNodeWithText("아니요").performClick()
         compose.runOnIdle { assertEquals(emptyList<OwnerProductModel>(), saved) }
         compose.onNodeWithText("저장하기").performClick()
         compose.onNodeWithText("네, 맞아요").performClick()
+        compose.onNode(isDialog()).assertIsDisplayed()
+        compose.onNodeWithText("저장이 완료되었습니다.").assertIsDisplayed()
         compose.runOnIdle {
             assertEquals(0, saved.single().remainingQuantity)
             assertEquals(false, saved.single().isVisibleToCustomers)
@@ -102,53 +80,57 @@ class OwnerProductFlowTest {
     }
 
     @Test
-    fun directStockInputCanBeDeferredWithoutSaving() {
-        show()
-        compose.onNodeWithText("재고 재확인").performClick()
-        compose.onNodeWithText("직접 입력").performScrollTo().performClick()
-        compose.onAllNodes(hasSetTextAction())[0].performTextReplacement("-1")
-        compose.onNodeWithText("적용").assertIsNotEnabled()
-        compose.onAllNodes(hasSetTextAction())[0].performTextReplacement("2")
-        compose.onNodeWithText("적용").performClick()
-        compose.onNodeWithText("나중에 하기").performClick()
-        compose.runOnIdle { assertEquals(emptyList<OwnerProductModel>(), saved) }
-        compose.onNodeWithText("재고 재확인").performClick()
-        compose.onNodeWithText("5").assertIsDisplayed()
-    }
-
-    @Test
-    fun stockShortageSavesThenPassesProductIdToCancellation() {
-        show()
-        compose.onNodeWithText("재고 재확인").performClick()
-        compose.onNodeWithText("직접 입력").performScrollTo().performClick()
-        compose.onAllNodes(hasSetTextAction())[0].performTextReplacement("1")
-        compose.onNodeWithText("적용").performClick()
+    fun shortageConfirmationShowsWarningAndCanBeDeferred() {
+        show(listOf(sample().copy(remainingQuantity = 2, reservedQuantity = 3)))
+        compose.onNodeWithText("복숭아 4입").performClick()
+        compose.onAllNodesWithContentDescription("수량 감소")[0].performScrollTo().performClick()
         compose.onNodeWithText("저장하기").performClick()
+        compose.onNodeWithText("지금 판매 가능한 수량이\n1개가 맞나요?").assertIsDisplayed()
+        compose.onNodeWithText("재고가 찜된 수보다 부족해져요.").assertIsDisplayed()
+        captureSheet("quantity-less")
         compose.onNodeWithText("네, 맞아요").performClick()
-        compose.onNodeWithText("찜 취소하기").performClick()
-        compose.runOnIdle {
-            assertEquals(1, saved.single().remainingQuantity)
-            assertEquals(listOf("peach"), cancellations)
+        compose.onNodeWithText("선착순을 기준으로 부족한 수량만큼 찜을 취소해야 해요.").assertIsDisplayed()
+        compose.runOnIdle { assertEquals(2, saved.single().shortageQuantity) }
+        captureSheet("reservation-cancel")
+        compose.onNodeWithText("나중에 하기").performClick()
+        compose.onNodeWithText("나중에 하기").assertDoesNotExist()
+        compose.runOnIdle { assertEquals(emptyList<String>(), cancellations) }
+    }
+
+    private fun captureSheet(name: String) {
+        compose.waitForIdle()
+        val bitmap = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+        File(compose.activity.getExternalFilesDir(null), "product-sheet-$name.png").outputStream().use {
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
         }
+        bitmap.recycle()
     }
 
     @Test
-    fun draftSurvivesSavedStateRestoration() {
+    fun storeTabsAndFiltersShowEmptyResultsWithoutStockScreen() {
+        show()
+        compose.onNodeWithText("등록된 상품 1").assertIsDisplayed()
+        compose.onNodeWithText("찜 현황 0").performClick()
+        compose.onNodeWithText("픽업완료").performClick()
+        compose.onNodeWithText("해당되는 상품이 없어요.").assertIsDisplayed()
+        compose.onNodeWithText("해당 상품 0개").assertIsDisplayed()
+        compose.onNodeWithText("등록된 상품 1").performClick()
+        compose.onNodeWithText("전체").performClick()
+        compose.onNodeWithText("복숭아 4입").assertIsDisplayed()
+    }
+
+    @Test
+    fun registrationDraftSurvivesSavedStateRestoration() {
         val restoration = StateRestorationTester(compose)
         restoration.setContent {
             MangroTheme(typography = OwnerMangroTypography) {
-                ProductTestNavHost(listOf(sample()), "20:00", {}, {})
+                ProductTestNavHost(emptyList(), "20:00", {}, {}, startInEditor = true)
             }
         }
-        compose.onNodeWithText("복숭아 4입").performClick()
-        compose.onNodeWithText("상품 정보 수정").performScrollTo().performClick()
         compose.onAllNodes(hasSetTextAction())[0].performScrollTo().performTextReplacement("복숭아 새 이름")
         restoration.emulateSavedInstanceStateRestore()
         compose.onNodeWithText("복숭아 새 이름").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("다음").performClick()
-        compose.onNodeWithText("다음").performClick()
-        compose.onNodeWithText("등록하기").performClick()
-        compose.onNodeWithText("상품 미리보기").assertIsDisplayed()
+        compose.onNodeWithText("다음").assertIsNotEnabled()
     }
 
     @Composable
@@ -157,10 +139,11 @@ class OwnerProductFlowTest {
         storeClosingTime: String,
         onSave: (List<OwnerProductModel>) -> Unit,
         onCancel: (List<String>) -> Unit,
+        startInEditor: Boolean = false,
     ) {
         val navController = rememberNavController()
-        NavHost(navController, startDestination = OwnerProductListDestination) {
-            ownerProductNavGraph(navController, products, storeClosingTime, onSave, onCancel)
+        NavHost(navController, startDestination = if (startInEditor) OwnerProductEditorDestination else OwnerProductListDestination) {
+            ownerProductNavGraph(navController, products, storeClosingTime, "09:00", onSave, onCancel, {}, {}, {})
         }
     }
 

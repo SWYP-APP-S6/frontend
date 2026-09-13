@@ -17,6 +17,7 @@ internal fun MainScreen() {
         OwnerNavHost(
             products = products,
             storeClosingTime = "20:00",
+            storeOpeningTime = "09:00",
             onSaveProducts = { changed ->
                 val ids = changed.map { it.id }.toSet()
                 products = products.filterNot { it.id in ids } + changed

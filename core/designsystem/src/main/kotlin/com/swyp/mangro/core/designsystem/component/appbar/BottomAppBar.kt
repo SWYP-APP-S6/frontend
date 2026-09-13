@@ -62,6 +62,7 @@ fun OwnerBottomAppBar(
                     OwnerMenu.SETTINGS -> R.string.owner_bottom_settings
                 },
                 onClick = { onMenuClick(menu) },
+                minHeight = 66.dp,
                 textStyle = OwnerMangroTypography.title.titleS ?: OwnerMangroTypography.title.titleM,
             )
         }

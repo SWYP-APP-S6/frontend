@@ -47,7 +47,7 @@ class OwnerProductTest {
 
     @Test
     fun `photo additions cannot duplicate or exceed five`() {
-        assertEquals(listOf("a", "b", "c", "d", "e"), mergedProductPhotos(listOf("a", "b"), listOf("b", "c", "d", "e", "f")))
+        assertEquals((1..5).map(Int::toString), mergedProductPhotos(listOf("1", "2"), (2..12).map(Int::toString)))
     }
 
     @Test

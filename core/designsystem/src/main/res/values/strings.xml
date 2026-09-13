@@ -79,4 +79,14 @@
     <string name="stepper_increase">수량 증가</string>
     <string name="owner_bottom_store">점포 관리</string>
     <string name="owner_bottom_settings">설정</string>
+    <string name="pickup_request_unavailable">픽업불가</string>
+    <string name="pickup_request_cancelled">찜 취소</string>
+
+    <string name="owner_product_sheet_no">아니요</string>
+    <string name="owner_product_sheet_confirm_yes">네, 맞아요</string>
+    <string name="owner_product_sheet_quantity_title">지금 판매 가능한 수량이\n%1$d개가 맞나요?</string>
+    <string name="owner_product_sheet_shortage_title">재고가 %1$d개 부족해요.</string>
+    <string name="owner_product_sheet_cancel_reservations">찜 취소하기</string>
+    <string name="owner_product_sheet_later">나중에 하기</string>
+    <string name="owner_product_sheet_shortage_hint">선착순을 기준으로 부족한 수량만큼 찜을 취소해야 해요.</string>
 </resources>

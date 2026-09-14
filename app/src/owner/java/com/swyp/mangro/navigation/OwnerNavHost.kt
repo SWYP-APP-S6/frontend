@@ -1,37 +1,21 @@
 package com.swyp.mangro.navigation
 
-import android.widget.Toast
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
-import com.swyp.mangro.R
-import com.swyp.mangro.core.designsystem.component.MangroButton
-import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
 import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProduct
 import com.swyp.mangro.feature.owner.home.navigation.OwnerHomeDestination
 import com.swyp.mangro.feature.owner.home.navigation.ownerHomeNavGraph
 import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import com.swyp.mangro.feature.owner.product.navigation.OwnerProductEditorDestination
+import com.swyp.mangro.feature.owner.product.navigation.ownerPickupNavGraph
 import com.swyp.mangro.feature.owner.product.navigation.ownerProductNavGraph
 import com.swyp.mangro.feature.owner.product.screen.detail.OwnerProductDetailDestination
 import com.swyp.mangro.feature.owner.product.screen.list.OwnerProductListDestination
+import com.swyp.mangro.feature.owner.product.screen.pickup.cancellation.OwnerPickupCancellationDestination
+import com.swyp.mangro.feature.owner.product.screen.pickup.detail.OwnerPickupDetailDestination
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.serialization.Serializable
-
-@Serializable
-private data class OwnerProductCancellationDestination(val productIds: List<String>)
 
 @Composable
 internal fun OwnerNavHost(
@@ -41,8 +25,6 @@ internal fun OwnerNavHost(
     onSaveProducts: (List<OwnerProductModel>) -> Unit,
 ) {
     val navController = rememberNavController()
-    val context = LocalContext.current
-    val pickupUnavailable = stringResource(R.string.owner_pickup_unavailable)
     NavHost(navController, startDestination = OwnerHomeDestination) {
         ownerHomeNavGraph(
             products = products.map {
@@ -65,26 +47,18 @@ internal fun OwnerNavHost(
             storeClosingTime = storeClosingTime,
             storeOpeningTime = storeOpeningTime,
             onSaveProducts = onSaveProducts,
-            onCancelReservations = { navController.navigate(OwnerProductCancellationDestination(it)) },
+            onCancelReservations = { navController.navigate(OwnerPickupCancellationDestination) },
             onMenuClick = { menu ->
                 if (menu == OwnerMenu.HOME) {
                     navController.popBackStack<OwnerHomeDestination>(inclusive = false, saveState = true)
                 }
             },
-            onPickupClick = { Toast.makeText(context, pickupUnavailable, Toast.LENGTH_SHORT).show() },
-            onCompletePickup = { Toast.makeText(context, pickupUnavailable, Toast.LENGTH_SHORT).show() },
+            onPickupClick = { navController.navigate(OwnerPickupDetailDestination(it)) },
         )
 
-        composable<OwnerProductCancellationDestination> { entry ->
-            val productIds = entry.toRoute<OwnerProductCancellationDestination>().productIds
-            Column(Modifier.fillMaxSize().padding(32.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
-                Text(stringResource(R.string.owner_product_cancellation_title))
-                products.filter { it.id in productIds }.forEach {
-                    Text(stringResource(R.string.owner_product_cancellation_summary, it.name, it.shortageQuantity))
-                }
-                Text(stringResource(R.string.owner_product_cancellation_error))
-                MangroButton(stringResource(R.string.owner_product_return), { navController.popBackStack() }, MangroButtonStyle.ACTIVE)
-            }
-        }
+        ownerPickupNavGraph(
+            navigateBack = { navController.popBackStack() },
+            navigateToHome = { navController.popBackStack<OwnerHomeDestination>(inclusive = false) },
+        )
     }
 }

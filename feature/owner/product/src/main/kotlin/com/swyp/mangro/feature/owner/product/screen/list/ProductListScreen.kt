@@ -47,7 +47,6 @@ import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProductCard
 import com.swyp.mangro.core.designsystem.component.chip.MangroChip
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.owner.product.R
-import com.swyp.mangro.feature.owner.product.model.OwnerPickupModel
 import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import kotlinx.serialization.Serializable
 
@@ -57,21 +56,17 @@ data object OwnerProductListDestination
 @Composable
 internal fun ProductListRoute(
     products: List<OwnerProductModel>,
-    pickups: List<OwnerPickupModel>,
     onSelect: (String) -> Unit,
     onMenuClick: (OwnerMenu) -> Unit,
     onPickupClick: (String) -> Unit,
-    onCompletePickup: (String) -> Unit,
     onCancelReservations: (List<String>) -> Unit,
     viewModel: ProductListViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
-    LaunchedEffect(products, pickups) {
-        viewModel.updateContent(
-            products = products,
-            pickups = pickups,
-        )
+
+    LaunchedEffect(products) {
+        viewModel.updateContent(products = products)
     }
     LaunchedEffect(
         viewModel,
@@ -79,7 +74,6 @@ internal fun ProductListRoute(
         onSelect,
         onMenuClick,
         onPickupClick,
-        onCompletePickup,
         onCancelReservations,
     ) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -88,7 +82,6 @@ internal fun ProductListRoute(
                     is ProductListEvent.OpenProduct -> onSelect(event.id)
                     is ProductListEvent.OpenMenu -> onMenuClick(event.menu)
                     is ProductListEvent.OpenPickup -> onPickupClick(event.id)
-                    is ProductListEvent.CompletePickup -> onCompletePickup(event.id)
                     is ProductListEvent.CancelReservations -> onCancelReservations(event.productIds)
                 }
             }
@@ -132,6 +125,14 @@ fun ProductListScreen(
                 style = MangroTheme.typography.heading.headingXXS,
                 color = MangroTheme.colors.textTitle,
             )
+            if (uiState.hasPickupError) {
+                Text(
+                    text = stringResource(R.string.pickup_error),
+                    color = MangroTheme.colors.dangerNormal,
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                )
+            }
+
             StoreTabs(
                 state = uiState,
                 onAction = onAction,
@@ -166,21 +167,16 @@ fun ProductListScreen(
                 style = MangroTheme.typography.body.bodyM,
                 color = MangroTheme.colors.textSubtitle,
             )
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-            ) {
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 val empty = if (uiState.tab == ProductListTab.PRODUCTS) {
                     uiState.filteredProducts.isEmpty()
                 } else {
                     uiState.filteredPickups.isEmpty()
                 }
+
                 if (empty) {
                     Column(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(bottom = 144.dp),
+                        modifier = Modifier.align(Alignment.Center).padding(bottom = 144.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
@@ -239,6 +235,7 @@ fun ProductListScreen(
                             ) { pickup ->
                                 OwnerPickupRequestCard(
                                     item = pickup.request,
+                                    completeEnabled = pickup.canComplete,
                                     onConsumerClick = { onAction(ProductListAction.PickupClicked(pickup.request.id)) },
                                     onButtonClick = { onAction(ProductListAction.PickupCompleteClicked(pickup.request.id)) },
                                     modifier = Modifier.padding(bottom = 16.dp),

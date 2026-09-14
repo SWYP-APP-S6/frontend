@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">맹그로(점주용)</string>
     <string name="greeting_message">Hello Mangro Owner!</string>
+    <string name="owner_feature_preparing">현재 준비 중인 기능이에요.</string>
 </resources>

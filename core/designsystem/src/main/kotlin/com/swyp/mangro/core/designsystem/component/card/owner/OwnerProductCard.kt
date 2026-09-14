@@ -3,6 +3,7 @@ package com.swyp.mangro.core.designsystem.component.card.owner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -62,9 +64,11 @@ fun OwnerProductCard(
                     .background(MangroTheme.colors.surfaceDisabled),
             )
 
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = product.name,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                     color = MangroTheme.colors.textTitle,
                     style = MangroTheme.typography.title.titleL,
                 )
@@ -77,42 +81,46 @@ fun OwnerProductCard(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text(
-                        text = stringResource(R.string.owner_product_card_remaining_prefix),
-                        color = MangroTheme.colors.textBody,
-                        style = MangroTheme.typography.body.bodyM,
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = product.remainingCount.toString(),
-                        color = MangroTheme.colors.primaryNormal,
-                        style = MangroTheme.typography.title.titleS ?: MangroTheme.typography.title.titleM,
-                    )
-                    Text(
-                        text = "개",
-                        color = MangroTheme.colors.textBody,
-                        style = MangroTheme.typography.body.bodyM,
-                    )
-                    Text(
-                        text = "·",
-                        color = MangroTheme.colors.textSubtitle,
-                        style = MangroTheme.typography.body.bodyM,
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                    )
-                    Text(
-                        text = stringResource(R.string.owner_product_card_expected_visit_prefix),
-                        color = MangroTheme.colors.textBody,
-                        style = MangroTheme.typography.body.bodyM,
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = stringResource(R.string.product_quantity, product.expectedVisitCount),
-                        color = MangroTheme.colors.textBody,
-                        style = MangroTheme.typography.body.bodyM,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = stringResource(R.string.owner_product_card_remaining_prefix),
+                            color = MangroTheme.colors.textBody,
+                            style = MangroTheme.typography.body.bodyM,
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = product.remainingCount.toString(),
+                            color = MangroTheme.colors.primaryNormal,
+                            style = MangroTheme.typography.title.titleS ?: MangroTheme.typography.title.titleM,
+                        )
+                        Text(
+                            text = "개",
+                            color = MangroTheme.colors.textBody,
+                            style = MangroTheme.typography.body.bodyM,
+                        )
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "·",
+                            color = MangroTheme.colors.textSubtitle,
+                            style = MangroTheme.typography.body.bodyM,
+                            modifier = Modifier.padding(end = 8.dp),
+                        )
+                        Text(
+                            text = stringResource(R.string.owner_product_card_expected_visit_prefix),
+                            color = MangroTheme.colors.textBody,
+                            style = MangroTheme.typography.body.bodyM,
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = stringResource(R.string.product_quantity, product.expectedVisitCount),
+                            color = MangroTheme.colors.textBody,
+                            style = MangroTheme.typography.body.bodyM,
+                        )
+                    }
                 }
             }
         }

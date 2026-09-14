@@ -31,6 +31,7 @@ dependencies {
     implementation(project(":core:utils"))
     add("ownerImplementation", project(":feature:owner:product"))
     add("ownerImplementation", project(":feature:owner:home"))
+    add("ownerImplementation", project(":feature:owner:setting"))
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

@@ -69,6 +69,10 @@ class OwnerHomeViewModel @Inject constructor() : ViewModel() {
                 _event.trySend(OwnerHomeEvent.NavigateToProduct(action.productId))
             }
 
+            OwnerHomeAction.ViewSettings -> {
+                _event.trySend(OwnerHomeEvent.NavigateToSettings)
+            }
+
             OwnerHomeAction.ViewProducts -> {
                 _event.trySend(OwnerHomeEvent.NavigateToProducts)
             }

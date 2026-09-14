@@ -13,6 +13,7 @@ data object OwnerHomeDestination
 fun NavGraphBuilder.ownerHomeNavGraph(
     products: PersistentList<OwnerProduct>,
     navigateToProducts: () -> Unit,
+    navigateToSettings: () -> Unit,
     navigateToProduct: (String) -> Unit,
     navigateToRegisterProduct: () -> Unit,
 ) {
@@ -20,6 +21,7 @@ fun NavGraphBuilder.ownerHomeNavGraph(
         OwnerHomeScreenRoute(
             products = products,
             navigateToProducts = navigateToProducts,
+            navigateToSettings = navigateToSettings,
             navigateToProduct = navigateToProduct,
             navigateToRegisterProduct = navigateToRegisterProduct,
         )

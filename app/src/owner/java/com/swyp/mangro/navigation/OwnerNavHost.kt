@@ -15,6 +15,9 @@ import com.swyp.mangro.feature.owner.product.screen.detail.OwnerProductDetailDes
 import com.swyp.mangro.feature.owner.product.screen.list.OwnerProductListDestination
 import com.swyp.mangro.feature.owner.product.screen.pickup.cancellation.OwnerPickupCancellationDestination
 import com.swyp.mangro.feature.owner.product.screen.pickup.detail.OwnerPickupDetailDestination
+import com.swyp.mangro.feature.owner.setting.navigation.OwnerPolicyDestination
+import com.swyp.mangro.feature.owner.setting.navigation.OwnerSettingDestination
+import com.swyp.mangro.feature.owner.setting.navigation.ownerSettingNavGraph
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
@@ -37,6 +40,13 @@ internal fun OwnerNavHost(
                     restoreState = true
                 }
             },
+            navigateToSettings = {
+                navController.navigate(OwnerSettingDestination) {
+                    popUpTo<OwnerHomeDestination> { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            },
             navigateToProduct = { navController.navigate(OwnerProductDetailDestination(it)) },
             navigateToRegisterProduct = { navController.navigate(OwnerProductEditorDestination) },
         )
@@ -49,11 +59,30 @@ internal fun OwnerNavHost(
             onSaveProducts = onSaveProducts,
             onCancelReservations = { navController.navigate(OwnerPickupCancellationDestination) },
             onMenuClick = { menu ->
-                if (menu == OwnerMenu.HOME) {
-                    navController.popBackStack<OwnerHomeDestination>(inclusive = false, saveState = true)
+                when (menu) {
+                    OwnerMenu.HOME -> navController.popBackStack<OwnerHomeDestination>(inclusive = false, saveState = true)
+                    OwnerMenu.STORE -> Unit
+                    OwnerMenu.SETTINGS -> navController.navigate(OwnerSettingDestination) {
+                        popUpTo<OwnerHomeDestination> { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
             },
             onPickupClick = { navController.navigate(OwnerPickupDetailDestination(it)) },
+        )
+
+        ownerSettingNavGraph(
+            navigateToHome = { navController.popBackStack<OwnerHomeDestination>(inclusive = false, saveState = true) },
+            navigateToProducts = {
+                navController.navigate(OwnerProductListDestination) {
+                    popUpTo<OwnerHomeDestination> { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            },
+            navigateToPolicy = { navController.navigate(OwnerPolicyDestination(it)) { launchSingleTop = true } },
+            navigateBack = { navController.popBackStack() },
         )
 
         ownerPickupNavGraph(

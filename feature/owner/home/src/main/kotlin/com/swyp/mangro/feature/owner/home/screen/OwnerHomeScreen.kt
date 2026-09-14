@@ -65,6 +65,7 @@ import kotlinx.coroutines.delay
 fun OwnerHomeScreenRoute(
     products: PersistentList<OwnerProduct>,
     navigateToProducts: () -> Unit,
+    navigateToSettings: () -> Unit,
     navigateToProduct: (String) -> Unit,
     navigateToRegisterProduct: () -> Unit,
     viewModel: OwnerHomeViewModel = hiltViewModel(),
@@ -78,6 +79,7 @@ fun OwnerHomeScreenRoute(
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
             when (event) {
+                OwnerHomeEvent.NavigateToSettings -> navigateToSettings()
                 OwnerHomeEvent.NavigateToProducts -> navigateToProducts()
                 is OwnerHomeEvent.NavigateToProduct -> navigateToProduct(event.productId)
                 OwnerHomeEvent.NavigateToRegisterProduct -> navigateToRegisterProduct()
@@ -165,7 +167,11 @@ fun OwnerHomeScreen(
             OwnerBottomAppBar(
                 currentMenu = OwnerMenu.HOME,
                 onMenuClick = {
-                    if (it == OwnerMenu.STORE) onAction(OwnerHomeAction.ViewProducts)
+                    when (it) {
+                        OwnerMenu.HOME -> Unit
+                        OwnerMenu.STORE -> onAction(OwnerHomeAction.ViewProducts)
+                        OwnerMenu.SETTINGS -> onAction(OwnerHomeAction.ViewSettings)
+                    }
                 },
             )
         },

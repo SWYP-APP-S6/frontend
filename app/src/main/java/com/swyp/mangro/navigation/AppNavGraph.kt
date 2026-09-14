@@ -33,6 +33,7 @@ fun AppNavGraph(
             navigateToHome = {},
         )
         authNavGraph(
+            navController = navController,
             navigateToHome = {},
             navigateToPrivacyPolicy = {},
         )

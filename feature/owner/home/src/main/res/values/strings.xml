@@ -1,0 +1,32 @@
+<resources>
+    <string name="owner_home_title">점주용</string>
+    <string name="owner_home_notifications">알림</string>
+    <string name="owner_home_welcome">안녕하세요, 사장님!</string>
+    <string name="owner_home_welcome_description">맹그로에서 오늘 남은 상품을 판매해보세요.</string>
+    <string name="owner_home_welcome_hint">상품 사진과 가격만 입력하면\n근처 손님에게 바로 보여줄 수 있어요!</string>
+    <string name="owner_home_first_product">첫 상품 등록하러 가기</string>
+    <string name="owner_home_greeting">사장님, 오늘도 좋은 하루 되세요!</string>
+    <string name="owner_home_no_issues">지금 확인해야 할 문제는 없어요.</string>
+    <string name="owner_home_attention">확인이 필요한 문제가 있어요.</string>
+    <string name="owner_home_dismiss_attention">확인 필요 안내 닫기</string>
+    <string name="owner_home_cancellation">취소 안내가 필요한 찜이 %1$d건 있어요.</string>
+    <string name="owner_home_confirmation">찜 수령 여부를 확인해주세요.</string>
+    <string name="owner_home_expected">방문 예정</string>
+    <string name="owner_home_completed">픽업 완료</string>
+    <string name="owner_home_selling">판매중</string>
+    <string name="owner_home_cases">%1$d건</string>
+    <string name="owner_home_units">%1$d개</string>
+    <string name="owner_home_visitors">곧 방문할 예정이에요</string>
+    <string name="owner_home_no_visitors_title">곧 방문해요</string>
+    <string name="owner_home_no_visitors">지금은 방문 예정인 손님이 없어요.</string>
+    <string name="owner_home_products">오늘 판매중</string>
+    <string name="owner_home_no_products">아직 판매 중인 상품이 없어요.\n첫 상품을 등록하고 시작해보세요!</string>
+    <string name="owner_home_register">상품 등록</string>
+    <string name="owner_home_register_button">상품 등록하기</string>
+    <string name="owner_home_view_all">전체 보기</string>
+    <string name="owner_home_customer">%1$s 님</string>
+    <string name="owner_home_quantity">× %1$d</string>
+    <string name="owner_home_remaining">%1$d분 남음</string>
+    <string name="owner_home_expired">시간 만료</string>
+    <string name="owner_home_pickup_action">%1$s 님 픽업 완료</string>
+</resources>

@@ -46,7 +46,7 @@ private const val ANIMATION_DURATION = 100
 @Composable
 fun MangroCheckbox(
     isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
+    onCheckedChange: ((Boolean) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val transition = updateTransition(
@@ -84,10 +84,16 @@ fun MangroCheckbox(
                     color = borderColor,
                     shape = shape,
                 )
-                .toggleable(
-                    role = Role.Checkbox,
-                    value = isChecked,
-                    onValueChange = onCheckedChange,
+                .then(
+                    if (onCheckedChange != null) {
+                        Modifier.toggleable(
+                            role = Role.Checkbox,
+                            value = isChecked,
+                            onValueChange = onCheckedChange,
+                        )
+                    } else {
+                        Modifier
+                    },
                 ),
             contentAlignment = Alignment.Center,
         ) {

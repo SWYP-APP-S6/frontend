@@ -7,6 +7,7 @@ import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -41,17 +42,10 @@ fun MangroTextField(
     onKeyboardAction: ((ImeAction) -> Unit)? = null,
     inputTransformation: InputTransformation? = null,
     outputTransformation: OutputTransformation? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
-
-    val borderColor = if (isFocused) {
-        Orange600
-    } else {
-        MangroTheme.colors.borderDefault
-    }
-
-    val shape = RoundedCornerShape(8.dp)
 
     BasicTextField(
         state = state,
@@ -71,32 +65,79 @@ fun MangroTextField(
         outputTransformation = outputTransformation,
         modifier = modifier,
         decorator = { innerTextField ->
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(shape)
-                    .background(MangroTheme.colors.textOnBrandWhite)
-                    .border(
-                        width = if (isFocused) 1.2.dp else 1.dp,
-                        color = borderColor,
-                        shape = shape,
-                    )
-                    .padding(12.dp),
-                contentAlignment = Alignment.CenterStart,
-            ) {
-                if (state.text.isEmpty()) {
-                    Text(
-                        text = placeholder,
-                        style = MangroTheme.typography.body.bodyM,
-                        color = MangroTheme.colors.textCanceled,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-                innerTextField()
-            }
+            MangroTextFieldDecoration(isFocused, state.text.isEmpty(), placeholder, innerTextField, leadingIcon)
         },
     )
+}
+
+@Composable
+fun MangroTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    modifier: Modifier = Modifier,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier,
+        interactionSource = interactionSource,
+        textStyle = MangroTheme.typography.body.bodyM.copy(color = MangroTheme.colors.textTitle),
+        singleLine = true,
+        keyboardOptions = keyboardOptions,
+        decorationBox = { innerTextField ->
+            MangroTextFieldDecoration(isFocused, value.isEmpty(), placeholder, innerTextField)
+        },
+    )
+}
+
+@Composable
+private fun MangroTextFieldDecoration(
+    isFocused: Boolean,
+    isEmpty: Boolean,
+    placeholder: String,
+    innerTextField: @Composable () -> Unit,
+    leadingIcon: @Composable (() -> Unit)? = null,
+) {
+    val borderColor = if (isFocused) {
+        Orange600
+    } else {
+        MangroTheme.colors.borderDefault
+    }
+
+    val shape = RoundedCornerShape(8.dp)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(MangroTheme.colors.textOnBrandWhite)
+            .border(
+                width = if (isFocused) 1.2.dp else 1.dp,
+                color = borderColor,
+                shape = shape,
+            )
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        leadingIcon?.invoke()
+        Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+            if (isEmpty) {
+                Text(
+                    text = placeholder,
+                    style = MangroTheme.typography.body.bodyM,
+                    color = MangroTheme.colors.textCanceled,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            innerTextField()
+        }
+    }
 }
 
 @Preview(showBackground = true)

@@ -39,6 +39,7 @@ include(":app")
 include(":core:network")
 include(":core:designsystem")
 include(":core:utils")
+include(":feature:owner:onboarding")
 include(":feature:splash")
 include(":feature:auth")
 

@@ -14,6 +14,7 @@
 | `:feature:splash`, `:feature:auth` | Android library 모듈 | Consumer 시작·인증 UI |
 | `:core:designsystem` | Android library 모듈 | Compose 테마와 공통 UI 컴포넌트 |
 | `:core:utils` | Android library 모듈 | 네트워크 상태 관측 등 공통 Android 유틸리티용 모듈 골격 |
+| `:feature:owner:onboarding` | Android library 모듈 | 점주 최초 매장 등록 2단계 UI와 외부 검색·신청 연결 계약 |
 | `:feature:splash` | Android library 모듈 | owner/consumer 스플래시 화면과 시작 시 로그인 분기 |
 | `:feature:auth` | Android library 모듈 | owner/consumer 로그인 화면과 내비게이션 |
 | `build-logic` | Gradle included build | Android application/library 공통 설정 |
@@ -40,6 +41,9 @@
 ## 주요 소스 위치
 
 - 공통 Activity, Manifest와 리소스: `app/src/main`
+- Flavor별 `MainScreen`: `app/src/consumer`, `app/src/ownerDebug`, `app/src/ownerRelease`
+  - Owner Debug는 매장 등록 샘플 UI, Owner Release는 기존 진입 화면이다. 실제 주소 검색·등록 API와 최상위 이동은 미연결이다.
+  - 동일한 패키지와 함수 시그니처를 사용하며, 빌드 대상 Flavor의 구현만 포함한다.
 - 공통 `MainScreen`, `AppNavGraph`, 스플래시 시작 테마: `app/src/main`
   - owner와 consumer 모두 스플래시에서 로그인 화면으로 진입한다.
 - Flavor별 로그인 UI: `feature/auth/src/owner`, `feature/auth/src/consumer`의 `LoginScreen`
@@ -55,6 +59,7 @@
 
 ## 현재 확인된 제약
 
+- `:app`은 `:core:designsystem`, `:core:utils`에 의존하며, Owner에 한해 `:feature:owner:onboarding`에도 의존한다. Data 모듈은 아직 등록되지 않았다.
 - `:app`은 Auth remote를 공통으로, Consumer/Owner remote를 Flavor별로 의존한다. Consumer는 `:feature:splash`, `:feature:auth`에도 의존한다. API 화면 연동은 후속이다.
 - Remote 생성·검증 방법은 [Remote README](../../remote/README.md)를 따른다. OpenAPI Generator 7.24.0 및 Python 3을 사용하며, 생성 코드는 Git에 포함하지 않는다.
 - `:app`은 두 Flavor 모두 `:core:designsystem`, `:core:utils`, `:feature:splash`, `:feature:auth`에 의존한다. 네이버 지도 의존성과 API 키 Manifest 설정은 consumer에만 적용한다.

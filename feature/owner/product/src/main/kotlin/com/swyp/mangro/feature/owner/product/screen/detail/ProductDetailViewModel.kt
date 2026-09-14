@@ -3,6 +3,7 @@ package com.swyp.mangro.feature.owner.product.screen.detail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.navigation.toRoute
+import com.swyp.mangro.feature.owner.product.data.OwnerPickupStore
 import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 @HiltViewModel
 class ProductDetailViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
+    private val pickupStore: OwnerPickupStore,
 ) : ViewModel() {
     private val productId = savedStateHandle.toRoute<OwnerProductDetailDestination>().productId
 
@@ -85,6 +87,7 @@ class ProductDetailViewModel @Inject constructor(
         val product = state.product ?: return
         if (!state.canSave) return
         val updated = product.copy(remainingQuantity = state.quantity)
+        pickupStore.updateProducts(listOf(updated))
         updateState {
             it.copy(product = updated, showSaveConfirmation = false, showSaved = true, savedShortage = updated.shortageQuantity)
         }

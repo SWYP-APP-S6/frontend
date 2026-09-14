@@ -6,4 +6,6 @@ import com.swyp.mangro.core.designsystem.component.card.owner.OwnerPickupRequest
 data class OwnerPickupModel(
     val productId: String,
     val request: OwnerPickupRequestItem,
+    val canComplete: Boolean = true,
+    val needsCancellation: Boolean = request.status == com.swyp.mangro.core.designsystem.component.card.owner.OwnerPickupRequestStatus.UNAVAILABLE,
 )

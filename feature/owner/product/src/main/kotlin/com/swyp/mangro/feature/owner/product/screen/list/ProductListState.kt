@@ -19,6 +19,7 @@ data class ProductListState(
     val pickups: List<OwnerPickupModel> = emptyList(),
     val tab: ProductListTab = ProductListTab.PRODUCTS,
     val filter: ProductListFilter = ProductListFilter.ALL,
+    val hasPickupError: Boolean = false,
 ) {
     val filteredPickups: List<OwnerPickupModel>
         get() = pickups.filter { filter.status == null || it.request.status == filter.status }
@@ -30,5 +31,5 @@ data class ProductListState(
             products.filter { it.id in ids }
         }
     val cancellationNeeded: List<OwnerPickupModel>
-        get() = pickups.filter { it.request.status == OwnerPickupRequestStatus.UNAVAILABLE }
+        get() = pickups.filter { it.needsCancellation }
 }

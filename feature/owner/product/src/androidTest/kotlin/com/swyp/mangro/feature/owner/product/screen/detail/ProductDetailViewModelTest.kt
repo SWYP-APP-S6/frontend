@@ -2,6 +2,7 @@ package com.swyp.mangro.feature.owner.product.screen.detail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.swyp.mangro.feature.owner.product.data.OwnerPickupStore
 import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -19,7 +20,7 @@ class ProductDetailViewModelTest {
 
     @Test
     fun unchangedAndNegativeQuantityCannotSave() = runTest {
-        val model = ProductDetailViewModel(SavedStateHandle(mapOf("productId" to product.id)))
+        val model = ProductDetailViewModel(SavedStateHandle(mapOf("productId" to product.id)), OwnerPickupStore())
         model.updateProducts(listOf(product))
         model.handleAction(ProductDetailAction.QuantityChanged(-1))
         model.handleAction(ProductDetailAction.SaveClicked)
@@ -30,7 +31,7 @@ class ProductDetailViewModelTest {
 
     @Test
     fun zeroQuantityNeedsConfirmationAndDismissKeepsDraft() = runTest {
-        val model = ProductDetailViewModel(SavedStateHandle(mapOf("productId" to product.id)))
+        val model = ProductDetailViewModel(SavedStateHandle(mapOf("productId" to product.id)), OwnerPickupStore())
         model.updateProducts(listOf(product))
         model.handleAction(ProductDetailAction.QuantityChanged(0))
         model.handleAction(ProductDetailAction.SaveClicked)
@@ -44,7 +45,7 @@ class ProductDetailViewModelTest {
 
     @Test
     fun confirmedShortageSavesOnceAndCanNavigateToCancellations() = runTest {
-        val model = ProductDetailViewModel(SavedStateHandle(mapOf("productId" to product.id)))
+        val model = ProductDetailViewModel(SavedStateHandle(mapOf("productId" to product.id)), OwnerPickupStore())
         model.updateProducts(listOf(product))
         model.handleAction(ProductDetailAction.QuantityChanged(1))
         model.handleAction(ProductDetailAction.SaveClicked)
@@ -63,7 +64,7 @@ class ProductDetailViewModelTest {
 
     @Test
     fun availableQuantitySavesWithoutConfirmationAndCompletionNavigatesOnce() = runTest {
-        val model = ProductDetailViewModel(SavedStateHandle(mapOf("productId" to product.id)))
+        val model = ProductDetailViewModel(SavedStateHandle(mapOf("productId" to product.id)), OwnerPickupStore())
         model.updateProducts(listOf(product))
         model.handleAction(ProductDetailAction.QuantityChanged(4))
         model.handleAction(ProductDetailAction.SaveClicked)
@@ -79,11 +80,11 @@ class ProductDetailViewModelTest {
     @Test
     fun restoredConfirmationKeepsDraftAndDoesNotSaveUntilConfirmed() = runTest {
         val handle = SavedStateHandle(mapOf("productId" to product.id))
-        val model = ProductDetailViewModel(handle)
+        val model = ProductDetailViewModel(handle, OwnerPickupStore())
         model.updateProducts(listOf(product))
         model.handleAction(ProductDetailAction.QuantityChanged(0))
         model.handleAction(ProductDetailAction.SaveClicked)
-        val restored = ProductDetailViewModel(SavedStateHandle(handle.keys().associateWith { handle.get<Any?>(it) }))
+        val restored = ProductDetailViewModel(SavedStateHandle(handle.keys().associateWith { handle.get<Any?>(it) }), OwnerPickupStore())
         restored.updateProducts(listOf(product))
         assertTrue(restored.uiState.value.showSaveConfirmation)
         assertEquals(0, restored.uiState.value.quantity)
@@ -94,7 +95,7 @@ class ProductDetailViewModelTest {
 
     @Test
     fun editorUpdatesRefreshProductWithoutDiscardingUnchangedQuantityDraft() {
-        val model = ProductDetailViewModel(SavedStateHandle(mapOf("productId" to product.id)))
+        val model = ProductDetailViewModel(SavedStateHandle(mapOf("productId" to product.id)), OwnerPickupStore())
         model.updateProducts(listOf(product))
         model.handleAction(ProductDetailAction.QuantityChanged(4))
         model.updateProducts(listOf(product.copy(name = "Updated peach", salePrice = 3000)))
@@ -107,7 +108,7 @@ class ProductDetailViewModelTest {
 
     @Test
     fun missingProductClearsStaleDetailAndAllowsBack() = runTest {
-        val model = ProductDetailViewModel(SavedStateHandle(mapOf("productId" to product.id)))
+        val model = ProductDetailViewModel(SavedStateHandle(mapOf("productId" to product.id)), OwnerPickupStore())
         model.updateProducts(listOf(product))
         model.handleAction(ProductDetailAction.QuantityChanged(0))
         model.handleAction(ProductDetailAction.SaveClicked)

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -30,9 +29,6 @@ import androidx.compose.ui.unit.dp
 import com.swyp.mangro.core.designsystem.R
 import com.swyp.mangro.core.designsystem.component.MangroButton
 import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
-import com.swyp.mangro.core.designsystem.component.card.timer.formatRemaining
-import com.swyp.mangro.core.designsystem.component.card.timer.rememberTimerCardState
-import com.swyp.mangro.core.designsystem.component.progress.MangroCircularProgress
 import com.swyp.mangro.core.designsystem.theme.Gray500
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 
@@ -57,22 +53,24 @@ fun OwnerPickupRequestCard(
     onConsumerClick: () -> Unit,
     onButtonClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    completeEnabled: Boolean = true,
 ) {
-    val timerState = if (item.requestTimeMillis != null && item.endTimeMillis != null) {
-        rememberTimerCardState(item.requestTimeMillis, item.endTimeMillis)
-    } else {
-        null
-    }
-
     Column(
         modifier = modifier
             .fillMaxWidth()
             .background(MangroTheme.colors.surfaceNormal)
-            .then(if (item.isNew) Modifier.border(1.dp, MangroTheme.colors.primaryNormal) else Modifier)
-            .padding(
-                vertical = 20.dp,
-                horizontal = 24.dp,
-            ),
+            .then(
+                if (item.isNew) {
+                    Modifier.border(1.dp, MangroTheme.colors.primaryNormal)
+                } else {
+                    Modifier
+                },
+            )
+            .clickable(
+                enabled = enabled,
+                onClick = onConsumerClick,
+            ).padding(horizontal = 24.dp, vertical = 20.dp),
     ) {
         Text(
             text = item.requestedAt,
@@ -87,15 +85,11 @@ fun OwnerPickupRequestCard(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Column(
-                modifier = Modifier
-                    .weight(1f),
+                modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.Center,
             ) {
                 Row(
-                    modifier = Modifier
-                        .clickable(
-                            onClick = onConsumerClick,
-                        ),
+                    modifier = Modifier,
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
@@ -155,37 +149,6 @@ fun OwnerPickupRequestCard(
                     )
                 }
             }
-
-            if (timerState != null) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(80.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        MangroCircularProgress(
-                            progress = 1f - timerState.progress,
-                            isActive = timerState.remainingMillis > 0,
-                            modifier = Modifier.fillMaxSize(),
-                        )
-
-                        Text(
-                            text = formatRemaining(timerState.remainingMillis),
-                            color = MangroTheme.colors.textTitle,
-                            style = MangroTheme.typography.title.titleS ?: MangroTheme.typography.title.titleM,
-                        )
-                    }
-
-                    Text(
-                        text = stringResource(R.string.pickup_request_remaining_time),
-                        color = MangroTheme.colors.textCanceled,
-                        style = MangroTheme.typography.caption.captionS,
-                    )
-                }
-            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -205,6 +168,7 @@ fun OwnerPickupRequestCard(
 
             OwnerPickupRequestStatus.IN_PROGRESS ->
                 MangroButton(
+                    enabled = enabled && completeEnabled,
                     text = stringResource(R.string.pickup_request_complete),
                     onClick = onButtonClick,
                     style = MangroButtonStyle.OUTLINED,

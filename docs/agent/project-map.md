@@ -11,6 +11,8 @@
 | `:core:designsystem` | Android library 모듈 | Compose 테마와 공통 UI 컴포넌트 |
 | `:core:utils` | Android library 모듈 | 네트워크 상태 관측 등 공통 Android 유틸리티용 모듈 골격 |
 | `:feature:owner:onboarding` | Android library 모듈 | 점주 최초 매장 등록 2단계 UI와 외부 검색·신청 연결 계약 |
+| `:feature:splash` | Android library 모듈 | owner/consumer 스플래시 화면과 시작 시 로그인 분기 |
+| `:feature:auth` | Android library 모듈 | owner/consumer 로그인 화면과 내비게이션 |
 | `build-logic` | Gradle included build | Android application/library 공통 설정 |
 | `gradle/libs.versions.toml` | Version Catalog | 플러그인과 외부 라이브러리 버전 |
 | `.githooks` | Git hooks | 커밋 메시지와 커밋 전 ktlint 검사 |
@@ -38,6 +40,13 @@
 - Flavor별 `MainScreen`: `app/src/consumer`, `app/src/ownerDebug`, `app/src/ownerRelease`
   - Owner Debug는 매장 등록 샘플 UI, Owner Release는 기존 진입 화면이다. 실제 주소 검색·등록 API와 최상위 이동은 미연결이다.
   - 동일한 패키지와 함수 시그니처를 사용하며, 빌드 대상 Flavor의 구현만 포함한다.
+- 공통 `MainScreen`, `AppNavGraph`, 스플래시 시작 테마: `app/src/main`
+  - owner와 consumer 모두 스플래시에서 로그인 화면으로 진입한다.
+- Flavor별 로그인 UI: `feature/auth/src/owner`, `feature/auth/src/consumer`의 `LoginScreen`
+- Flavor별 스플래시 UI: `feature/splash/src/owner`, `feature/splash/src/consumer`의 `SplashScreen`
+  - 두 Feature 모두 `role` 차원의 owner/consumer Flavor를 선언하며, 화면은 각 Flavor에서 독립적으로 수정한다.
+  - Route, ViewModel, 상태와 이벤트는 각 Feature의 `src/main`에서 공유한다.
+- Flavor별 테마와 앱 리소스: `app/src/consumer`, `app/src/owner`
 - 로컬 단위 테스트: `app/src/test`
 - Android 계측 테스트: `app/src/androidTest`
 - application convention plugin: `MangroApplicationPlugin.kt`
@@ -47,6 +56,8 @@
 ## 현재 확인된 제약
 
 - `:app`은 `:core:designsystem`, `:core:utils`에 의존하며, Owner에 한해 `:feature:owner:onboarding`에도 의존한다. Data 모듈은 아직 등록되지 않았다.
+- `:app`은 두 Flavor 모두 `:core:designsystem`, `:core:utils`, `:feature:splash`, `:feature:auth`에 의존한다. 네이버 지도 의존성과 API 키 Manifest 설정은 consumer에만 적용한다.
+- 로그인 여부 확인, 실제 카카오 인증, 홈 및 개인정보처리방침 이동은 아직 TODO 또는 빈 콜백이다.
 - `:core:utils`의 `NetworkConnectivityManager`는 기본 네트워크 콜백으로 연결 상태를 관측한다. `MangroApplication`에서 필드 주입받아 앱 시작 시 인스턴스를 생성한다.
 - 앱의 실제 기능 소스는 아직 초기 상태이며 예제 테스트가 남아 있다.
 - Compose convention plugin은 `:app`, `:core:designsystem`에 적용되어 있다. Hilt 및 KSP 플러그인은 `:app`, `:core:network`, `:core:utils`에 적용되어 있으며, 앱의 Hilt 진입점은 `MangroApplication`이다.

@@ -5,4 +5,15 @@
     <string name="login_message_closing">여기서 사세요</string>
     <string name="login_browse_without_login_button">로그인 없이 둘러보기</string>
     <string name="login_privacy_policy">개인정보처리방침</string>
+
+    <string name="terms_title_prefix">서비스 이용을 위한</string>
+    <string name="terms_title_suffix">약관 동의가 필요해요</string>
+
+    <string name="terms_all_agree">전체동의</string>
+    <string name="terms_service">[필수] 맹그로 서비스 이용 약관</string>
+    <string name="terms_privacy">[필수] 개인정보 수집·이용 동의</string>
+    <string name="terms_location">[필수] 맹그로 위치기반 서비스 이용 약관</string>
+    <string name="terms_privacy_third_party">[필수] 개인정보 제3자 제공 동의</string>
+    <string name="terms_marketing">[선택] 마케팅 정보 수신 동의</string>
+    <string name="terms_confirm_button">확인하기</string>
 </resources>

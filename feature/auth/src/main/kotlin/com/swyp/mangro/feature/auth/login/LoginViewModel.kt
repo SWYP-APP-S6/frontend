@@ -24,7 +24,7 @@ class LoginViewModel @Inject constructor() : ViewModel() {
         when (action) {
             LoginUiAction.KakaoLoginClicked -> {
                 // TODO: 카카오 로그인
-                viewModelScope.launch { _event.send(LoginUiEvent.NavigateToHome) }
+                viewModelScope.launch { _event.send(LoginUiEvent.NavigateToTerms) }
             }
             LoginUiAction.BrowseWithoutLoginClicked -> {
                 viewModelScope.launch { _event.send(LoginUiEvent.NavigateToHome) }

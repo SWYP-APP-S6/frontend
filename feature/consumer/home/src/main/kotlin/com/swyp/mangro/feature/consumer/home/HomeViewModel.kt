@@ -52,25 +52,26 @@ class HomeViewModel @Inject constructor() : ViewModel() {
 
     private val _uiState = MutableStateFlow(
         HomeUiState(
-            locationName = "망원동",
+            locationName = "광화문",
+            isLocationPermissionGranted = false,
             storePins = listOf(
                 StorePinMarker(
                     storeId = "dummy-1",
-                    latitude = 37.5563,
-                    longitude = 126.9099,
+                    latitude = 37.5759,
+                    longitude = 126.9769,
                     pinState = storePinStateOf(count = 3, name = "청과마을", isSelected = false),
                 ),
                 StorePinMarker(
                     storeId = "dummy-2",
-                    latitude = 37.5570,
-                    longitude = 126.9110,
+                    latitude = 37.5768,
+                    longitude = 126.9780,
                     pinState = storePinStateOf(count = 5, name = "야채가게", isSelected = false),
                 ),
                 StorePinMarker(
                     storeId = "dummy-3",
-                    latitude = 37.5550,
-                    longitude = 126.9080,
-                    pinState = storePinStateOf(count = 2, name = "정육점", isSelected = false), // 0 -> 2
+                    latitude = 37.5748,
+                    longitude = 126.9755,
+                    pinState = storePinStateOf(count = 2, name = "정육점", isSelected = false),
                 ),
             ),
         ),
@@ -83,7 +84,7 @@ class HomeViewModel @Inject constructor() : ViewModel() {
     fun handleAction(action: HomeUiAction) {
         when (action) {
             HomeUiAction.PermissionBannerActionClicked -> {
-                viewModelScope.launch { _event.send(HomeUiEvent.RequestLocationPermission) }
+                _uiState.update { it.copy(isLocationPermissionGranted = true) }
             }
             is HomeUiAction.ViewModeChanged -> {
                 _uiState.update { it.copy(viewMode = action.mode) }

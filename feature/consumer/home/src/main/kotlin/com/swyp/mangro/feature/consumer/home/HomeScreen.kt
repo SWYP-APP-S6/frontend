@@ -1,5 +1,11 @@
 package com.swyp.mangro.feature.consumer.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -56,6 +62,7 @@ import com.swyp.mangro.core.designsystem.component.count
 import com.swyp.mangro.core.designsystem.component.storePinStateOf
 import com.swyp.mangro.core.designsystem.component.tab.MangroPillTabItem
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
+import com.swyp.mangro.feature.consumer.home.component.LocationPermissionRequiredContent
 import kotlin.math.roundToInt
 import kotlinx.collections.immutable.toPersistentList
 
@@ -132,47 +139,53 @@ internal fun HomeScreen(
                 .padding(innerPadding),
         ) {
             if (uiState.viewMode == HomeViewMode.MAP) {
-                NaverMap(
-                    modifier = Modifier.fillMaxSize(),
-                    cameraPositionState = cameraPositionState,
-                ) {
-                    uiState.storePins.forEach { pin ->
-                        val isSelected = uiState.selectedStore?.storeId == pin.storeId
-                        MarkerComposable(
-                            pin.storeId,
-                            isSelected,
-                            state = rememberSaveable(saver = MarkerState.Saver) {
-                                MarkerState(position = LatLng(pin.latitude, pin.longitude))
-                            },
-                            onClick = {
-                                onAction(HomeUiAction.StorePinClicked(pin.storeId))
-                                true
-                            },
-                        ) {
-                            MangroStorePin(
-                                state = if (isSelected) {
-                                    storePinStateOf(count = pin.pinState.count, name = "", isSelected = false)
-                                } else {
-                                    storePinStateOf(count = pin.pinState.count, name = "", isSelected = false)
+                if (uiState.isLocationPermissionGranted) {
+                    NaverMap(
+                        modifier = Modifier.fillMaxSize(),
+                        cameraPositionState = cameraPositionState,
+                    ) {
+                        uiState.storePins.forEach { pin ->
+                            val isSelected = uiState.selectedStore?.storeId == pin.storeId
+                            MarkerComposable(
+                                pin.storeId,
+                                isSelected,
+                                state = rememberSaveable(saver = MarkerState.Saver) {
+                                    MarkerState(position = LatLng(pin.latitude, pin.longitude))
                                 },
-                                onTap = { onAction(HomeUiAction.StorePinClicked(pin.storeId)) },
-                                modifier = if (isSelected) Modifier.size(1.dp).alpha(0f) else Modifier,
-                            )
+                                onClick = {
+                                    onAction(HomeUiAction.StorePinClicked(pin.storeId))
+                                    true
+                                },
+                            ) {
+                                MangroStorePin(
+                                    state = if (isSelected) {
+                                        storePinStateOf(count = pin.pinState.count, name = "", isSelected = false)
+                                    } else {
+                                        storePinStateOf(count = pin.pinState.count, name = "", isSelected = false)
+                                    },
+                                    onTap = { onAction(HomeUiAction.StorePinClicked(pin.storeId)) },
+                                    modifier = if (isSelected) Modifier.size(1.dp).alpha(0f) else Modifier,
+                                )
+                            }
+                        }
+
+                        val selectedPin = uiState.selectedStore?.let { detail ->
+                            uiState.storePins.find { it.storeId == detail.storeId }
+                        }
+
+                        MapEffect(selectedPin, cameraPositionState.position) { map ->
+                            selectedPinScreenOffset = selectedPin?.let {
+                                val point = map.projection.toScreenLocation(
+                                    LatLng(it.latitude, it.longitude),
+                                )
+                                Offset(point.x, point.y)
+                            }
                         }
                     }
-
-                    val selectedPin = uiState.selectedStore?.let { detail ->
-                        uiState.storePins.find { it.storeId == detail.storeId }
-                    }
-
-                    MapEffect(selectedPin, cameraPositionState.position) { map ->
-                        selectedPinScreenOffset = selectedPin?.let {
-                            val point = map.projection.toScreenLocation(
-                                LatLng(it.latitude, it.longitude),
-                            )
-                            Offset(point.x, point.y)
-                        }
-                    }
+                } else {
+                    LocationPermissionRequiredContent(
+                        onExpandRadiusClick = { onAction(HomeUiAction.PermissionBannerActionClicked) },
+                    )
                 }
 
                 val selectedDetail = uiState.selectedStore
@@ -223,31 +236,44 @@ internal fun HomeScreen(
                 )
             }
 
-            uiState.selectedStore?.let { store ->
-                MapStoreCard(
-                    storeName = store.storeName,
-                    closingTime = store.closingTime,
-                    products = store.products,
-                    onProductClick = { onAction(HomeUiAction.ProductClicked(it)) },
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp),
-                    travelInfo = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = ImageVector.vectorResource(com.swyp.mangro.core.designsystem.R.drawable.ic_directions_walk),
-                                contentDescription = null,
-                            )
-                            Text(
-                                text = stringResource(
-                                    R.string.home_walking_minutes,
-                                    store.walkingMinutes,
-                                ),
-                                style = MangroTheme.typography.caption.captionS,
-                            )
-                        }
-                    },
-                )
+            AnimatedVisibility(
+                visible = uiState.selectedStore != null,
+                enter = slideInVertically(
+                    initialOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = tween(durationMillis = 300),
+                ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+                exit = slideOutVertically(
+                    targetOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = tween(durationMillis = 250),
+                ) + fadeOut(animationSpec = tween(durationMillis = 250)),
+                modifier = Modifier.align(Alignment.BottomCenter),
+            ) {
+                uiState.selectedStore?.let { store ->
+                    MapStoreCard(
+                        storeName = store.storeName,
+                        closingTime = store.closingTime,
+                        products = store.products,
+                        onProductClick = { onAction(HomeUiAction.ProductClicked(it)) },
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(16.dp),
+                        travelInfo = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = ImageVector.vectorResource(com.swyp.mangro.core.designsystem.R.drawable.ic_directions_walk),
+                                    contentDescription = null,
+                                )
+                                Text(
+                                    text = stringResource(
+                                        R.string.home_walking_minutes,
+                                        store.walkingMinutes,
+                                    ),
+                                    style = MangroTheme.typography.caption.captionS,
+                                )
+                            }
+                        },
+                    )
+                }
             }
         }
     }

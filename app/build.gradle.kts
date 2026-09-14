@@ -26,6 +26,9 @@ android {
 }
 
 dependencies {
+    implementation(project(":remote:auth"))
+    add("consumerImplementation", project(":remote:consumer"))
+    add("ownerImplementation", project(":remote:owner"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:utils"))
 

@@ -7,9 +7,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
@@ -17,27 +17,46 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
+import com.naver.maps.map.compose.MapEffect
+import com.naver.maps.map.compose.MarkerComposable
+import com.naver.maps.map.compose.MarkerState
 import com.naver.maps.map.compose.NaverMap
+import com.naver.maps.map.compose.rememberCameraPositionState
+import com.swyp.mangro.core.designsystem.component.MangroStorePin
 import com.swyp.mangro.core.designsystem.component.appbar.ConsumerBottomAppBar
 import com.swyp.mangro.core.designsystem.component.appbar.ConsumerMenu
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
 import com.swyp.mangro.core.designsystem.component.banner.ActionBanner
 import com.swyp.mangro.core.designsystem.component.card.map.MapStoreCard
 import com.swyp.mangro.core.designsystem.component.card.map.StoreProduct
+import com.swyp.mangro.core.designsystem.component.count
+import com.swyp.mangro.core.designsystem.component.storePinStateOf
 import com.swyp.mangro.core.designsystem.component.tab.MangroPillTabItem
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
+import kotlin.math.roundToInt
 import kotlinx.collections.immutable.toPersistentList
 
 @OptIn(ExperimentalNaverMapApi::class)
@@ -47,6 +66,9 @@ internal fun HomeScreen(
     onAction: (HomeUiAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val cameraPositionState = rememberCameraPositionState()
+    var selectedPinScreenOffset by remember { mutableStateOf<Offset?>(null) }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -107,22 +129,87 @@ internal fun HomeScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .systemBarsPadding()
                 .padding(innerPadding),
         ) {
-            when (uiState.viewMode) {
-                HomeViewMode.MAP -> {
-                    NaverMap(modifier = Modifier.fillMaxSize())
+            if (uiState.viewMode == HomeViewMode.MAP) {
+                NaverMap(
+                    modifier = Modifier.fillMaxSize(),
+                    cameraPositionState = cameraPositionState,
+                ) {
+                    uiState.storePins.forEach { pin ->
+                        val isSelected = uiState.selectedStore?.storeId == pin.storeId
+                        MarkerComposable(
+                            pin.storeId,
+                            isSelected,
+                            state = rememberSaveable(saver = MarkerState.Saver) {
+                                MarkerState(position = LatLng(pin.latitude, pin.longitude))
+                            },
+                            onClick = {
+                                onAction(HomeUiAction.StorePinClicked(pin.storeId))
+                                true
+                            },
+                        ) {
+                            MangroStorePin(
+                                state = if (isSelected) {
+                                    storePinStateOf(count = pin.pinState.count, name = "", isSelected = false)
+                                } else {
+                                    storePinStateOf(count = pin.pinState.count, name = "", isSelected = false)
+                                },
+                                onTap = { onAction(HomeUiAction.StorePinClicked(pin.storeId)) },
+                                modifier = if (isSelected) Modifier.size(1.dp).alpha(0f) else Modifier,
+                            )
+                        }
+                    }
+
+                    val selectedPin = uiState.selectedStore?.let { detail ->
+                        uiState.storePins.find { it.storeId == detail.storeId }
+                    }
+
+                    MapEffect(selectedPin, cameraPositionState.position) { map ->
+                        selectedPinScreenOffset = selectedPin?.let {
+                            val point = map.projection.toScreenLocation(
+                                LatLng(it.latitude, it.longitude),
+                            )
+                            Offset(point.x, point.y)
+                        }
+                    }
                 }
-                HomeViewMode.LIST -> {}
+
+                val selectedDetail = uiState.selectedStore
+                val offset = selectedPinScreenOffset
+                if (selectedDetail != null && offset != null) {
+                    var pinSize by remember { mutableStateOf(IntSize.Zero) }
+
+                    MangroStorePin(
+                        state = storePinStateOf(
+                            count = uiState.storePins
+                                .find { it.storeId == selectedDetail.storeId }
+                                ?.pinState?.count ?: 0,
+                            name = selectedDetail.storeName,
+                            isSelected = true,
+                        ),
+                        onTap = { onAction(HomeUiAction.SelectedStoreDismissed) },
+                        modifier = Modifier
+                            .onGloballyPositioned { pinSize = it.size }
+                            .offset {
+                                if (pinSize == IntSize.Zero) {
+                                    IntOffset(offset.x.roundToInt(), offset.y.roundToInt())
+                                } else {
+                                    IntOffset(
+                                        x = (offset.x - pinSize.width / 2f).roundToInt(),
+                                        y = (offset.y - pinSize.height).roundToInt(),
+                                    )
+                                }
+                            },
+                    )
+                }
             }
 
             if (!uiState.isLocationPermissionGranted) {
                 ActionBanner(
                     iconRes = com.swyp.mangro.core.designsystem.R.drawable.ic_error,
                     stringRes = com.swyp.mangro.core.designsystem.R.string.banner_location_permission,
-                    modifier = Modifier
-                        .align(Alignment.TopCenter),
+                    modifier = Modifier.align(Alignment.TopCenter),
                     action = {
                         Text(
                             text = stringResource(com.swyp.mangro.core.designsystem.R.string.banner_action_turn_on),
@@ -175,13 +262,8 @@ private val previewStoreProducts = listOf(
 private class HomeUiStatePreviewProvider : PreviewParameterProvider<HomeUiState> {
     override val values: Sequence<HomeUiState>
         get() = sequenceOf(
-            HomeUiState(
-                locationName = "망원동",
-            ),
-            HomeUiState(
-                locationName = "망원동",
-                isLocationPermissionGranted = false,
-            ),
+            HomeUiState(locationName = "망원동"),
+            HomeUiState(locationName = "망원동", isLocationPermissionGranted = false),
             HomeUiState(
                 locationName = "망원동",
                 selectedStore = SelectedStoreDetail(

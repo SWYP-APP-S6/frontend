@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -69,6 +70,7 @@ fun MangroStepper(
             onClick = { if (canDecrease) onValueChange(value - 1) },
             icon = if (isSmall) R.drawable.ic_stepper_minus_small else R.drawable.ic_stepper_minus_large,
             enabled = canDecrease,
+            description = stringResource(R.string.stepper_decrease),
             size = if (isSmall) 36.dp else 48.dp,
         )
 
@@ -90,6 +92,7 @@ fun MangroStepper(
             onClick = { if (canIncrease) onValueChange(value + 1) },
             icon = if (isSmall) R.drawable.ic_stepper_plus_small else R.drawable.ic_stepper_plus_large,
             enabled = canIncrease,
+            description = stringResource(R.string.stepper_increase),
             size = if (isSmall) 36.dp else 48.dp,
         )
     }
@@ -99,6 +102,7 @@ fun MangroStepper(
 private fun StepperButton(
     onClick: () -> Unit,
     @DrawableRes icon: Int,
+    description: String,
     size: Dp,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
@@ -130,7 +134,7 @@ private fun StepperButton(
     ) {
         Icon(
             painter = painterResource(icon),
-            contentDescription = null,
+            contentDescription = description,
             modifier = Modifier.size(size),
             tint = if (enabled) MangroTheme.colors.textOnBrandWhite else Color(0xFFBDBDBD),
         )

@@ -44,6 +44,7 @@ fun MangroInputBox(
     onKeyboardAction: ((ImeAction) -> Unit)? = null,
     inputTransformation: InputTransformation? = null,
     outputTransformation: OutputTransformation? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
 ) {
     Column(
         modifier = modifier,
@@ -86,6 +87,7 @@ fun MangroInputBox(
             onKeyboardAction = onKeyboardAction,
             inputTransformation = inputTransformation,
             outputTransformation = outputTransformation,
+            leadingIcon = leadingIcon,
         )
     }
 }

@@ -13,6 +13,8 @@
 | `:remote:owner` | Android library 모듈 | Owner 12 API 생성 |
 | `:core:designsystem` | Android library 모듈 | Compose 테마와 공통 UI 컴포넌트 |
 | `:core:utils` | Android library 모듈 | 네트워크 상태 관측 등 공통 Android 유틸리티용 모듈 골격 |
+| `:feature:owner:setting` | Android library 모듈 | 점주 상점 정보와 약관 목록·WebView |
+| `:feature:owner:product` | Android library 모듈 | 점포 관리의 상품 등록·상세 및 찜 목록·상세·취소 |
 | `:feature:owner:home` | Android library 모듈 | 점주 홈 UI, 운영 현황과 외부 화면 진입 액션 |
 | `:feature:owner:onboarding` | Android library 모듈 | 점주 최초 매장 등록 2단계 UI와 외부 검색·신청 연결 계약 |
 | `:feature:splash` | Android library 모듈 | owner/consumer 스플래시 화면과 시작 시 로그인 분기 |
@@ -41,11 +43,11 @@
 ## 주요 소스 위치
 
 - 공통 Activity, Manifest와 리소스: `app/src/main`
-- Flavor별 `MainScreen`: `app/src/consumer`, `app/src/ownerDebug`, `app/src/ownerRelease`
-  - Owner Debug는 매장 등록 샘플 UI, Owner Release는 홈 샘플 화면이다. 실제 주소 검색은 연결되어 있으며 등록 API와 최상위 이동은 미연결이다.
+- Flavor별 `MainScreen`: `app/src/consumer`, `app/src/owner`
+  - Owner는 홈·점포 관리·찜·설정 Navigation을 사용한다. 온보딩 모듈의 실제 주소 검색은 연결되어 있으며 등록 API와 최상위 이동은 미연결이다.
   - 동일한 패키지와 함수 시그니처를 사용하며, 빌드 대상 Flavor의 구현만 포함한다.
 - Consumer `MainScreen`: `app/src/consumer`. `AppNavGraph`와 스플래시 시작 테마는 `app/src/main`에서 공유한다.
-  - Consumer는 스플래시에서 로그인 화면으로 진입하고, Owner Debug는 온보딩, Owner Release는 홈 샘플 화면으로 진입한다.
+  - Consumer는 스플래시에서 로그인 화면으로 진입하고, Owner Debug와 Release는 홈에서 상품·찜·설정 화면으로 이동한다.
   - Kotlin 함수는 소스셋 사이에서 덮어쓰지 않으므로 `MainScreen`은 각 빌드에서 하나만 포함한다.
 - Flavor별 로그인 UI: `feature/auth/src/owner`, `feature/auth/src/consumer`의 `LoginScreen`
 - Flavor별 스플래시 UI: `feature/splash/src/owner`, `feature/splash/src/consumer`의 `SplashScreen`
@@ -60,7 +62,7 @@
 
 ## 현재 확인된 제약
 
-- `:app`은 `:core:designsystem`, `:core:utils`에 의존하며, Owner에 한해 `:feature:owner:onboarding`, `:feature:owner:home`에도 의존한다. Data 모듈은 아직 등록되지 않았다.
+- `:app`은 `:core:designsystem`, `:core:utils`에 의존하며, Owner에 한해 `:feature:owner:onboarding`, `:feature:owner:home`, `:feature:owner:product`, `:feature:owner:setting`에도 의존한다. Data 모듈은 아직 등록되지 않았다.
 - `:app`은 Auth remote를 공통으로, Consumer/Owner remote를 Flavor별로 의존한다. Consumer는 `:feature:splash`, `:feature:auth`에도 의존한다. API 화면 연동은 후속이다.
 - Remote 생성·검증 방법은 [Remote README](../../remote/README.md)를 따른다. OpenAPI Generator 7.24.0 및 Python 3을 사용하며, 생성 코드는 Git에 포함하지 않는다.
 - `:app`은 두 Flavor 모두 `:core:designsystem`, `:core:utils`, `:feature:splash`, `:feature:auth`에 의존한다. 네이버 지도 의존성과 API 키 Manifest 설정은 consumer에만 적용한다.
@@ -68,7 +70,7 @@
 - `:core:utils`의 `NetworkConnectivityManager`는 기본 네트워크 콜백으로 연결 상태를 관측한다. `MangroApplication`에서 필드 주입받아 앱 시작 시 인스턴스를 생성한다.
 - 앱의 실제 기능 소스는 아직 초기 상태이며 예제 테스트가 남아 있다.
 - Compose convention plugin은 `:app`, `:core:designsystem`, `:feature:owner:home` 등 Compose UI 모듈에 적용되어 있다. Hilt 및 KSP 플러그인은 `:app`, `:core:utils`, `:core:network`, `:remote:auth`, `:remote:consumer`, `:remote:owner`, `:feature:owner:home` 등에 적용되어 있으며, 앱의 Hilt 진입점은 `MangroApplication`이다.
-- 점주 홈은 최초 안내·빈 상태·운영 현황을 표시한다. Owner Debug와 Release 모두 공통 샘플 데이터로 운영 현황을 표시하는 임시 구성이다. Preview는 Debug 전용이며 실제 데이터 조회와 목적지 연결은 아직 없다.
+- 점주 홈은 최초 안내·빈 상태·운영 현황을 표시한다. Owner Debug와 Release 모두 공통 샘플 데이터로 운영 현황을 표시하는 임시 구성이다. Preview는 Debug 전용이며 실제 데이터 조회는 미연결이며 상품 목록·상세·등록 및 찜 목적지는 Owner Navigation으로 연결한다.
 - 루트 `ktlintCheck`는 subproject를 집계하지만 included build인 `build-logic` 소스는 직접 검사하지 않는다.
 - `.github/workflows` 기반 CI는 아직 없다.
 
@@ -81,3 +83,16 @@
 - SDK, Java, Build Type, Product Flavor 변경
 - 주요 테스트 진입점 변경
 - 프로젝트 최상위 디렉터리의 책임 변경
+
+## 점주 상품 화면
+
+- `:feature:owner:product`: 상품 등록 3단계, 미리보기, 목록·상세, 재고 재확인 및 찜 목록·상세·취소 UI.
+- `:app` Owner 소스셋에서만 의존하며 `OwnerNavHost`가 홈과 상품 Navigation 그래프를 조립한다. 상품 저장은 호출부 콜백으로 연결하고, 찜 상세·취소는 같은 product 모듈의 Navigation 그래프로 연결한다.
+- 현재 API 연결 이전의 UI 호스트 범위이며 상세 계약과 미확정 디자인 기준은 `feature/owner/product/README.md`를 참고한다.
+
+## 점주 설정 화면
+
+- `:feature:owner:setting`: 상점 이름·전화번호 읽기 전용 카드, 서비스 이용약관·개인정보 처리방침 목록과 앱 내 WebView.
+- `OwnerNavHost`가 홈·점포 관리·설정 탭을 연결한다. 각 화면이 State·Action·Event·ViewModel을 소유한다.
+- 상점 조회 API는 미연결이며 Debug에서만 예시 정보를 사용하고 Release는 미등록 상태를 표시한다.
+- 약관 URL은 아직 없으므로 WebView는 `about:blank`를 열고 준비 중 안내를 표시한다. 확정 URL은 `OwnerPolicyViewModel`의 상태에 연결한다.

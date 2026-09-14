@@ -15,6 +15,7 @@ dependencies {
     implementation(project(":core:utils"))
 
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     ksp(libs.hilt.compiler)

@@ -47,6 +47,7 @@ import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlig
 import com.swyp.mangro.core.designsystem.component.appbar.OwnerBottomAppBar
 import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
 import com.swyp.mangro.core.designsystem.component.banner.ActionBanner
+import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProduct
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProductCard
 import com.swyp.mangro.core.designsystem.component.label.MangroLabel
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
@@ -57,18 +58,31 @@ import com.swyp.mangro.feature.owner.home.component.card.DashboardCard
 import com.swyp.mangro.feature.owner.home.component.card.VisitorCard
 import com.swyp.mangro.feature.owner.home.component.heading.SectionHeading
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.collections.immutable.PersistentList
 import kotlinx.coroutines.delay
 
 @Composable
 fun OwnerHomeScreenRoute(
+    products: PersistentList<OwnerProduct>,
+    navigateToProducts: () -> Unit,
+    navigateToSettings: () -> Unit,
+    navigateToProduct: (String) -> Unit,
+    navigateToRegisterProduct: () -> Unit,
     viewModel: OwnerHomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    LaunchedEffect(products) {
+        viewModel.updateProducts(products)
+    }
+
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
             when (event) {
-                OwnerHomeEvent.NavigateToDetail -> { }
+                OwnerHomeEvent.NavigateToSettings -> navigateToSettings()
+                OwnerHomeEvent.NavigateToProducts -> navigateToProducts()
+                is OwnerHomeEvent.NavigateToProduct -> navigateToProduct(event.productId)
+                OwnerHomeEvent.NavigateToRegisterProduct -> navigateToRegisterProduct()
             }
         }
     }
@@ -153,7 +167,11 @@ fun OwnerHomeScreen(
             OwnerBottomAppBar(
                 currentMenu = OwnerMenu.HOME,
                 onMenuClick = {
-                    if (it != OwnerMenu.HOME) return@OwnerBottomAppBar
+                    when (it) {
+                        OwnerMenu.HOME -> Unit
+                        OwnerMenu.STORE -> onAction(OwnerHomeAction.ViewProducts)
+                        OwnerMenu.SETTINGS -> onAction(OwnerHomeAction.ViewSettings)
+                    }
                 },
             )
         },

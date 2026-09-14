@@ -43,6 +43,8 @@ include(":feature:owner:onboarding")
 include(":feature:splash")
 include(":feature:auth")
 include(":feature:owner:home")
+include(":feature:owner:product")
+include(":feature:owner:setting")
 
 include(":remote:consumer")
 include(":remote:owner")

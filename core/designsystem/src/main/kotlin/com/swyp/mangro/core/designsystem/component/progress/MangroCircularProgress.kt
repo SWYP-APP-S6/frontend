@@ -24,12 +24,13 @@ fun MangroCircularProgress(
     isActive: Boolean,
     modifier: Modifier = Modifier,
     thickness: Dp = 10.dp,
+    trackColor: Color = Color(0xFFD9D9D9),
+    inactiveColor: Color = Color(0xFFD9D9D9),
 ) {
-    val trackColor = Color(0xFFD9D9D9)
     val progressBrush = if (isActive) {
         Brush.verticalGradient(colors = listOf(Orange900, Orange700))
     } else {
-        Brush.verticalGradient(colors = listOf(Color(0xFFD9D9D9), Color(0xFFD9D9D9)))
+        Brush.verticalGradient(colors = listOf(inactiveColor, inactiveColor))
     }
     val normalizedProgress = progress.coerceIn(0f, 1f)
 

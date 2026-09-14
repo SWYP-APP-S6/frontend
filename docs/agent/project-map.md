@@ -8,7 +8,7 @@
 |---|---|---|
 | `:app` | Android application 모듈 | 애플리케이션 패키징과 앱 진입점 |
 | `:core:network` | Android library 모듈 | Retrofit/Json 구성, Bearer 헤더와 HTTP 오류 정보 처리 |
-| `:remote:auth` | Android library 모듈 | 공통 인증 8 API 생성 |
+| `:remote:auth` | Android library 모듈 | 공통 인증 8 API와 공개 약관 2 API 생성 |
 | `:remote:consumer` | Android library 모듈 | Consumer 21 API 생성 |
 | `:remote:owner` | Android library 모듈 | Owner 12 API 생성 |
 | `:core:designsystem` | Android library 모듈 | Compose 테마와 공통 UI 컴포넌트 |
@@ -18,6 +18,7 @@
 | `:feature:owner:home` | Android library 모듈 | 점주 홈 UI, 운영 현황과 외부 화면 진입 액션 |
 | `:feature:owner:onboarding` | Android library 모듈 | 점주 최초 매장 등록 2단계 UI와 외부 검색·신청 연결 계약 |
 | `:feature:splash` | Android library 모듈 | owner/consumer 스플래시 화면과 시작 시 로그인 분기 |
+| `:data:owner:terms` | Android library 모듈 | Owner 약관 목록·본문 Repository와 검증된 앱 모델 |
 | `:feature:auth` | Android library 모듈 | owner/consumer 로그인·약관 동의 화면과 내비게이션 |
 | `build-logic` | Gradle included build | Android application/library 공통 설정 |
 | `gradle/libs.versions.toml` | Version Catalog | 플러그인과 외부 라이브러리 버전 |
@@ -62,7 +63,7 @@
 
 ## 현재 확인된 제약
 
-- `:app`은 `:core:designsystem`, `:core:utils`에 의존하며, Owner에 한해 `:feature:owner:onboarding`, `:feature:owner:home`, `:feature:owner:product`, `:feature:owner:setting`에도 의존한다. Data 모듈은 아직 등록되지 않았다.
+- `:app`은 `:core:designsystem`, `:core:utils`에 의존하며, Owner에 한해 `:feature:owner:onboarding`, `:feature:owner:home`, `:feature:owner:product`, `:feature:owner:setting`에도 의존한다. `data:owner:terms`가 Owner 인증 Feature에서 약관 조회를 담당한다.
 - `:app`은 Auth remote를 공통으로, Consumer/Owner remote를 Flavor별로 의존한다. Consumer는 `:feature:splash`, `:feature:auth`에도 의존한다. API 화면 연동은 후속이다.
 - Remote 생성·검증 방법은 [Remote README](../../remote/README.md)를 따른다. OpenAPI Generator 7.24.0 및 Python 3을 사용하며, 생성 코드는 Git에 포함하지 않는다.
 - `:app`은 두 Flavor 모두 `:core:designsystem`, `:core:utils`, `:feature:splash`, `:feature:auth`에 의존한다. 네이버 지도 의존성과 API 키 Manifest 설정은 consumer에만 적용한다.
@@ -105,4 +106,4 @@
 - 홈 방문 예정/새 찜 → 전체 찜, 픽업 완료 → 완료 필터, 수령 확인 → 만료 필터, 취소 안내 → 전체 재고 부족 취소.
 - 홈 방문자와 찜 목록은 같은 주문 ID로 상세에 진입한다. 상품 상세의 재고 부족 취소는 해당 상품 ID만 전달한다.
 - 상품 등록 3단계와 미리보기는 product 내부 Navigation이 소유한다. 설정의 이용약관·개인정보처리방침은 같은 WebView 목적지를 사용한다.
-- 로그인은 기존 임시 성공 이벤트이며 실제 인증·매장 등록 여부 조회는 미연결이다. 등록 신청은 기존 오류 처리를 유지한다. 약관 동의는 필수 항목을 모두 선택해야 온보딩으로 진행하며 마케팅 동의는 선택 사항이다. 동의 내역의 서버 저장과 동의 화면의 약관 상세 이동은 미연결이고, 설정의 약관 WebView는 확정 URL 없이 준비 중 화면을 표시한다. 알림 목록 화면은 없어 준비 중 안내를 표시한다.
+- 로그인은 기존 임시 성공 이벤트이며 실제 인증·매장 등록 여부 조회는 미연결이다. 등록 신청은 기존 오류 처리를 유지한다. 약관 동의는 필수 항목을 모두 선택해야 온보딩으로 진행하며 마케팅 동의는 선택 사항이다. Owner 약관 목록·본문은 공개 Terms API에 연결되어 있다. 동의 내역의 서버 저장은 미연결이고, 설정의 약관 WebView는 확정 URL 없이 준비 중 화면을 표시한다. 알림 목록 화면은 없어 준비 중 안내를 표시한다.

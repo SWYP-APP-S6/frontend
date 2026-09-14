@@ -2,4 +2,13 @@
     <string name="login_greeting">사장님!</string>
     <string name="login_message_prefix">오늘 팔고 남은</string>
     <string name="login_message_closing">여기서 파세요</string>
+    <string name="owner_terms_back">뒤로가기</string>
+    <string name="owner_terms_load_error">약관을 불러오지 못했어요</string>
+    <string name="owner_terms_retry">다시 시도</string>
+    <string name="owner_terms_view">보기</string>
+    <string name="owner_terms_detail_title">약관 보기</string>
+    <string name="owner_terms_not_found">현재 제공되지 않는 약관이에요</string>
+    <string name="owner_terms_refresh">약관 목록 새로고침</string>
+    <string name="owner_terms_required">[필수] %1$s</string>
+    <string name="owner_terms_optional">[선택] %1$s</string>
 </resources>

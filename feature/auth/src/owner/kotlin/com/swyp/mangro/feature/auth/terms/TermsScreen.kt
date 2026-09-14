@@ -15,6 +15,9 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -24,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -37,15 +41,9 @@ import com.swyp.mangro.core.designsystem.component.MangroCheckbox
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
 import com.swyp.mangro.core.designsystem.theme.Gray600
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
+import com.swyp.mangro.data.owner.terms.model.OwnerTerm
+import com.swyp.mangro.data.owner.terms.model.TermsRequirement
 import com.swyp.mangro.feature.auth.R
-
-private fun TermsType.toLabelRes(): Int = when (this) {
-    TermsType.SERVICE -> R.string.terms_service
-    TermsType.PRIVACY -> R.string.terms_privacy
-    TermsType.LOCATION -> R.string.terms_location
-    TermsType.PRIVACY_THIRD_PARTY -> R.string.terms_privacy_third_party
-    TermsType.MARKETING -> R.string.terms_marketing
-}
 
 @Composable
 fun TermsScreen(
@@ -63,7 +61,7 @@ fun TermsScreen(
                 navigationIcon = {
                     Icon(
                         imageVector = ImageVector.vectorResource(com.swyp.mangro.core.designsystem.R.drawable.ic_arrow_left),
-                        contentDescription = null,
+                        contentDescription = stringResource(R.string.owner_terms_back),
                         tint = Color.Unspecified,
                         modifier = Modifier.clickable(
                             interactionSource = remember { MutableInteractionSource() },
@@ -95,7 +93,8 @@ fun TermsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState()),
         ) {
             Column(
                 modifier = Modifier
@@ -133,23 +132,30 @@ fun TermsScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Column(
                 modifier = Modifier
                     .fillMaxWidth(),
             ) {
-                AllAgreeRow(
-                    isChecked = uiState.isAllChecked,
-                    onCheckedChange = { onAction(TermsUiAction.AllAgreeClicked) },
-                )
-
-                uiState.items.forEach { item ->
-                    TermsRow(
-                        item = item,
-                        onCheckedChange = { onAction(TermsUiAction.ItemToggled(item.type)) },
-                        onDetailClick = { onAction(TermsUiAction.ItemDetailClicked(item.type)) },
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                } else if (uiState.failure != null) {
+                    Text(text = stringResource(R.string.owner_terms_load_error), modifier = Modifier.padding(20.dp))
+                    MangroButton(style = MangroButtonStyle.ACTIVE, text = stringResource(R.string.owner_terms_retry), onClick = { onAction(TermsUiAction.RetryClicked) }, modifier = Modifier.padding(20.dp))
+                } else {
+                    AllAgreeRow(
+                        isChecked = uiState.isAllChecked,
+                        onCheckedChange = { onAction(TermsUiAction.AllAgreeClicked) },
                     )
+
+                    uiState.items.forEach { item ->
+                        TermsRow(
+                            item = item,
+                            onCheckedChange = { onAction(TermsUiAction.ItemToggled(item.document.id)) },
+                            onDetailClick = { onAction(TermsUiAction.ItemDetailClicked(item.document.id)) },
+                        )
+                    }
                 }
             }
         }
@@ -223,41 +229,44 @@ private fun TermsRow(
             ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        MangroCheckbox(
-            isChecked = item.isChecked,
-            onCheckedChange = onCheckedChange,
-        )
+        if (item.document.isCheckable) {
+            MangroCheckbox(
+                isChecked = item.isChecked,
+                onCheckedChange = onCheckedChange,
+                modifier = Modifier.testTag("terms-check-${item.document.requirement}-${item.document.id}"),
+            )
+        } else {
+            Spacer(modifier = Modifier.width(48.dp))
+        }
 
         Spacer(modifier = Modifier.width(4.dp))
 
         Text(
-            text = stringResource(item.type.toLabelRes()),
+            text = when (item.document.requirement) {
+                TermsRequirement.REQUIRED -> stringResource(R.string.owner_terms_required, item.document.title)
+                TermsRequirement.OPTIONAL -> stringResource(R.string.owner_terms_optional, item.document.title)
+                TermsRequirement.NOTICE -> item.document.title
+            },
             style = MangroTheme.typography.body.bodyM,
             color = MangroTheme.colors.textTitle,
             modifier = Modifier.weight(1f),
         )
 
-        Icon(
-            imageVector = ImageVector.vectorResource(com.swyp.mangro.core.designsystem.R.drawable.ic_chevron_right),
-            contentDescription = null,
-            tint = Gray600,
-        )
+        Text(text = stringResource(R.string.owner_terms_view), color = Gray600)
     }
 }
 
 private class TermsUiStatePreviewProvider : PreviewParameterProvider<TermsUiState> {
-    override val values: Sequence<TermsUiState>
-        get() = sequenceOf(
-            TermsUiState(),
-            TermsUiState(
-                items = TermsType.entries.map { TermsItem(type = it, isChecked = true) },
+    override val values = sequenceOf(
+        TermsUiState(
+            isLoading = false,
+            items = listOf(
+                TermsItem(OwnerTerm(1, "SERVICE", 1, "서비스 이용 약관", TermsRequirement.REQUIRED, "2026-09-16")),
+                TermsItem(OwnerTerm(2, "MARKETING", 1, "마케팅 정보 수신 동의", TermsRequirement.OPTIONAL, "2026-09-16")),
+                TermsItem(OwnerTerm(3, "PRIVACY_POLICY", 1, "개인정보처리방침", TermsRequirement.NOTICE, "2026-09-16")),
             ),
-            TermsUiState(
-                items = TermsType.entries.map {
-                    TermsItem(type = it, isChecked = it != TermsType.MARKETING)
-                },
-            ),
-        )
+        ),
+    )
 }
 
 @Preview(showBackground = true)

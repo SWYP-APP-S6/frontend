@@ -49,3 +49,5 @@ include(":feature:owner:setting")
 include(":remote:consumer")
 include(":remote:owner")
 include(":remote:auth")
+
+include(":data:owner:terms")

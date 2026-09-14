@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.material)
 
     testImplementation(libs.junit)
+    add("androidTestOwnerImplementation", project(":data:owner:terms"))
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

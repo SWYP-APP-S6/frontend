@@ -154,15 +154,30 @@ def prepare(source, mapping, policies):
     return output
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--output', type=Path, default=ROOT / 'build/openapi')
-    args = parser.parse_args()
+def load_inputs():
     raw = (ROOT / 'openapi/swyp-app-api-20260913-v2.json').read_bytes()
     expected = (ROOT / 'openapi/spec.sha256').read_text().split()[0]
     if hashlib.sha256(raw).hexdigest() != expected:
         raise ValueError('Source checksum mismatch; update the snapshot and checksum together')
-    result = prepare(json.loads(raw), json.loads((ROOT / 'openapi/endpoint-map.json').read_text()), json.loads((ROOT / 'openapi/model-map.json').read_text()))
+    source = json.loads(raw)
+    mapping = json.loads((ROOT / 'openapi/endpoint-map.json').read_text())
+    policies = json.loads((ROOT / 'openapi/model-map.json').read_text())
+    # Private, explicitly labelled client contract until the new server snapshot is delivered.
+    supplement = json.loads((ROOT / 'openapi/terms-supplement.json').read_text())
+    for target, additions in [(source['paths'], supplement['paths']),
+                              (source['components']['schemas'], supplement['schemas']),
+                              (mapping, supplement['mapping'])]:
+        if set(target) & set(additions):
+            raise ValueError('Supplement conflicts with source; remove it after updating the official snapshot')
+        target.update(additions)
+    return source, mapping, policies
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--output', type=Path, default=ROOT / 'build/openapi')
+    args = parser.parse_args()
+    result = prepare(*load_inputs())
     args.output.mkdir(parents=True, exist_ok=True)
     for module, spec in result.items():
         (args.output / f'{module}.json').write_text(json.dumps(spec, ensure_ascii=False, indent=2, sort_keys=True) + '\n')

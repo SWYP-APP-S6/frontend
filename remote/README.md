@@ -10,8 +10,9 @@ Auth·Consumer·Owner Android library에서 OpenAPI Generator 7.24.0으로 Kotli
 - `openapi/endpoint-map.json`
 - `openapi/model-map.json`
 - `openapi/spec.sha256`
+- `openapi/terms-supplement.json` (공식 최신 명세 접근 전의 로컬 보완 계약)
 
-자동 다운로드는 아직 구현되어 있지 않다. 위 파일 없이 코드 생성과 앱 빌드는 실패한다. 파일은 같은 버전의 묶음으로 전달하고, 명세와 체크섬이 일치해야 한다. 전달사항과 내부 보고서도 비공개로 공유한다.
+자동 다운로드는 아직 구현되어 있지 않다. 위 파일 없이 코드 생성과 앱 빌드는 실패한다. 약관 보완 입력은 사용자 전달사항과 공개 응답을 바탕으로 작성한 클라이언트 계약이며 공식 명세가 아니다. 최신 명세 접근 시 대조 후 제거한다. 파일은 같은 버전의 묶음으로 전달하고, 명세와 체크섬이 일치해야 한다. 전달사항과 내부 보고서도 비공개로 공유한다.
 
 Python 3과 Android/Java 개발 환경이 필요하다. 템플릿과 생성 스크립트는 저장소에서 관리한다. 원본 JSON → `prepareOpenApiSpecs` → 모듈별 `openApiValidate` → `openApiGenerate` 순서로 실행되며 Debug/Release 컴파일에 연결된다.
 
@@ -19,7 +20,7 @@ Python 3과 Android/Java 개발 환경이 필요하다. 템플릿과 생성 스�
 
 Hilt `SingletonComponent`에서 공통 OkHttpClient·Retrofit과 각 Service 인터페이스를 싱글턴으로 제공한다. app은 Auth를 공통 의존성으로, Consumer/Owner를 각각 Flavor 의존성으로 포함한다. Service 인터페이스를 생성자 주입으로 사용한다.
 
-기본 클라이언트에는 인증 인터셉터가 없다. 토큰 저장·인증 헤더·갱신과 화면 연동은 후속 작업이다. `AuthServices`, `ConsumerServices`, `OwnerServices` 팩토리는 테스트나 별도 Retrofit을 직접 구성할 때 사용할 수 있다.
+`TermsService`는 인증 상태와 무관하게 조회하도록 별도의 인증 없는 Retrofit을 사용한다. 기본 클라이언트에는 인증 인터셉터가 없다. 토큰 저장·인증 헤더·갱신과 화면 연동은 후속 작업이다. `AuthServices`, `ConsumerServices`, `OwnerServices` 팩토리는 테스트나 별도 Retrofit을 직접 구성할 때 사용할 수 있다.
 
 ## 검증
 

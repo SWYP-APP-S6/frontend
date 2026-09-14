@@ -22,6 +22,9 @@ internal fun ComposeContentTestRule.loginToOwnerTerms() {
     }
     onNodeWithText("카카오로 시작하기").performClick()
     onNodeWithText("약관 동의가 필요해요").assertIsDisplayed()
+    waitUntil(timeoutMillis = 15_000) {
+        onAllNodesWithText("전체동의").fetchSemanticsNodes().isNotEmpty()
+    }
 }
 
 internal fun ComposeContentTestRule.loginToOwnerRegistration() {

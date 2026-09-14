@@ -19,6 +19,9 @@ android {
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:utils"))
+    add("ownerImplementation", project(":data:owner:terms"))
+    add("ownerImplementation", libs.commonmark.core)
+    add("ownerImplementation", libs.commonmark.tables)
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

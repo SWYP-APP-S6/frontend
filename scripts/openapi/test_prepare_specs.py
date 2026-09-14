@@ -1,14 +1,12 @@
 import copy
 import json
 import unittest
-from prepare_specs import ROOT, operations, prepare
+from prepare_specs import ROOT, load_inputs, operations, prepare
 
 
 class PrepareSpecsTest(unittest.TestCase):
     def setUp(self):
-        self.source = json.loads((ROOT / 'openapi/swyp-app-api-20260913-v2.json').read_text())
-        self.mapping = json.loads((ROOT / 'openapi/endpoint-map.json').read_text())
-        self.policies = json.loads((ROOT / 'openapi/model-map.json').read_text())
+        self.source, self.mapping, self.policies = load_inputs()
 
     def generate(self):
         return prepare(self.source, self.mapping, self.policies)
@@ -16,9 +14,9 @@ class PrepareSpecsTest(unittest.TestCase):
     def test_partition_is_complete_and_disjoint(self):
         result = self.generate()
         counts = {k: len(list(operations(v))) for k, v in result.items()}
-        self.assertEqual(counts, {'consumer': 21, 'owner': 12, 'auth': 8})
+        self.assertEqual(counts, {'consumer': 21, 'owner': 12, 'auth': 10})
         endpoints = [f'{m} {p}' for v in result.values() for m, p, _ in operations(v)]
-        self.assertEqual(len(set(endpoints)), 41)
+        self.assertEqual(len(set(endpoints)), 43)
 
     def test_deterministic_and_does_not_mutate_source(self):
         before = copy.deepcopy(self.source)

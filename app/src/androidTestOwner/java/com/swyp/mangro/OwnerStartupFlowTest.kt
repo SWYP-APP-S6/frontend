@@ -1,10 +1,14 @@
 package com.swyp.mangro
 
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -62,20 +66,27 @@ class OwnerStartupFlowTest {
         compose.onNodeWithText("확인하기").assertIsNotEnabled()
         compose.onNodeWithText("전체동의").performClick()
         compose.onNodeWithText("확인하기").assertIsEnabled()
-        // Checkbox order: all, service, privacy, location, third party, marketing.
-        compose.onAllNodes(isToggleable())[5].performClick().assertIsOff()
+        // Use server requirement semantics instead of hard-coded document counts or types.
+        checkboxes("OPTIONAL")[0].performClick().assertIsOff()
         compose.onNodeWithText("확인하기").assertIsEnabled()
-        compose.onAllNodes(isToggleable())[4].performClick().assertIsOff()
+        checkboxes("REQUIRED")[0].performClick().assertIsOff()
         compose.onNodeWithText("확인하기").assertIsNotEnabled()
         compose.activityRule.scenario.recreate()
-        compose.onAllNodes(isToggleable())[4].assertIsOff()
-        compose.onAllNodes(isToggleable())[5].assertIsOff()
+        checkboxes("REQUIRED")[0].assertIsOff()
+        checkboxes("OPTIONAL")[0].assertIsOff()
         compose.onNodeWithText("확인하기").assertIsNotEnabled()
-        compose.onAllNodes(isToggleable())[4].performClick().assertIsOn()
+        checkboxes("REQUIRED")[0].performClick().assertIsOn()
         compose.onNodeWithText("확인하기").performClick()
         compose.onNodeWithText("가게 정보를 등록해주시면").assertIsDisplayed()
         pressBack()
         compose.onNodeWithText("약관 동의가 필요해요").assertIsDisplayed()
-        compose.onAllNodes(isToggleable())[5].assertIsOff()
+        checkboxes("OPTIONAL")[0].assertIsOff()
     }
+    private fun checkboxes(requirement: String) = compose.onAllNodes(
+        isToggleable() and hasAnyAncestor(
+            SemanticsMatcher("$requirement checkbox") {
+                it.config.getOrNull(SemanticsProperties.TestTag)?.startsWith("terms-check-$requirement-") == true
+            },
+        ),
+    )
 }

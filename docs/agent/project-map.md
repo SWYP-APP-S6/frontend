@@ -18,7 +18,7 @@
 | `:feature:owner:home` | Android library 모듈 | 점주 홈 UI, 운영 현황과 외부 화면 진입 액션 |
 | `:feature:owner:onboarding` | Android library 모듈 | 점주 최초 매장 등록 2단계 UI와 외부 검색·신청 연결 계약 |
 | `:feature:splash` | Android library 모듈 | owner/consumer 스플래시 화면과 시작 시 로그인 분기 |
-| `:feature:auth` | Android library 모듈 | owner/consumer 로그인 화면과 내비게이션 |
+| `:feature:auth` | Android library 모듈 | owner/consumer 로그인·약관 동의 화면과 내비게이션 |
 | `build-logic` | Gradle included build | Android application/library 공통 설정 |
 | `gradle/libs.versions.toml` | Version Catalog | 플러그인과 외부 라이브러리 버전 |
 | `.githooks` | Git hooks | 커밋 메시지와 커밋 전 ktlint 검사 |
@@ -44,10 +44,10 @@
 
 - 공통 Activity, Manifest와 리소스: `app/src/main`
 - Flavor별 `MainScreen`: `app/src/consumer`, `app/src/owner`
-  - Owner는 홈·점포 관리·찜·설정 Navigation을 사용한다. 온보딩 모듈의 실제 주소 검색은 연결되어 있으며 등록 API와 최상위 이동은 미연결이다.
+  - Owner는 `OwnerNavHost`에서 스플래시·로그인·약관 동의·홈·상점 등록·점포 관리·찜·설정 Navigation을 조립한다. 온보딩 모듈의 실제 주소 검색과 상위 그래프 복귀는 연결되어 있으며 등록 API는 미연결이다.
   - 동일한 패키지와 함수 시그니처를 사용하며, 빌드 대상 Flavor의 구현만 포함한다.
 - Consumer `MainScreen`: `app/src/consumer`. `AppNavGraph`와 스플래시 시작 테마는 `app/src/main`에서 공유한다.
-  - Consumer는 스플래시에서 로그인 화면으로 진입하고, Owner Debug와 Release는 홈에서 상품·찜·설정 화면으로 이동한다.
+  - Consumer는 스플래시에서 로그인 화면으로 진입하고, Owner Debug와 Release는 스플래시 → 로그인 → 약관 동의 → 상점 정보 등록 → 완료 시 홈으로 진입하고 상품·찜·설정·상점 등록 화면으로 이동한다.
   - Kotlin 함수는 소스셋 사이에서 덮어쓰지 않으므로 `MainScreen`은 각 빌드에서 하나만 포함한다.
 - Flavor별 로그인 UI: `feature/auth/src/owner`, `feature/auth/src/consumer`의 `LoginScreen`
 - Flavor별 스플래시 UI: `feature/splash/src/owner`, `feature/splash/src/consumer`의 `SplashScreen`
@@ -66,11 +66,11 @@
 - `:app`은 Auth remote를 공통으로, Consumer/Owner remote를 Flavor별로 의존한다. Consumer는 `:feature:splash`, `:feature:auth`에도 의존한다. API 화면 연동은 후속이다.
 - Remote 생성·검증 방법은 [Remote README](../../remote/README.md)를 따른다. OpenAPI Generator 7.24.0 및 Python 3을 사용하며, 생성 코드는 Git에 포함하지 않는다.
 - `:app`은 두 Flavor 모두 `:core:designsystem`, `:core:utils`, `:feature:splash`, `:feature:auth`에 의존한다. 네이버 지도 의존성과 API 키 Manifest 설정은 consumer에만 적용한다.
-- 로그인 여부 확인, 실제 카카오 인증, 홈 및 개인정보처리방침 이동은 아직 TODO 또는 빈 콜백이다.
+- 로그인 여부 확인과 실제 카카오 인증은 미연결이다. Owner의 상점 정보 등록·개인정보처리방침 이동은 연결되어 있으며, Consumer의 해당 목적지 콜백은 아직 비어 있다.
 - `:core:utils`의 `NetworkConnectivityManager`는 기본 네트워크 콜백으로 연결 상태를 관측한다. `MangroApplication`에서 필드 주입받아 앱 시작 시 인스턴스를 생성한다.
 - 앱의 실제 기능 소스는 아직 초기 상태이며 예제 테스트가 남아 있다.
 - Compose convention plugin은 `:app`, `:core:designsystem`, `:feature:owner:home` 등 Compose UI 모듈에 적용되어 있다. Hilt 및 KSP 플러그인은 `:app`, `:core:utils`, `:core:network`, `:remote:auth`, `:remote:consumer`, `:remote:owner`, `:feature:owner:home` 등에 적용되어 있으며, 앱의 Hilt 진입점은 `MangroApplication`이다.
-- 점주 홈은 최초 안내·빈 상태·운영 현황을 표시한다. Owner Debug와 Release 모두 공통 샘플 데이터로 운영 현황을 표시하는 임시 구성이다. Preview는 Debug 전용이며 실제 데이터 조회는 미연결이며 상품 목록·상세·등록 및 찜 목적지는 Owner Navigation으로 연결한다.
+- 점주 홈은 최초 안내·빈 상태·운영 현황을 표시한다. 앱의 홈 주문 정보는 찜과 같은 `OwnerPickupStore`의 ID·상태·재고로 구성한다. Debug는 예시 주문, Release는 빈 상태를 사용한다. Preview는 Debug 전용이며 실제 데이터 조회는 미연결이며 상품 목록·상세·등록 및 찜 목적지는 Owner Navigation으로 연결한다.
 - 루트 `ktlintCheck`는 subproject를 집계하지만 included build인 `build-logic` 소스는 직접 검사하지 않는다.
 - `.github/workflows` 기반 CI는 아직 없다.
 
@@ -96,3 +96,13 @@
 - `OwnerNavHost`가 홈·점포 관리·설정 탭을 연결한다. 각 화면이 State·Action·Event·ViewModel을 소유한다.
 - 상점 조회 API는 미연결이며 Debug에서만 예시 정보를 사용하고 Release는 미등록 상태를 표시한다.
 - 약관 URL은 아직 없으므로 WebView는 `about:blank`를 열고 준비 중 안내를 표시한다. 확정 URL은 `OwnerPolicyViewModel`의 상태에 연결한다.
+
+## Owner 전체 화면 이동
+
+- `OwnerNavHost`: 스플래시 → 로그인 → 약관 동의 → 상점 정보 등록 → 완료 시 홈. 로그인에서 개인정보처리방침으로 이동한 뒤 로그인으로 복귀한다. 등록 완료 후 홈 진입 시 스플래시·로그인·약관·온보딩 기록을 제거한다. 등록 화면에서 뒤로가면 약관 동의로, 약관에서 뒤로가면 로그인으로 복귀한다.
+- 홈 상단 상점 등록 → 기본 정보 → 주소 검색/운영 정보. 주소 검색 결과는 기본 정보의 SavedStateHandle로 돌려주며, 등록 완료 이벤트는 홈으로 복귀한다.
+- 홈·점포 관리·설정 하단 탭은 이전 선택을 복원한다. 홈의 상품/찜 바로가기는 요청한 탭·필터를 우선한다.
+- 홈 방문 예정/새 찜 → 전체 찜, 픽업 완료 → 완료 필터, 수령 확인 → 만료 필터, 취소 안내 → 전체 재고 부족 취소.
+- 홈 방문자와 찜 목록은 같은 주문 ID로 상세에 진입한다. 상품 상세의 재고 부족 취소는 해당 상품 ID만 전달한다.
+- 상품 등록 3단계와 미리보기는 product 내부 Navigation이 소유한다. 설정의 이용약관·개인정보처리방침은 같은 WebView 목적지를 사용한다.
+- 로그인은 기존 임시 성공 이벤트이며 실제 인증·매장 등록 여부 조회는 미연결이다. 등록 신청은 기존 오류 처리를 유지한다. 약관 동의는 필수 항목을 모두 선택해야 온보딩으로 진행하며 마케팅 동의는 선택 사항이다. 동의 내역의 서버 저장과 동의 화면의 약관 상세 이동은 미연결이고, 설정의 약관 WebView는 확정 URL 없이 준비 중 화면을 표시한다. 알림 목록 화면은 없어 준비 중 안내를 표시한다.

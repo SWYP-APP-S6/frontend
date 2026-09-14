@@ -3,6 +3,7 @@ package com.swyp.mangro.feature.owner.product.screen.list
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
 import com.swyp.mangro.feature.owner.product.data.OwnerPickupStore
 import com.swyp.mangro.feature.owner.product.data.pickupTime
@@ -24,10 +25,11 @@ class ProductListViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val pickupStore: OwnerPickupStore,
 ) : ViewModel() {
+    private val destination = savedStateHandle.toRoute<OwnerProductListDestination>()
     private val _uiState = MutableStateFlow(
         ProductListState(
-            tab = savedStateHandle.get<String>(TAB)?.let(ProductListTab::valueOf) ?: ProductListTab.PRODUCTS,
-            filter = savedStateHandle.get<String>(FILTER)?.let(ProductListFilter::valueOf) ?: ProductListFilter.ALL,
+            tab = savedStateHandle.get<String>(TAB)?.let(ProductListTab::valueOf) ?: destination.tab,
+            filter = savedStateHandle.get<String>(FILTER)?.let(ProductListFilter::valueOf) ?: destination.filter,
         ),
     )
     val uiState = _uiState.asStateFlow()

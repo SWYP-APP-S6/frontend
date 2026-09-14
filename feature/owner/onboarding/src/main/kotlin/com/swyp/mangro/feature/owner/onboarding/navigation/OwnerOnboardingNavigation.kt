@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -32,47 +33,55 @@ fun OwnerOnboardingNavigation(
     onBack: () -> Unit,
 ) {
     NavHost(navController = navController, startDestination = OnboardingGraph) {
-        navigation<OnboardingGraph>(startDestination = OwnerBasicInfoDestination) {
-            composable<OwnerBasicInfoDestination> { entry ->
-                val addressResult by entry.savedStateHandle
-                    .getStateFlow<StoreAddressModel?>(ADDRESS_RESULT, null)
-                    .collectAsStateWithLifecycle(lifecycleOwner = entry, minActiveState = Lifecycle.State.RESUMED)
+        ownerOnboardingNavGraph(navController, onComplete, onBack)
+    }
+}
 
-                OwnerBasicInfoRoute(
-                    navigateNext = { basicInfo ->
-                        val destination = requireNotNull(entry.destination.parent?.findNode<OwnerOperatingInfoDestination>())
+fun NavGraphBuilder.ownerOnboardingNavGraph(
+    navController: NavHostController,
+    onComplete: () -> Unit,
+    onBack: () -> Unit,
+) {
+    navigation<OnboardingGraph>(startDestination = OwnerBasicInfoDestination) {
+        composable<OwnerBasicInfoDestination> { entry ->
+            val addressResult by entry.savedStateHandle
+                .getStateFlow<StoreAddressModel?>(ADDRESS_RESULT, null)
+                .collectAsStateWithLifecycle(lifecycleOwner = entry, minActiveState = Lifecycle.State.RESUMED)
 
-                        navController.navigate(
-                            destination.id,
-                            bundleOf(BASIC_INFO to basicInfo),
-                            navOptions { launchSingleTop = true },
-                        )
-                    },
-                    navigateToAddressSearch = {
-                        navController.navigate(AddressSearchDestination) { launchSingleTop = true }
-                    },
-                    navigateBack = onBack,
-                    addressResult = addressResult,
-                    onAddressResultConsumed = { entry.savedStateHandle[ADDRESS_RESULT] = null },
-                )
-            }
+            OwnerBasicInfoRoute(
+                navigateNext = { basicInfo ->
+                    val destination = requireNotNull(entry.destination.parent?.findNode<OwnerOperatingInfoDestination>())
 
-            composable<OwnerOperatingInfoDestination> {
-                OwnerOperatingInfoRoute(
-                    onComplete = onComplete,
-                    navigateBack = { navController.popBackStack() },
-                )
-            }
+                    navController.navigate(
+                        destination.id,
+                        bundleOf(BASIC_INFO to basicInfo),
+                        navOptions { launchSingleTop = true },
+                    )
+                },
+                navigateToAddressSearch = {
+                    navController.navigate(AddressSearchDestination) { launchSingleTop = true }
+                },
+                navigateBack = onBack,
+                addressResult = addressResult,
+                onAddressResultConsumed = { entry.savedStateHandle[ADDRESS_RESULT] = null },
+            )
+        }
 
-            composable<AddressSearchDestination> {
-                AddressSearchWebView(
-                    onDismiss = { navController.popBackStack() },
-                    onSelect = { address ->
-                        navController.previousBackStackEntry?.savedStateHandle?.set(ADDRESS_RESULT, address)
-                        navController.popBackStack()
-                    },
-                )
-            }
+        composable<OwnerOperatingInfoDestination> {
+            OwnerOperatingInfoRoute(
+                onComplete = onComplete,
+                navigateBack = { navController.popBackStack() },
+            )
+        }
+
+        composable<AddressSearchDestination> {
+            AddressSearchWebView(
+                onDismiss = { navController.popBackStack() },
+                onSelect = { address ->
+                    navController.previousBackStackEntry?.savedStateHandle?.set(ADDRESS_RESULT, address)
+                    navController.popBackStack()
+                },
+            )
         }
     }
 }

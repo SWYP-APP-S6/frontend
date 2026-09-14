@@ -22,6 +22,8 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -63,6 +66,15 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun OwnerHomeScreenRoute(
+    pickups: OwnerHomePickupState,
+    navigateToStore: () -> Unit,
+    navigateToRegisterStore: () -> Unit,
+    navigateToPickups: () -> Unit,
+    navigateToCompletedPickups: () -> Unit,
+    navigateToExpiredPickups: () -> Unit,
+    navigateToCancellations: () -> Unit,
+    navigateToPickup: (String) -> Unit,
+    onCompletePickup: (String) -> Boolean,
     products: PersistentList<OwnerProduct>,
     navigateToProducts: () -> Unit,
     navigateToSettings: () -> Unit,
@@ -71,14 +83,31 @@ fun OwnerHomeScreenRoute(
     viewModel: OwnerHomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     LaunchedEffect(products) {
         viewModel.updateProducts(products)
     }
 
+    LaunchedEffect(pickups) {
+        viewModel.updatePickups(pickups)
+    }
+
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
             when (event) {
+                OwnerHomeEvent.NavigateToStore -> navigateToStore()
+                OwnerHomeEvent.NavigateToRegisterStore -> navigateToRegisterStore()
+                OwnerHomeEvent.NavigateToPickups -> navigateToPickups()
+                OwnerHomeEvent.NavigateToCompletedPickups -> navigateToCompletedPickups()
+                OwnerHomeEvent.NavigateToExpiredPickups -> navigateToExpiredPickups()
+                OwnerHomeEvent.NavigateToCancellations -> navigateToCancellations()
+                is OwnerHomeEvent.NavigateToPickup -> navigateToPickup(event.pickupId)
+                is OwnerHomeEvent.CompletePickup -> if (!onCompletePickup(event.pickupId)) {
+                    snackbarHostState.showSnackbar(context.getString(R.string.owner_home_pickup_error))
+                }
+                OwnerHomeEvent.ShowNotificationsPreparing -> snackbarHostState.showSnackbar(context.getString(R.string.owner_home_notifications_preparing))
                 OwnerHomeEvent.NavigateToSettings -> navigateToSettings()
                 OwnerHomeEvent.NavigateToProducts -> navigateToProducts()
                 is OwnerHomeEvent.NavigateToProduct -> navigateToProduct(event.productId)
@@ -90,6 +119,7 @@ fun OwnerHomeScreenRoute(
     OwnerHomeScreen(
         uiState = uiState,
         onAction = viewModel::handleAction,
+        snackbarHostState = snackbarHostState,
     )
 }
 
@@ -97,6 +127,7 @@ fun OwnerHomeScreenRoute(
 fun OwnerHomeScreen(
     uiState: OwnerHomeUiState,
     onAction: (OwnerHomeAction) -> Unit,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -112,6 +143,7 @@ fun OwnerHomeScreen(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
         topBar = {
             Column {
@@ -125,6 +157,14 @@ fun OwnerHomeScreen(
                         )
                     },
                     actions = {
+                        Text(
+                            text = stringResource(R.string.owner_home_register_store),
+                            style = MangroTheme.typography.caption.captionS,
+                            color = MangroTheme.colors.textTitle,
+                            modifier = Modifier
+                                .clickable { onAction(OwnerHomeAction.RegisterStore) }
+                                .padding(12.dp),
+                        )
                         Icon(
                             painter = painterResource(DesignR.drawable.ic_owner_notification),
                             contentDescription = stringResource(R.string.owner_home_notifications),
@@ -169,7 +209,7 @@ fun OwnerHomeScreen(
                 onMenuClick = {
                     when (it) {
                         OwnerMenu.HOME -> Unit
-                        OwnerMenu.STORE -> onAction(OwnerHomeAction.ViewProducts)
+                        OwnerMenu.STORE -> onAction(OwnerHomeAction.ViewStore)
                         OwnerMenu.SETTINGS -> onAction(OwnerHomeAction.ViewSettings)
                     }
                 },
@@ -241,11 +281,13 @@ fun OwnerHomeScreen(
                                 style = MangroTheme.typography.body.bodyL,
                                 color = MangroTheme.colors.textTitle,
                             )
-                            MangroLabel(
-                                content = uiState.storeCategory,
-                                contentColor = MangroTheme.colors.vegetablesNormal,
-                                containerColor = MangroTheme.colors.vegetablesBg,
-                            )
+                            if (uiState.storeCategory.isNotBlank()) {
+                                MangroLabel(
+                                    content = uiState.storeCategory,
+                                    contentColor = MangroTheme.colors.vegetablesNormal,
+                                    containerColor = MangroTheme.colors.vegetablesBg,
+                                )
+                            }
                         }
 
                         Row(

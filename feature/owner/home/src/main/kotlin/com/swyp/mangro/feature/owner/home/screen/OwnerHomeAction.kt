@@ -1,8 +1,10 @@
 package com.swyp.mangro.feature.owner.home.screen
 
 sealed interface OwnerHomeAction {
+    data object RegisterStore : OwnerHomeAction
     data object RegisterProduct : OwnerHomeAction
     data object ViewSettings : OwnerHomeAction
+    data object ViewStore : OwnerHomeAction
     data object ViewProducts : OwnerHomeAction
     data class ViewProduct(val productId: String) : OwnerHomeAction
     data object ViewPickups : OwnerHomeAction

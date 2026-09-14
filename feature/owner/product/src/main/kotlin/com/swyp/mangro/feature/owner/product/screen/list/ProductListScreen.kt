@@ -51,7 +51,10 @@ import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object OwnerProductListDestination
+data class OwnerProductListDestination(
+    val tab: ProductListTab = ProductListTab.PRODUCTS,
+    val filter: ProductListFilter = ProductListFilter.ALL,
+)
 
 @Composable
 internal fun ProductListRoute(

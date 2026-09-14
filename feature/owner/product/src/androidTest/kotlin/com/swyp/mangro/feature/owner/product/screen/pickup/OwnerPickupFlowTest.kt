@@ -72,14 +72,14 @@ class OwnerPickupFlowTest {
         compose.setContent {
             MangroTheme(typography = OwnerMangroTypography) {
                 val nav = rememberNavController()
-                NavHost(nav, startDestination = if (cancellation) OwnerPickupCancellationDestination else OwnerProductListDestination) {
+                NavHost(nav, startDestination = if (cancellation) OwnerPickupCancellationDestination() else OwnerProductListDestination()) {
                     composable<OwnerProductListDestination> {
                         ProductListRoute(
                             products = emptyList(),
                             onSelect = {},
                             onMenuClick = {},
                             onPickupClick = { nav.navigate(OwnerPickupDetailDestination(it)) },
-                            onCancelReservations = { nav.navigate(OwnerPickupCancellationDestination) },
+                            onCancelReservations = { nav.navigate(OwnerPickupCancellationDestination()) },
                             viewModel = model("list") { ProductListViewModel(SavedStateHandle(mapOf("store_tab" to "PICKUPS")), store) },
                         )
                     }

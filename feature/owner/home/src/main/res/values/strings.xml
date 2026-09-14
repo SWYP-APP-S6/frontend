@@ -29,4 +29,7 @@
     <string name="owner_home_remaining">%1$d분 남음</string>
     <string name="owner_home_expired">시간 만료</string>
     <string name="owner_home_pickup_action">%1$s 님 픽업 완료</string>
+    <string name="owner_home_register_store">상점 등록</string>
+    <string name="owner_home_notifications_preparing">알림 화면을 준비하고 있어요.</string>
+    <string name="owner_home_pickup_error">픽업을 완료할 수 없어요. 찜 상태와 재고를 확인해주세요.</string>
 </resources>

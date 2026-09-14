@@ -3,6 +3,7 @@ package com.swyp.mangro.feature.owner.product.screen.pickup.cancellation
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.swyp.mangro.feature.owner.product.data.OwnerPickupStore
 import com.swyp.mangro.feature.owner.product.data.pickupTime
 import com.swyp.mangro.feature.owner.product.model.pickupShortages
@@ -21,6 +22,7 @@ class PickupCancellationViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val pickupStore: OwnerPickupStore,
 ) : ViewModel() {
+    private val productIds = savedStateHandle.toRoute<OwnerPickupCancellationDestination>().productIds.toSet()
     private val _uiState = MutableStateFlow(
         PickupCancellationState(
             excludedIds = savedStateHandle.get<ArrayList<String>>(EXCLUDED)?.toSet().orEmpty(),
@@ -36,6 +38,7 @@ class PickupCancellationViewModel @Inject constructor(
         viewModelScope.launch {
             combine(pickupStore.snapshot, pickupTime()) { snapshot, now ->
                 snapshot to pickupShortages(snapshot.pickups, snapshot.stock, now)
+                    .filter { productIds.isEmpty() || it.productId in productIds }
             }.collect { (snapshot, shortages) ->
                 updateState { state ->
                     val next = state.copy(shortages = shortages, storeName = snapshot.storeName, storePhone = snapshot.storePhone)

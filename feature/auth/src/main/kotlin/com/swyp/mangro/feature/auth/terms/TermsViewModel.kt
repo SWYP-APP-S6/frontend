@@ -29,7 +29,7 @@ class TermsViewModel @Inject constructor() : ViewModel() {
                     _event.send(TermsUiEvent.NavigateToTermsDetail(action.type))
                 }
             }
-            TermsUiAction.ConfirmClicked -> {
+            TermsUiAction.ConfirmClicked -> if (_uiState.value.isRequiredAllChecked) {
                 viewModelScope.launch { _event.send(TermsUiEvent.NavigateToHome) }
             }
         }

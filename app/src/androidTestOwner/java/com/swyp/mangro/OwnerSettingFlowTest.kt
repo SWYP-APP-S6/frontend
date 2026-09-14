@@ -8,21 +8,38 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelectable
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import androidx.test.espresso.Espresso.pressBack
 import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
 class OwnerSettingFlowTest {
     @get:Rule
-    val compose = createAndroidComposeRule<MainActivity>()
+    val compose = createAndroidComposeRule<ProductTestActivity>()
+
+    private val restoration by lazy { StateRestorationTester(compose) }
+
+    @Before
+    fun openHome() {
+        lateinit var navController: NavHostController
+        restoration.setContent {
+            navController = rememberNavController()
+            OwnerTestNavHost(navController)
+        }
+        compose.loginToOwnerRegistration()
+        compose.confirmAcceptedRegistration(navController)
+    }
 
     @Test
     fun settingsCanBeOpenedFromBothTabsAndReselectedWithoutDuplicatingBackStack() {
@@ -53,7 +70,7 @@ class OwnerSettingFlowTest {
         compose.onNodeWithContentDescription("뒤로").performClick()
         compose.onNodeWithText("개인정보 처리방침").performClick()
         assertPolicy("개인정보 처리방침")
-        compose.activityRule.scenario.recreate()
+        restoration.emulateSavedInstanceStateRestore()
         assertPolicy("개인정보 처리방침")
         capture("owner-setting-privacy")
         pressBack()

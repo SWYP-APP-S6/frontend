@@ -24,9 +24,9 @@ Figma [Step1](https://www.figma.com/design/hqglQXERCwjFx1W4amjPHI?node-id=1172-1
 
 ## 앱 조립
 
-`:app`은 `ownerImplementation`으로 이 모듈에 의존한다. `ownerDebug/MainScreen`은 실제 카카오 주소 검색과 등록 폼 UI를 실행한다. 검색어는 카카오 서비스로 전송되지만 등록 신청은 전송되지 않는다. 완료 확인은 Debug Activity를 종료한다.
+`:app`은 `ownerImplementation`으로 이 모듈에 의존한다. Owner Debug/Release 모두 `OwnerNavHost`에서 로그인 → 약관 동의 → 기본 정보 → 운영 정보로 진입한다. 주소 검색 결과는 기본 정보 화면에 전달하며, 등록 완료 이벤트가 발생하면 로그인·약관·온보딩 기록을 제거하고 홈으로 이동한다. 기본 정보 화면의 뒤로가기는 약관 동의로, 약관 화면의 뒤로가기는 로그인으로 돌아간다.
 
-`ownerRelease/MainScreen`은 기존 Owner 진입 화면을 유지한다. Consumer 진입 코드는 변경하지 않는다. 기존 `feat/owner-home`과 합칠 때 두 Feature 의존성/등록을 유지하고 MainScreen 선택은 #56에서 조립해야 한다.
+실제 인증과 매장 등록 API는 미연결이다. 검색어는 카카오 서비스로 전송되지만 등록 신청은 전송되지 않는다. 현재 제출 시 오류 안내가 표시되므로 완료 이벤트를 통한 홈 이동은 계측 테스트의 접수 완료 상태로만 검증한다. Consumer 진입 코드는 변경하지 않는다.
 
 ## 리소스
 

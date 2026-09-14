@@ -48,7 +48,7 @@ import com.swyp.mangro.feature.owner.product.model.pickupDate
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object OwnerPickupCancellationDestination
+data class OwnerPickupCancellationDestination(val productIds: List<String> = emptyList())
 
 @Composable
 internal fun PickupCancellationRoute(

@@ -100,9 +100,9 @@ internal fun VisitorCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(if (minutes > 0) Color(0xFFFFD2B2) else MangroTheme.colors.borderDefault)
+                .background(if (minutes > 0 && visitor.canComplete) Color(0xFFFFD2B2) else MangroTheme.colors.borderDefault)
                 .clickable(
-                    enabled = minutes > 0,
+                    enabled = minutes > 0 && visitor.canComplete,
                     onClick = { onAction(OwnerHomeAction.CompletePickup(visitor.id)) },
                 )
                 .padding(horizontal = 12.dp, vertical = 10.dp),

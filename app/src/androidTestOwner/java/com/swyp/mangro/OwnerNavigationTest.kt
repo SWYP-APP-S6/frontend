@@ -3,18 +3,35 @@ package com.swyp.mangro
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import androidx.test.espresso.Espresso.pressBack
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
 class OwnerNavigationTest {
     @get:Rule
-    val compose = createAndroidComposeRule<MainActivity>()
+    val compose = createAndroidComposeRule<ProductTestActivity>()
+
+    private val restoration by lazy { StateRestorationTester(compose) }
+
+    @Before
+    fun openHome() {
+        lateinit var navController: NavHostController
+        restoration.setContent {
+            navController = rememberNavController()
+            OwnerTestNavHost(navController)
+        }
+        compose.loginToOwnerRegistration()
+        compose.confirmAcceptedRegistration(navController)
+    }
 
     @Test
     fun homeOpensProductManagementAndBackReturnsHome() {

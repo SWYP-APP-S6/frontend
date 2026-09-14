@@ -40,11 +40,11 @@ import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.auth.R
 
 private fun TermsType.toLabelRes(): Int = when (this) {
-    TermsType.SERVICE -> com.swyp.mangro.feature.auth.R.string.terms_service
-    TermsType.PRIVACY -> com.swyp.mangro.feature.auth.R.string.terms_privacy
-    TermsType.LOCATION -> com.swyp.mangro.feature.auth.R.string.terms_location
-    TermsType.PRIVACY_THIRD_PARTY -> com.swyp.mangro.feature.auth.R.string.terms_privacy_third_party
-    TermsType.MARKETING -> com.swyp.mangro.feature.auth.R.string.terms_marketing
+    TermsType.SERVICE -> R.string.terms_service
+    TermsType.PRIVACY -> R.string.terms_privacy
+    TermsType.LOCATION -> R.string.terms_location
+    TermsType.PRIVACY_THIRD_PARTY -> R.string.terms_privacy_third_party
+    TermsType.MARKETING -> R.string.terms_marketing
 }
 
 @Composable
@@ -76,7 +76,7 @@ fun TermsScreen(
         },
         bottomBar = {
             MangroButton(
-                text = stringResource(com.swyp.mangro.feature.auth.R.string.terms_confirm_button),
+                text = stringResource(R.string.terms_confirm_button),
                 onClick = { onAction(TermsUiAction.ConfirmClicked) },
                 style = MangroButtonStyle.ACTIVE,
                 enabled = uiState.isRequiredAllChecked,
@@ -108,7 +108,7 @@ fun TermsScreen(
                 horizontalAlignment = Alignment.Start,
             ) {
                 Text(
-                    text = stringResource(com.swyp.mangro.feature.auth.R.string.terms_title_prefix),
+                    text = stringResource(R.string.terms_title_prefix),
                     style = MangroTheme.typography.heading.headingM,
                     color = MangroTheme.colors.textTitle,
                 )
@@ -120,7 +120,7 @@ fun TermsScreen(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     Text(
-                        text = stringResource(com.swyp.mangro.feature.auth.R.string.terms_title_suffix),
+                        text = stringResource(R.string.terms_title_suffix),
                         style = MangroTheme.typography.heading.headingM,
                         color = MangroTheme.colors.textTitle,
                     )
@@ -187,7 +187,7 @@ private fun AllAgreeRow(
         Spacer(modifier = Modifier.width(8.dp))
 
         Text(
-            text = stringResource(com.swyp.mangro.feature.auth.R.string.terms_all_agree),
+            text = stringResource(R.string.terms_all_agree),
             style = MangroTheme.typography.title.titleS ?: MangroTheme.typography.title.titleM,
             color = MangroTheme.colors.textTitle,
             modifier = Modifier.weight(1f),

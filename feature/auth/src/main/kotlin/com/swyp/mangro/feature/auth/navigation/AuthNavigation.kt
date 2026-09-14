@@ -20,9 +20,9 @@ fun NavGraphBuilder.authNavGraph(
 ) {
     composable<Login> {
         LoginRoute(
-            navigateToHome = { navController.navigate(Terms) },
+            navigateToHome = { navController.navigate(Terms) { launchSingleTop = true } },
             navigateToPrivacyPolicy = navigateToPrivacyPolicy,
-            navigateToTerms = { navController.navigate(Terms) },
+            navigateToTerms = { navController.navigate(Terms) { launchSingleTop = true } },
         )
     }
     composable<Terms> {

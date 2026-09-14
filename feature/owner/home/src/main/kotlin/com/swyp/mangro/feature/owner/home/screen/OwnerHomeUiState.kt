@@ -31,4 +31,5 @@ data class OwnerHomeVisitor(
     val productName: String,
     val quantity: Int,
     val pickupDeadlineMillis: Long,
+    val canComplete: Boolean = true,
 )

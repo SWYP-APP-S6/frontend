@@ -37,6 +37,7 @@ dependencies {
     add("ownerImplementation", project(":feature:owner:product"))
     add("ownerImplementation", project(":feature:owner:home"))
     add("ownerImplementation", project(":feature:owner:setting"))
+    add("ownerImplementation", libs.androidx.hilt.lifecycle.viewmodel.compose)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

@@ -184,6 +184,9 @@ class OwnerPickupFlowTest {
     }
 
     private fun capture(name: String) {
+        compose.waitForIdle()
+        // Navigation 전환 후 실제 디스플레이 프레임이 반영된 뒤 캡처한다.
+        Thread.sleep(500)
         val file = File(compose.activity.getExternalFilesDir(null), "pickup-$name.png")
         file.outputStream().use { InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot().compress(Bitmap.CompressFormat.PNG, 100, it) }
     }

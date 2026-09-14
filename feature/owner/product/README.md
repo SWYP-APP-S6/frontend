@@ -19,7 +19,7 @@
 - 찜 취소 안내도 별도 목적지로 열어 돌아오면 상세의 수량 입력 상태를 유지한다. 실제 찜 취소 API는 아직 연결하지 않았다.
 
 - 호출부가 `products`, `storeOpeningTime(HH:mm)`, `storeClosingTime(HH:mm)`을 제공한다. `onSaveProducts`에는 변경된 상품들만 전달한다. 호출부는 ID로 병합해야 한다.
-- 재고 부족 시 `onCancelReservations`에 해당 상품 ID를 전달한다. 찜 취소 실행·선착순 주문 배정·안내 발송은 #66의 `:feature:owner:pickup` 책임이다. 상품 UI는 부족 수량을 주문 건수로 추정하지 않는다.
+- 재고 부족 시 `onCancelReservations`에 해당 상품 ID를 전달한다. 찜 취소 화면과 선착순 배정은 이 모듈의 `screen/pickup` 및 `OwnerPickupStore`에서 담당한다. 실제 안내 발송은 API 미연결 범위다. 상품 UI는 부족 수량을 주문 건수로 추정하지 않는다.
 - 매장 잔여 수량은 찜에 배정된 수량을 포함한다. 소비자에게 추가 판매 가능한 수량은 `max(잔여 - 찜, 0)`이며 0이면 `isVisibleToCustomers`가 false다. 소비자 조회 API의 노출 필터 연결은 별도다.
 - 사진 URI 읽기 권한을 유지한다. 입력 및 목록은 화면 재생성 시 복원된다. 현재 Owner 앱은 메모리/저장 상태 기반 UI 호스트이며 서버 저장·영구 보관·업로드는 구현하지 않는다. 운영시간 20:00도 호스트 예시로, 실제 매장 설정을 주입해야 한다.
 
@@ -122,3 +122,27 @@ Samsung SM-F711N / Android 15에서 Owner Debug로 실행했다.
 - 최종 검증: 디자인 3개 + 작성/상세 ViewModel 13개 계측 테스트 통과, 앱 사용자 플로우 12개 통과, 단위 테스트 10개 통과. Owner/Consumer Debug 빌드·lint와 앱/상품/디자인시스템 ktlint 통과. 마지막 시간 문자열 분리 후 Owner 빌드·lint와 계측 테스트를 다시 통과했다.
 
 - 픽업 마감: 현재 시각 이후이면서 영업 시작 시각 이상~종료 시각 이하인 오늘의 시간을 드롭다운에 표시한다. 1시간 단위이며 정각이 아닌 영업 종료 시각도 포함한다. 선택지가 없으면 등록할 수 없다. 실제 매장 설정 연결 전 앱 호스트는 09:00~20:00 예시 값을 전달한다.
+
+
+## 찜 관리 통합 (2026-09-14)
+
+별도 `:feature:owner:pickup` 대신 이 모듈의 점포 관리 → 찜 현황 탭에서 목록, 상세, 완료, 재고 부족 취소, 확인 시트 및 빈 상태를 제공한다. 상세와 취소는 화면별 State/Action/Event/ViewModel/Route/Screen으로 나누며 목록과 로컬 찜 저장소를 공유한다.
+
+- [컨벤션 안내](../../../docs/conventions/README.md): 다른 상품·홈 feature와 같은 형식, 화면 계약, ktlint 적용
+- [통합 결정과 API 미연결 범위](../../../docs/adr/0001-owner-product-pickup.md)
+- [찜 관리 아이콘 리소스](#찜-관리-아이콘-리소스)
+- Debug만 예시 데이터와 로컬 완료·취소 동작을 제공한다. Release는 빈 목록이며 실제 재고 API와 메시지 전송은 미연결이다.
+
+
+## 찜 관리 아이콘 리소스
+
+Figma 파일 `hqglQXERCwjFx1W4amjPHI`의 SVG를 변환한 Android VectorDrawable을 `src/main/res/drawable`에서 관리한다. 별도 `design` 폴더에 SVG를 중복 보관하지 않으며, 화면은 `painterResource(R.drawable.pickup_*)`로 참조한다.
+
+| Android 리소스 | 용도 | Figma 노드 |
+|---|---|---|
+| [pickup_empty.xml](src/main/res/drawable/pickup_empty.xml) | 취소 대상 없음 | 1318:26762 |
+| [pickup_product.xml](src/main/res/drawable/pickup_product.xml) | 취소 상품 그룹 | 1318:26538 |
+| [pickup_shortage.xml](src/main/res/drawable/pickup_shortage.xml) | 재고 부족 안내 | 1318:26538 |
+| [pickup_notifications_off.xml](src/main/res/drawable/pickup_notifications_off.xml) | 알림 미동의 | 1318:26538 |
+
+SVG의 path·색상·stroke를 유지하고 rect는 path, 회전은 group으로 변환했다. 빈 상태 아이콘은 48dp 프레임 안에 배치한다.

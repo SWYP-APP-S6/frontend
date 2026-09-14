@@ -53,6 +53,12 @@ class HomeViewModel @Inject constructor() : ViewModel() {
     private val _uiState = MutableStateFlow(
         HomeUiState(
             locationName = "광화문",
+            activeWish = ActiveWishSummary(
+                storeName = "청과 마을",
+                productSummary = "복숭아 4입 · 1개",
+                requestTimeMillis = System.currentTimeMillis() - 5 * 60 * 1000,
+                endTimeMillis = System.currentTimeMillis() + 9 * 60 * 1000 + 24 * 1000,
+            ),
             isLocationPermissionGranted = false,
             storePins = listOf(
                 StorePinMarker(

@@ -10,9 +10,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -62,6 +64,7 @@ import com.swyp.mangro.core.designsystem.component.count
 import com.swyp.mangro.core.designsystem.component.storePinStateOf
 import com.swyp.mangro.core.designsystem.component.tab.MangroPillTabItem
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
+import com.swyp.mangro.feature.consumer.home.component.CountdownCard
 import com.swyp.mangro.feature.consumer.home.component.LocationPermissionRequiredContent
 import kotlin.math.roundToInt
 import kotlinx.collections.immutable.toPersistentList
@@ -218,22 +221,38 @@ internal fun HomeScreen(
                 }
             }
 
-            if (!uiState.isLocationPermissionGranted) {
-                ActionBanner(
-                    iconRes = com.swyp.mangro.core.designsystem.R.drawable.ic_error,
-                    stringRes = com.swyp.mangro.core.designsystem.R.string.banner_location_permission,
-                    modifier = Modifier.align(Alignment.TopCenter),
-                    action = {
-                        Text(
-                            text = stringResource(com.swyp.mangro.core.designsystem.R.string.banner_action_turn_on),
-                            color = MangroTheme.colors.primaryNormal,
-                            style = MangroTheme.typography.label.labelM,
-                            modifier = Modifier.clickable {
-                                onAction(HomeUiAction.PermissionBannerActionClicked)
-                            },
-                        )
-                    },
-                )
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth(),
+            ) {
+                if (!uiState.isLocationPermissionGranted) {
+                    ActionBanner(
+                        iconRes = com.swyp.mangro.core.designsystem.R.drawable.ic_error,
+                        stringRes = com.swyp.mangro.core.designsystem.R.string.banner_location_permission,
+                        action = {
+                            Text(
+                                text = stringResource(com.swyp.mangro.core.designsystem.R.string.banner_action_turn_on),
+                                color = MangroTheme.colors.primaryNormal,
+                                style = MangroTheme.typography.label.labelM,
+                                modifier = Modifier.clickable {
+                                    onAction(HomeUiAction.PermissionBannerActionClicked)
+                                },
+                            )
+                        },
+                    )
+                }
+
+                uiState.activeWish?.let { wish ->
+                    CountdownCard(
+                        storeName = wish.storeName,
+                        productSummary = wish.productSummary,
+                        requestTimeMillis = wish.requestTimeMillis,
+                        endTimeMillis = wish.endTimeMillis,
+                        onClick = { },
+                        modifier = Modifier.padding(16.dp),
+                    )
+                }
             }
 
             AnimatedVisibility(

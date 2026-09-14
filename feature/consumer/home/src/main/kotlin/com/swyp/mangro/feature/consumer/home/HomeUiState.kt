@@ -9,6 +9,7 @@ data class HomeUiState(
     val isLocationPermissionGranted: Boolean = true,
     val storePins: List<StorePinMarker> = emptyList(),
     val selectedStore: SelectedStoreDetail? = null,
+    val activeWish: ActiveWishSummary? = null,
 )
 
 enum class HomeViewMode { MAP, LIST }
@@ -26,4 +27,11 @@ data class SelectedStoreDetail(
     val closingTime: String,
     val walkingMinutes: Int,
     val products: List<StoreProduct>,
+)
+
+data class ActiveWishSummary(
+    val storeName: String,
+    val productSummary: String,
+    val requestTimeMillis: Long,
+    val endTimeMillis: Long,
 )

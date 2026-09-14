@@ -27,6 +27,11 @@ android {
 }
 
 dependencies {
+    add("ownerImplementation", project(":feature:owner:onboarding"))
+
+    implementation(project(":remote:auth"))
+    add("consumerImplementation", project(":remote:consumer"))
+    add("ownerImplementation", project(":remote:owner"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:utils"))
     add("ownerImplementation", project(":feature:owner:product"))
@@ -37,8 +42,12 @@ dependencies {
 
     add("consumerImplementation", libs.naver.maps)
     add("consumerImplementation", libs.naver.maps.compose)
+
     add("consumerImplementation", project(":feature:splash"))
     add("consumerImplementation", project(":feature:auth"))
+
+    add("ownerImplementation", project(":feature:splash"))
+    add("ownerImplementation", project(":feature:auth"))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)

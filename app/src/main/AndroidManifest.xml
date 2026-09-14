@@ -16,7 +16,8 @@
         android:theme="@style/Theme.Mangro">
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.Mangro.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

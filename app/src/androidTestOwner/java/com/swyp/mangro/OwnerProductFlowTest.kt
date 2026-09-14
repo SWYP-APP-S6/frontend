@@ -107,13 +107,12 @@ class OwnerProductFlowTest {
     }
 
     @Test
-    fun storeTabsAndFiltersShowEmptyResultsWithoutStockScreen() {
+    fun storeTabsAndFiltersShowCurrentPickupSamples() {
         show()
         compose.onNodeWithText("등록된 상품 1").assertIsDisplayed()
-        compose.onNodeWithText("찜 현황 0").performClick()
+        compose.onNodeWithText("찜 현황 10").performClick()
         compose.onNodeWithText("픽업완료").performClick()
-        compose.onNodeWithText("해당되는 상품이 없어요.").assertIsDisplayed()
-        compose.onNodeWithText("해당 상품 0개").assertIsDisplayed()
+        compose.onNodeWithText("해당 상품 1개").assertIsDisplayed()
         compose.onNodeWithText("등록된 상품 1").performClick()
         compose.onNodeWithText("전체").performClick()
         compose.onNodeWithText("복숭아 4입").assertIsDisplayed()
@@ -143,7 +142,7 @@ class OwnerProductFlowTest {
     ) {
         val navController = rememberNavController()
         NavHost(navController, startDestination = if (startInEditor) OwnerProductEditorDestination else OwnerProductListDestination) {
-            ownerProductNavGraph(navController, products, storeClosingTime, "09:00", onSave, onCancel, {}, {}, {})
+            ownerProductNavGraph(navController, products, storeClosingTime, "09:00", onSave, onCancel, {}, {})
         }
     }
 

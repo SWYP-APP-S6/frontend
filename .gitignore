@@ -10,3 +10,13 @@
 .cxx
 local.properties
 CLAUDE.local.md
+
+# Private OpenAPI inputs and server handoff documents
+/openapi/*.json
+/openapi/*.md
+/openapi/spec.sha256
+
+# Internal API plans and reports
+/docs/plans/remote-api-codegen.md
+/docs/reports/remote-api-*.md
+/docs/reports/remote-api-*.json

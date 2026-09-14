@@ -50,7 +50,7 @@ class OwnerTermsContentTest {
     }
 
     @Test fun noticeHasNoCheckboxAndOpensByDocumentId() {
-        val model = TermsViewModel(SavedStateHandle(), repository).also { store.put("terms", it) }
+        val model = TermsViewModel(SavedStateHandle(), repository, FakeOwnerAuthRepository()).also { store.put("terms", it) }
         var opened: Long? = null
         compose.setContent { MangroTheme { TermsRoute({}, { opened = it }, {}, model) } }
         compose.onNodeWithText("전체동의").performClick()

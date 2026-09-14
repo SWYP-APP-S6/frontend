@@ -2,6 +2,8 @@ package com.swyp.mangro.feature.auth.terms
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelStore
+import com.swyp.mangro.data.owner.auth.AuthFailure
+import com.swyp.mangro.data.owner.auth.AuthResult
 import com.swyp.mangro.data.owner.terms.model.OwnerTerm
 import com.swyp.mangro.data.owner.terms.model.OwnerTermDetail
 import com.swyp.mangro.data.owner.terms.model.TermsFailure
@@ -46,7 +48,8 @@ class TermsViewModelTest {
         store.clear()
         Dispatchers.resetMain()
     }
-    private fun model(handle: SavedStateHandle = SavedStateHandle()) = TermsViewModel(handle, repository).also { store.put("terms", it) }
+    private val auth = FakeOwnerAuthRepository()
+    private fun model(handle: SavedStateHandle = SavedStateHandle()) = TermsViewModel(handle, repository, auth).also { store.put("terms", it) }
 
     @Test fun loadingAndErrorCannotContinueAndRetryRestoresTheList() = runTest {
         response = TermsResult.Failure(TermsFailure.NETWORK)
@@ -85,10 +88,10 @@ class TermsViewModelTest {
         model.handleAction(TermsUiAction.ItemToggled(7))
         assertTrue(model.uiState.value.isRequiredAllChecked)
         assertFalse(model.uiState.value.isAllChecked)
-        model.handleAction(TermsUiAction.ConfirmClicked)
         model.handleAction(TermsUiAction.ItemDetailClicked(10))
+        model.handleAction(TermsUiAction.ConfirmClicked)
         runCurrent()
-        assertEquals(listOf(TermsUiEvent.NavigateToHome, TermsUiEvent.NavigateToTermsDetail(10)), events)
+        assertEquals(listOf(TermsUiEvent.NavigateToTermsDetail(10), TermsUiEvent.NavigateToOnboarding), events)
     }
 
     @Test fun selectionRestoresOnlyForTheSameDocumentVersion() = runTest {
@@ -101,5 +104,20 @@ class TermsViewModelTest {
         runCurrent()
         assertEquals(listOf(false, true, false), restored.uiState.value.items.map { it.isChecked })
         assertFalse(restored.uiState.value.isRequiredAllChecked)
+    }
+
+    @Test fun signupFailureStaysOnTermsAndAllowsRetryWithoutDoubleSubmission() = runTest {
+        auth.signupResult = AuthResult.Failure(AuthFailure.NETWORK)
+        val model = model()
+        runCurrent()
+        model.handleAction(TermsUiAction.AllAgreeClicked)
+        model.handleAction(TermsUiAction.ConfirmClicked)
+        model.handleAction(TermsUiAction.ConfirmClicked)
+        assertTrue(model.uiState.value.isSubmitting)
+        runCurrent()
+        assertEquals(1, auth.signupCalls)
+        assertFalse(model.uiState.value.isSubmitting)
+        assertTrue(model.uiState.value.isRequiredAllChecked)
+        assertEquals(AuthFailure.NETWORK, model.uiState.value.signupFailure)
     }
 }

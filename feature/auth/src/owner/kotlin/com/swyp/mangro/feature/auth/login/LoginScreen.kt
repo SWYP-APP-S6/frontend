@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -129,11 +130,14 @@ internal fun LoginScreen(
 
                 Spacer(modifier = Modifier.weight(1f))
 
+                if (uiState.isLoading) CircularProgressIndicator()
+                if (uiState.hasError) Text(text = stringResource(R.string.owner_login_error))
+
                 KakaoButton(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 20.dp, bottom = 32.dp, start = 20.dp, end = 20.dp),
-                    onClick = { onAction(LoginUiAction.KakaoLoginClicked) },
+                    onClick = { if (!uiState.isLoading) onAction(LoginUiAction.KakaoLoginClicked) },
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))

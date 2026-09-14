@@ -18,6 +18,7 @@
 | `:feature:owner:home` | Android library 모듈 | 점주 홈 UI, 운영 현황과 외부 화면 진입 액션 |
 | `:feature:owner:onboarding` | Android library 모듈 | 점주 최초 매장 등록 2단계 UI와 외부 검색·신청 연결 계약 |
 | `:feature:splash` | Android library 모듈 | owner/consumer 스플래시 화면과 시작 시 로그인 분기 |
+| `:data:owner:auth` | Android library | Owner 카카오 인증, 가입, 암호화 세션 저장 및 갱신 |
 | `:data:owner:terms` | Android library 모듈 | Owner 약관 목록·본문 Repository와 검증된 앱 모델 |
 | `:feature:auth` | Android library 모듈 | owner/consumer 로그인·약관 동의 화면과 내비게이션 |
 | `build-logic` | Gradle included build | Android application/library 공통 설정 |
@@ -47,13 +48,13 @@
 - Flavor별 `MainScreen`: `app/src/consumer`, `app/src/owner`
   - Owner는 `OwnerNavHost`에서 스플래시·로그인·약관 동의·홈·상점 등록·점포 관리·찜·설정 Navigation을 조립한다. 온보딩 모듈의 실제 주소 검색과 상위 그래프 복귀는 연결되어 있으며 등록 API는 미연결이다.
   - 동일한 패키지와 함수 시그니처를 사용하며, 빌드 대상 Flavor의 구현만 포함한다.
-- Consumer `MainScreen`: `app/src/consumer`. `AppNavGraph`와 스플래시 시작 테마는 `app/src/main`에서 공유한다.
-  - Consumer는 스플래시에서 로그인 화면으로 진입하고, Owner Debug와 Release는 스플래시 → 로그인 → 약관 동의 → 상점 정보 등록 → 완료 시 홈으로 진입하고 상품·찜·설정·상점 등록 화면으로 이동한다.
+- Consumer `MainScreen`: `app/src/consumer`. `AppNavGraph`는 Consumer 소스셋에 있고 스플래시 시작 테마는 공통으로 사용한다.
+  - Consumer는 스플래시에서 로그인 화면으로 진입한다. Owner 신규 회원은 로그인 → 약관 동의·가입 → 상점 등록, 기존 회원과 복원된 세션은 홈으로 이동한다. 상점 조회를 통한 최종 분기는 다음 단계에서 연결한다.
   - Kotlin 함수는 소스셋 사이에서 덮어쓰지 않으므로 `MainScreen`은 각 빌드에서 하나만 포함한다.
 - Flavor별 로그인 UI: `feature/auth/src/owner`, `feature/auth/src/consumer`의 `LoginScreen`
 - Flavor별 스플래시 UI: `feature/splash/src/owner`, `feature/splash/src/consumer`의 `SplashScreen`
   - 두 Feature 모두 `role` 차원의 owner/consumer Flavor를 선언하며, 화면은 각 Flavor에서 독립적으로 수정한다.
-  - Route, ViewModel, 상태와 이벤트는 각 Feature의 `src/main`에서 공유한다.
+  - 로그인 Route·ViewModel·상태·이벤트와 스플래시 Route·ViewModel은 Flavor별로 분리한다. Consumer의 기존 동작은 유지한다.
 - Flavor별 테마와 앱 리소스: `app/src/consumer`, `app/src/owner`
 - 로컬 단위 테스트: `app/src/test`
 - Android 계측 테스트: `app/src/androidTest`
@@ -67,7 +68,8 @@
 - `:app`은 Auth remote를 공통으로, Consumer/Owner remote를 Flavor별로 의존한다. Consumer는 `:feature:splash`, `:feature:auth`에도 의존한다. API 화면 연동은 후속이다.
 - Remote 생성·검증 방법은 [Remote README](../../remote/README.md)를 따른다. OpenAPI Generator 7.24.0 및 Python 3을 사용하며, 생성 코드는 Git에 포함하지 않는다.
 - `:app`은 두 Flavor 모두 `:core:designsystem`, `:core:utils`, `:feature:splash`, `:feature:auth`에 의존한다. 네이버 지도 의존성과 API 키 Manifest 설정은 consumer에만 적용한다.
-- 로그인 여부 확인과 실제 카카오 인증은 미연결이다. Owner의 상점 정보 등록·개인정보처리방침 이동은 연결되어 있으며, Consumer의 해당 목적지 콜백은 아직 비어 있다.
+- Owner는 `data:owner:auth`로 카카오 로그인·가입·세션 복원과 갱신을 연결한다. 신규 가입은 약관 동의 성공 후 상점 등록으로, 기존 회원 및 복원된 세션은 홈으로 이동한다. 상점 보유 여부 조회에 따른 분기는 3단계에서 추가한다. Consumer 인증은 기존 미연결 상태다.
+- Owner SDK 설정은 [Owner 인증 ADR](../adr/0003-owner-auth-data.md)을 따른다. 현재 가입 동의 매핑은 기존 OpenAPI의 boolean 필드를 사용하며 최신 서버 계약 확인이 필요하다.
 - `:core:utils`의 `NetworkConnectivityManager`는 기본 네트워크 콜백으로 연결 상태를 관측한다. `MangroApplication`에서 필드 주입받아 앱 시작 시 인스턴스를 생성한다.
 - 앱의 실제 기능 소스는 아직 초기 상태이며 예제 테스트가 남아 있다.
 - Compose convention plugin은 `:app`, `:core:designsystem`, `:feature:owner:home` 등 Compose UI 모듈에 적용되어 있다. Hilt 및 KSP 플러그인은 `:app`, `:core:utils`, `:core:network`, `:remote:auth`, `:remote:consumer`, `:remote:owner`, `:feature:owner:home` 등에 적용되어 있으며, 앱의 Hilt 진입점은 `MangroApplication`이다.

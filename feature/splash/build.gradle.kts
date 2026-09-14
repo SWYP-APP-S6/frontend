@@ -17,6 +17,8 @@ android {
 }
 
 dependencies {
+    add("ownerImplementation", project(":data:owner:auth"))
+    testImplementation(libs.kotlinx.coroutines.test)
     implementation(project(":core:designsystem"))
     implementation(project(":core:utils"))
     implementation(libs.androidx.compose.runtime)
@@ -27,5 +29,6 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
+    add("testOwnerImplementation", project(":data:owner:terms"))
     testImplementation(libs.junit)
 }

@@ -41,6 +41,7 @@ import com.swyp.mangro.core.designsystem.component.MangroCheckbox
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
 import com.swyp.mangro.core.designsystem.theme.Gray600
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
+import com.swyp.mangro.data.owner.auth.AuthFailure
 import com.swyp.mangro.data.owner.terms.model.OwnerTerm
 import com.swyp.mangro.data.owner.terms.model.TermsRequirement
 import com.swyp.mangro.feature.auth.R
@@ -138,6 +139,10 @@ fun TermsScreen(
                 modifier = Modifier
                     .fillMaxWidth(),
             ) {
+                if (uiState.signupFailure != null) {
+                    Text(text = stringResource(if (uiState.signupFailure == AuthFailure.CONSENT_CHANGED) R.string.owner_signup_changed else R.string.owner_signup_error), modifier = Modifier.padding(20.dp))
+                }
+                if (uiState.isSubmitting) CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
                 if (uiState.isLoading) {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
                 } else if (uiState.failure != null) {

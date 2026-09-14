@@ -29,7 +29,7 @@ class OwnerNavigationTest {
             navController = rememberNavController()
             OwnerTestNavHost(navController)
         }
-        compose.loginToOwnerRegistration()
+        compose.enterOwnerRegistration(navController)
         compose.confirmAcceptedRegistration(navController)
     }
 

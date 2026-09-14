@@ -50,6 +50,7 @@ dependencies {
 
     add("ownerImplementation", project(":feature:splash"))
     add("ownerImplementation", project(":feature:auth"))
+    add("ownerImplementation", libs.kakao.user)
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)
@@ -64,6 +65,7 @@ dependencies {
 
     testImplementation(libs.junit)
     add("androidTestOwnerImplementation", project(":data:owner:terms"))
+    add("androidTestOwnerImplementation", project(":data:owner:auth"))
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

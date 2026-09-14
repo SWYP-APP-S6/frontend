@@ -1,4 +1,5 @@
 [versions]
+kakao = "2.25.0"
 commonmark = "0.24.0"
 openapiGenerator = "7.24.0"
 agp = "9.2.1"
@@ -33,6 +34,7 @@ navigationCompose = "2.9.0"
 webkit = "1.17.0"
 
 [libraries]
+kakao-user = { module = "com.kakao.sdk:v2-user", version.ref = "kakao" }
 commonmark-tables = { module = "org.commonmark:commonmark-ext-gfm-tables", version.ref = "commonmark" }
 commonmark-core = { module = "org.commonmark:commonmark", version.ref = "commonmark" }
 androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }

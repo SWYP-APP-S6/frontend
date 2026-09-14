@@ -3,6 +3,7 @@ package com.swyp.mangro
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.junit4.StateRestorationTester
@@ -10,6 +11,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextReplacement
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -48,7 +50,7 @@ class OwnerNavigationGraphTest {
                 )
             }
         }
-        compose.loginToOwnerRegistration()
+        compose.enterOwnerRegistration(navController)
     }
 
     @Test
@@ -89,6 +91,17 @@ class OwnerNavigationGraphTest {
         compose.confirmAcceptedRegistration(navController)
         tab("홈").assertIsSelected()
         compose.runOnIdle { assertNull(navController.previousBackStackEntry) }
+    }
+
+    @Test
+    fun addressBackAndStateRestorationPreserveOnboardingForm() {
+        compose.onAllNodes(hasSetTextAction())[0].performTextReplacement("네비게이션 확인 상점")
+        compose.onNodeWithText("검색").performClick()
+        compose.onNodeWithText("주소 검색").assertIsDisplayed()
+        pressBack()
+        compose.onNodeWithText("네비게이션 확인 상점").assertIsDisplayed()
+        restoration.emulateSavedInstanceStateRestore()
+        compose.onNodeWithText("네비게이션 확인 상점").assertIsDisplayed()
     }
 
     private fun tab(label: String) = compose.onNode(hasText(label) and isSelectable())

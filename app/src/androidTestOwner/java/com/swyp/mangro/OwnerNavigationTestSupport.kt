@@ -16,21 +16,12 @@ import com.swyp.mangro.feature.owner.onboarding.screen.operating.OwnerOperatingI
 import com.swyp.mangro.navigation.OwnerNavHost
 import com.swyp.mangro.theme.MangroTheme
 
-internal fun ComposeContentTestRule.loginToOwnerTerms() {
+/** Navigation tests enter onboarding directly; OAuth and signup are covered with explicit repository fixtures. */
+internal fun ComposeContentTestRule.enterOwnerRegistration(navController: NavHostController) {
     waitUntil(timeoutMillis = 10_000) {
         onAllNodesWithText("카카오로 시작하기").fetchSemanticsNodes().isNotEmpty()
     }
-    onNodeWithText("카카오로 시작하기").performClick()
-    onNodeWithText("약관 동의가 필요해요").assertIsDisplayed()
-    waitUntil(timeoutMillis = 15_000) {
-        onAllNodesWithText("전체동의").fetchSemanticsNodes().isNotEmpty()
-    }
-}
-
-internal fun ComposeContentTestRule.loginToOwnerRegistration() {
-    loginToOwnerTerms()
-    onNodeWithText("전체동의").performClick()
-    onNodeWithText("확인하기").performClick()
+    runOnIdle { navController.navigate(com.swyp.mangro.feature.owner.onboarding.navigation.OnboardingGraph) }
     onNodeWithText("가게 정보를 등록해주시면").assertIsDisplayed()
 }
 

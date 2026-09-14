@@ -11,4 +11,7 @@
     <string name="owner_terms_refresh">약관 목록 새로고침</string>
     <string name="owner_terms_required">[필수] %1$s</string>
     <string name="owner_terms_optional">[선택] %1$s</string>
+    <string name="owner_login_error">로그인하지 못했어요. 잠시 후 다시 시도해 주세요.</string>
+    <string name="owner_signup_error">가입하지 못했어요. 동의 항목을 확인하고 다시 시도해 주세요.</string>
+    <string name="owner_signup_changed">약관이 변경되었어요. 다시 확인하고 동의해 주세요.</string>
 </resources>

@@ -51,3 +51,5 @@ include(":remote:owner")
 include(":remote:auth")
 
 include(":data:owner:terms")
+
+include(":data:owner:auth")

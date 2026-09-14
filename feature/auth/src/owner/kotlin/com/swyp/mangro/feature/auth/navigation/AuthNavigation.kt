@@ -26,11 +26,12 @@ data class OwnerTermDetailDestination(val documentId: Long)
 fun NavGraphBuilder.authNavGraph(
     navController: NavController,
     navigateToHome: () -> Unit,
+    navigateToOnboarding: () -> Unit,
     navigateToPrivacyPolicy: () -> Unit,
 ) {
     composable<Login> {
         LoginRoute(
-            navigateToHome = { navController.navigate(Terms) { launchSingleTop = true } },
+            navigateToHome = navigateToHome,
             navigateToPrivacyPolicy = navigateToPrivacyPolicy,
             navigateToTerms = { navController.navigate(Terms) { launchSingleTop = true } },
         )
@@ -46,7 +47,13 @@ fun NavGraphBuilder.authNavGraph(
         }
         TermsRoute(
             viewModel = viewModel,
-            navigateToHome = navigateToHome,
+            navigateToLogin = {
+                navController.navigate(Login) {
+                    popUpTo<Login> { inclusive = true }
+                    launchSingleTop = true
+                }
+            },
+            navigateToOnboarding = navigateToOnboarding,
             navigateToTermsDetail = { id -> navController.navigate(OwnerTermDetailDestination(id)) { launchSingleTop = true } },
             onBackClick = { navController.popBackStack() },
         )

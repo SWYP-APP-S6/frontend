@@ -61,7 +61,13 @@ internal fun OwnerNavHost(
         )
         authNavGraph(
             navController = navController,
-            navigateToHome = { navController.navigate(OnboardingGraph) { launchSingleTop = true } },
+            navigateToHome = { navController.enterOwnerHome() },
+            navigateToOnboarding = {
+                navController.navigate(OnboardingGraph) {
+                    popUpTo<Login> { inclusive = true }
+                    launchSingleTop = true
+                }
+            },
             navigateToPrivacyPolicy = {
                 navController.navigate(OwnerPolicyDestination(OwnerPolicy.PRIVACY_POLICY)) { launchSingleTop = true }
             },

@@ -1,4 +1,4 @@
-package com.swyp.mangro.feature.auth.login
+package com.swyp.mangro.feature.auth.terms
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -7,26 +7,26 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
-fun LoginRoute(
+fun TermsRoute(
     navigateToHome: () -> Unit,
-    navigateToPrivacyPolicy: () -> Unit,
-    navigateToTerms: () -> Unit,
-    viewModel: LoginViewModel = hiltViewModel(),
+    navigateToTermsDetail: (TermsType) -> Unit,
+    onBackClick: () -> Unit,
+    viewModel: TermsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
             when (event) {
-                LoginUiEvent.NavigateToHome -> navigateToHome()
-                LoginUiEvent.NavigateToPrivacyPolicy -> navigateToPrivacyPolicy()
-                LoginUiEvent.NavigateToTerms -> navigateToTerms()
+                TermsUiEvent.NavigateToHome -> navigateToHome()
+                is TermsUiEvent.NavigateToTermsDetail -> navigateToTermsDetail(event.type)
             }
         }
     }
 
-    LoginScreen(
+    TermsScreen(
         uiState = uiState,
         onAction = viewModel::handleAction,
+        onBackClick = onBackClick,
     )
 }

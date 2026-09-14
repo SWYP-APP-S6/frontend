@@ -45,6 +45,7 @@ include(":feature:auth")
 include(":feature:owner:home")
 include(":feature:owner:product")
 include(":feature:owner:setting")
+include(":feature:consumer:home")
 
 include(":remote:consumer")
 include(":remote:owner")

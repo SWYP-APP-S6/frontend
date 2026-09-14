@@ -1,0 +1,5 @@
+<resources>
+    <string name="login_greeting">사장님!</string>
+    <string name="login_message_prefix">오늘 팔고 남은</string>
+    <string name="login_message_closing">여기서 파세요</string>
+</resources>

@@ -37,8 +37,12 @@ dependencies {
 
     add("consumerImplementation", libs.naver.maps)
     add("consumerImplementation", libs.naver.maps.compose)
+
     add("consumerImplementation", project(":feature:splash"))
     add("consumerImplementation", project(":feature:auth"))
+
+    add("ownerImplementation", project(":feature:splash"))
+    add("ownerImplementation", project(":feature:auth"))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)

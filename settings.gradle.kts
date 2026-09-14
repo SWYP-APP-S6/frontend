@@ -42,3 +42,7 @@ include(":core:utils")
 include(":feature:owner:onboarding")
 include(":feature:splash")
 include(":feature:auth")
+
+include(":remote:consumer")
+include(":remote:owner")
+include(":remote:auth")

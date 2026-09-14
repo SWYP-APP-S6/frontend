@@ -39,7 +39,7 @@ fun KakaoButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val shape = RoundedCornerShape(16.dp)
+    val shape = RoundedCornerShape(12.dp)
 
     Row(
         modifier = modifier

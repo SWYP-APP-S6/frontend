@@ -8,6 +8,12 @@ plugins {
 
 android {
     namespace = "com.swyp.mangro.feature.splash"
+
+    flavorDimensions += "role"
+    productFlavors {
+        create("owner") { dimension = "role" }
+        create("consumer") { dimension = "role" }
+    }
 }
 
 dependencies {

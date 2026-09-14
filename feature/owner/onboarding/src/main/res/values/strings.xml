@@ -1,0 +1,43 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="store_info">상점 정보</string>
+    <string name="back">뒤로가기</string>
+    <string name="next">다음</string>
+    <string name="submit">등록 신청</string>
+    <string name="intro_first">가게 정보를 등록해주시면</string>
+    <string name="intro_second">확인 후 연락드려요</string>
+    <string name="operating_intro">가게 운영 정보를\n입력해주세요.</string>
+    <string name="name">상호</string>
+    <string name="name_hint">가게명을 입력해주세요.</string>
+    <string name="name_placeholder">청과마을</string>
+    <string name="category">가게 종류</string>
+    <string name="category_hint">가게에서 주로 판매하시는 품목을 선택해주세요.</string>
+    <string name="category_placeholder">과채류</string>
+    <string name="address">주소</string>
+    <string name="address_hint">주소를 기입해주세요.</string>
+    <string name="postal_code">우편번호</string>
+    <string name="detail_address">상세 주소</string>
+    <string name="search">검색</string>
+    <string name="phone">연락처</string>
+    <!-- Telephone separators are hyphens, not punctuation dashes. -->
+    <string name="phone_placeholder" tools:ignore="TypographyDashes">02-000-0000</string>
+    <string name="phone_public">입력하신 번호는 모든 소비자에게 공개됩니다.\n매장 전용 번호를 입력해 주세요</string>
+    <string name="phone_error">올바른 매장 연락처를 입력해주세요.</string>
+    <string name="hours">영업 시간</string>
+    <string name="opening">시작 시간</string>
+    <string name="closing">종료 시간</string>
+    <string name="hours_error">종료 시간은 시작 시간과 같거나 늦어야 해요.</string>
+    <string name="days">영업 요일</string>
+    <string name="day_labels">일,월,화,수,목,금,토</string>
+    <string name="time_format">%1$02d:%2$02d</string>
+    <string name="submitting">등록 신청 중이에요</string>
+    <string name="submit_error_title">등록 신청을 완료하지 못했어요</string>
+    <string name="submit_error_body">입력한 정보는 유지됩니다. 잠시 후 등록 신청 버튼을 눌러 다시 시도해주세요.</string>
+    <string name="submitted">등록 신청이 접수됐어요</string>
+    <string name="submitted_body">가게 정보를 확인한 후 연락드릴게요.</string>
+    <string name="confirm">확인</string>
+    <string name="cancel">취소</string>
+    <string name="address_search">주소 검색</string>
+    <string name="search_hint">도로명 또는 지번 주소</string>
+    <string name="search_error">주소를 불러오지 못했어요. 다시 검색해주세요.</string>
+    <string name="search_empty">검색 결과가 없어요. 다른 주소로 검색해주세요.</string>
+</resources>

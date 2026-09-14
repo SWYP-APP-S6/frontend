@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,26 +25,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
-
-@Composable
-fun SplashRoute(
-    navigateToLogin: () -> Unit,
-    navigateToHome: () -> Unit,
-    viewModel: SplashViewModel = hiltViewModel(),
-) {
-    LaunchedEffect(Unit) {
-        viewModel.event.collect { event ->
-            when (event) {
-                SplashUiEvent.NavigateToLogin -> navigateToLogin()
-                SplashUiEvent.NavigateToHome -> navigateToHome()
-            }
-        }
-    }
-
-    SplashScreen()
-}
 
 @Composable
 fun SplashScreen(

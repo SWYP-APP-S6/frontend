@@ -46,6 +46,7 @@ dependencies {
 
     add("consumerImplementation", project(":feature:splash"))
     add("consumerImplementation", project(":feature:auth"))
+    add("consumerImplementation", project(":feature:consumer:store"))
 
     add("ownerImplementation", project(":feature:splash"))
     add("ownerImplementation", project(":feature:auth"))

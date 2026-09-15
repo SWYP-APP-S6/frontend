@@ -30,6 +30,7 @@ import com.swyp.mangro.core.designsystem.component.label.MangroLabel
 import com.swyp.mangro.core.designsystem.theme.ConsumerMangroCaption
 import com.swyp.mangro.core.designsystem.theme.Gray600
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
+import com.swyp.mangro.core.model.product.ProductCategory
 
 data class ProductDetail(
     val hashtags: List<String>,

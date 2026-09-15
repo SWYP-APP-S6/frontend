@@ -1,0 +1,20 @@
+<resources>
+    <!-- 상세 화면 -->
+    <string name="product_detail_title">상품 상세</string>
+    <string name="product_detail_store_label">판매처</string>
+    <string name="product_detail_operating_hours_label">운영시간</string>
+    <string name="product_detail_payment_notice">매장에 직접 방문해서 결제하셔야 해요.</string>
+    <string name="product_detail_recipe_section_title">이 재료로 만드는 추천 레시피</string>
+    <string name="product_detail_wish_button">이 상품 찜하기</string>
+
+    <!-- 찜하기 바텀시트 -->
+    <string name="wish_sheet_title">이 상품 찜하기</string>
+    <string name="wish_sheet_description">아래 버튼을 누르면 15분 동안 상품을 찜할 수 있어요.</string>
+    <string name="wish_sheet_quantity_label">찜할 수량</string>
+    <string name="wish_sheet_total_price_label">총 금액</string>
+    <string name="product_price">%1$d원</string>
+    <string name="wish_sheet_unit_price_quantity">%1$s원 * %2$d개</string>
+    <string name="wish_sheet_cancel_notice">15분 안에 매장에서 픽업하지 않으시면\n찜이 자동으로 취소돼요.</string>
+    <string name="wish_sheet_edit_button">수정하기</string>
+    <string name="wish_sheet_confirm_button">15분 간 찜하기</string>
+</resources>

@@ -1,0 +1,14 @@
+<resources>
+    <string name="hold_title">찜 현황</string>
+    <string name="hold_description">픽업 시간 내로\n매장에 방문해주세요</string>
+    <string name="hold_notice">방문하시지 않으면 자동으로 찜이 취소돼요</string>
+    <string name="hold_store_info_title">매장 정보</string>
+    <string name="hold_phone_label">전화</string>
+    <string name="hold_address_label">주소 복사</string>
+    <string name="hold_wished_product_title">찜한 상품</string>
+    <string name="hold_cancel_button">찜 취소</string>
+    <string name="hold_retry_button">다시 찜하기</string>
+
+    <string name="store_info_card_copy_address">주소 복사</string>
+    <string name="store_info_card_call">전화</string>
+</resources>

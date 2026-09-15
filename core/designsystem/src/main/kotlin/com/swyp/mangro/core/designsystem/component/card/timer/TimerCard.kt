@@ -152,10 +152,15 @@ fun TimerCard(
     requestTimeMillis: Long,
     endTimeMillis: Long,
     modifier: Modifier = Modifier,
+    onPhaseChange: (TimerCardPhase) -> Unit = {},
 ) {
     val timeState = rememberTimerCardState(requestTimeMillis, endTimeMillis)
     val style = timeState.phase.toStyle()
     val shape = RoundedCornerShape(16.dp)
+
+    LaunchedEffect(timeState.phase) {
+        onPhaseChange(timeState.phase)
+    }
 
     Column(
         modifier = modifier

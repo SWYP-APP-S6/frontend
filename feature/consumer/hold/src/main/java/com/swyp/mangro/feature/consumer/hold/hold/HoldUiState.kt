@@ -12,5 +12,5 @@ data class HoldUiState(
     val timerPhase: TimerCardPhase = TimerCardPhase.DEFAULT,
     val wishedProducts: ImmutableList<WishedProduct> = persistentListOf(),
     val storeInfo: StoreInfo? = null,
-    val isLoading: Boolean = false,
+    val isCancelled: Boolean = false,
 )

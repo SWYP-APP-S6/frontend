@@ -10,6 +10,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun HoldRoute(
     onNavigateToProductDetail: () -> Unit,
+    onNavigateToHomeList: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HoldViewModel = hiltViewModel(),
 ) {
@@ -19,6 +20,7 @@ fun HoldRoute(
         viewModel.uiEvent.collect { event ->
             when (event) {
                 is HoldUiEvent.NavigateToProductDetail -> onNavigateToProductDetail()
+                is HoldUiEvent.NavigateToHomeList -> onNavigateToHomeList()
                 is HoldUiEvent.OpenMapDirections -> {}
                 is HoldUiEvent.CopyAddress -> {}
                 is HoldUiEvent.OpenDialer -> {}

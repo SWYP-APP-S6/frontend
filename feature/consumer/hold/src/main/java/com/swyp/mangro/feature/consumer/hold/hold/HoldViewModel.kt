@@ -76,10 +76,20 @@ class HoldViewModel @Inject constructor(
                     }
                 }
             }
+
+            is HoldUiAction.OnViewOtherProductsClick -> {
+                viewModelScope.launch {
+                    _uiEvent.send(HoldUiEvent.NavigateToHomeList)
+                }
+            }
         }
     }
 
     private fun loadHoldInfo() {
-        viewModelScope.launch {}
+        viewModelScope.launch {
+            _uiState.update {
+                dummyHoldUiState
+            }
+        }
     }
 }

@@ -24,6 +24,7 @@ val dummyProductInfo = ProductInfo(
         id = 1L,
         name = "청과마을",
         address = "서울 마포구 망원로 12",
+        phoneNumber = "02-5894-1982",
         distanceMeters = 450,
         travelInfo = "도보 7분",
         closingTime = "오늘 20:00까지",

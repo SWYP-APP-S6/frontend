@@ -43,3 +43,7 @@ val dummyHoldUiStateExpired = dummyHoldUiState.copy(
     requestTimeMillis = now - 20 * 60_000,
     endTimeMillis = now - 5 * 60_000,
 )
+
+val dummyHoldUiStateCancelled = dummyHoldUiState.copy(
+    isCancelled = true,
+)

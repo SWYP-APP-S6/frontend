@@ -8,7 +8,12 @@
     <string name="hold_wished_product_title">찜한 상품</string>
     <string name="hold_cancel_button">찜 취소</string>
     <string name="hold_retry_button">다시 찜하기</string>
+    <string name="hold_view_other_products_button">다른 상품 보기</string>
+    <string name="hold_wished_product_past_title">찜했던 상품</string>
 
     <string name="store_info_card_copy_address">주소 복사</string>
     <string name="store_info_card_call">전화</string>
+
+    <string name="hold_cancelled_notice">%1$s에서\n준비가 어려워졌어요</string>
+    <string name="hold_cancelled_reason">예약이 취소 되었어요</string>
 </resources>

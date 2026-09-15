@@ -11,10 +11,12 @@ data class HoldDestination(val holdId: String)
 
 fun NavGraphBuilder.holdScreen(
     navController: NavController,
+    onNavigateToHomeList: () -> Unit,
 ) {
     composable<HoldDestination> {
         HoldRoute(
             onNavigateToProductDetail = { navController.popBackStack() },
+            onNavigateToHomeList = onNavigateToHomeList,
         )
     }
 }

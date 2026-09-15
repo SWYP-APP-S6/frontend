@@ -8,8 +8,11 @@ import androidx.navigation.compose.rememberNavController
 import com.swyp.mangro.core.utils.HideNavigationBarWhileVisible
 import com.swyp.mangro.feature.auth.navigation.Login
 import com.swyp.mangro.feature.auth.navigation.authNavGraph
+import com.swyp.mangro.feature.consumer.hold.navigation.holdScreen
+import com.swyp.mangro.feature.consumer.hold.navigation.navigateToHold
 import com.swyp.mangro.feature.consumer.home.navigation.Home
 import com.swyp.mangro.feature.consumer.home.navigation.homeNavGraph
+import com.swyp.mangro.feature.consumer.store.navigation.productDetailScreen
 import com.swyp.mangro.feature.splash.navigation.Splash
 import com.swyp.mangro.feature.splash.navigation.splashNavGraph
 
@@ -41,6 +44,18 @@ fun AppNavGraph(
         )
         homeNavGraph(
             navController = navController,
+        )
+        productDetailScreen(
+            navController = navController,
+            onNavigateToHold = { holdId -> navController.navigateToHold(holdId) },
+        )
+        holdScreen(
+            navController = navController,
+            onNavigateToHomeList = {
+                navController.navigate(Home) {
+                    popUpTo(Home) { inclusive = true }
+                }
+            },
         )
     }
 }

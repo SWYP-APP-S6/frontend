@@ -9,4 +9,5 @@ sealed interface HoldUiAction {
     data object OnDirectionsClick : HoldUiAction
     data object OnCopyAddressClick : HoldUiAction
     data object OnCallClick : HoldUiAction
+    data object OnViewOtherProductsClick : HoldUiAction
 }

@@ -38,13 +38,13 @@ import androidx.compose.ui.unit.dp
 import com.swyp.mangro.core.designsystem.component.MangroButton
 import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
 import com.swyp.mangro.core.designsystem.component.banner.NoticeBanner
-import com.swyp.mangro.core.designsystem.component.card.product.Product
-import com.swyp.mangro.core.designsystem.component.card.product.ProductCategory
 import com.swyp.mangro.core.designsystem.component.card.product.ProductListCard
 import com.swyp.mangro.core.designsystem.component.stepper.MangroStepper
 import com.swyp.mangro.core.designsystem.component.stepper.MangroStepperSize
 import com.swyp.mangro.core.designsystem.theme.Black
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
+import com.swyp.mangro.core.model.product.Product
+import com.swyp.mangro.core.model.product.ProductCategory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

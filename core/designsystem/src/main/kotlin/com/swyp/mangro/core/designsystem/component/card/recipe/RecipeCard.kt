@@ -25,12 +25,7 @@ import com.swyp.mangro.core.designsystem.R
 import com.swyp.mangro.core.designsystem.component.label.MangroLabel
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.designsystem.theme.Orange700
-
-enum class RecipeDifficulty {
-    LOW,
-    MEDIUM,
-    HIGH,
-}
+import com.swyp.mangro.core.model.recipe.RecipeDifficulty
 
 data class RecipeDifficultyStyle(
     @param:StringRes val labelTextRes: Int,

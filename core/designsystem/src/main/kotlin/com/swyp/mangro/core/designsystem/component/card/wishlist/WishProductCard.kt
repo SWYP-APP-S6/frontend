@@ -45,7 +45,7 @@ fun WishProductCard(
         modifier = modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
-            .padding(20.dp),
+            .padding(vertical = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         AsyncImage(

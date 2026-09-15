@@ -9,7 +9,7 @@
 | `:app` | Android application 모듈 | 애플리케이션 패키징과 앱 진입점 |
 | `:core:network` | Android library 모듈 | Retrofit/Json 구성, Bearer 헤더와 HTTP 오류 정보 처리 |
 | `:core:crypto` | Android library 모듈 | Android Keystore 키 관리와 AES-GCM 바이트 암복호화. 저장소와 직렬화는 포함하지 않음 |
-| `:core:local` | Android library 모듈 | AuthKey·사용자 데이터 저장을 위한 골격. Preferences DataStore·crypto 의존성과 Consumer/Owner Flavor 선언 |
+| `:core:local` | Android library 모듈 | 공통 AuthStore의 개별 토큰 암호화·DataStore 저장. Consumer/Owner Flavor 선언, UserInfoStore는 미구현 |
 | `:remote:auth` | Android library 모듈 | 공통 인증 8 API 생성 |
 | `:remote:consumer` | Android library 모듈 | Consumer 21 API 생성 |
 | `:remote:owner` | Android library 모듈 | Owner 12 API 생성 |

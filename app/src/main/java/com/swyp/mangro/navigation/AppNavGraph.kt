@@ -8,8 +8,8 @@ import androidx.navigation.compose.rememberNavController
 import com.swyp.mangro.core.utils.HideNavigationBarWhileVisible
 import com.swyp.mangro.feature.auth.navigation.Login
 import com.swyp.mangro.feature.auth.navigation.authNavGraph
-import com.swyp.mangro.feature.consumer.store.navigation.ProductDetailRoute
-import com.swyp.mangro.feature.consumer.store.navigation.productDetailScreen
+import com.swyp.mangro.feature.consumer.home.navigation.Home
+import com.swyp.mangro.feature.consumer.home.navigation.homeNavGraph
 import com.swyp.mangro.feature.splash.navigation.Splash
 import com.swyp.mangro.feature.splash.navigation.splashNavGraph
 
@@ -36,14 +36,10 @@ fun AppNavGraph(
         )
         authNavGraph(
             navController = navController,
-            navigateToHome = {
-                navController.navigate(ProductDetailRoute(productId = "1")) {
-                    popUpTo(Login) { inclusive = true }
-                }
-            },
+            navigateToHome = { navController.navigate(Home) },
             navigateToPrivacyPolicy = {},
         )
-        productDetailScreen(
+        homeNavGraph(
             navController = navController,
         )
     }

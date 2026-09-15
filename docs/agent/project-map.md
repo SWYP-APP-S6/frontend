@@ -8,6 +8,7 @@
 |---|---|---|
 | `:app` | Android application 모듈 | 애플리케이션 패키징과 앱 진입점 |
 | `:core:network` | Android library 모듈 | Retrofit/Json 구성, Bearer 헤더와 HTTP 오류 정보 처리 |
+| `:core:crypto` | Android library 모듈 | Android Keystore 키 관리와 AES-GCM 바이트 암복호화. 저장소와 직렬화는 포함하지 않음 |
 | `:remote:auth` | Android library 모듈 | 공통 인증 8 API 생성 |
 | `:remote:consumer` | Android library 모듈 | Consumer 21 API 생성 |
 | `:remote:owner` | Android library 모듈 | Owner 12 API 생성 |

@@ -1,5 +1,6 @@
 package com.swyp.mangro.feature.consumer.home
 
+import android.R.attr.top
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -70,6 +71,8 @@ import com.swyp.mangro.core.designsystem.component.card.product.toLabelTextRes
 import com.swyp.mangro.core.designsystem.component.count
 import com.swyp.mangro.core.designsystem.component.storePinStateOf
 import com.swyp.mangro.core.designsystem.component.tab.MangroPillTabItem
+import com.swyp.mangro.core.designsystem.theme.Gray50
+import com.swyp.mangro.core.designsystem.theme.Gray900
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.designsystem.theme.White
 import com.swyp.mangro.feature.consumer.home.HomeViewMode.LIST
@@ -270,7 +273,11 @@ private fun HomeListContent(
 ) {
     Column(
         modifier = modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .background(Gray50)
+            .padding(
+                top = 12.dp,
+            ),
     ) {
         LazyRow(
             modifier = Modifier
@@ -332,7 +339,7 @@ private fun HomeListContent(
         }
 
         LazyColumn(
-            contentPadding = PaddingValues(vertical = 8.dp),
+            contentPadding = PaddingValues(bottom = 50.dp),
         ) {
             filteredGroups.forEach { group ->
                 item(key = "${group.storeId}_header") {
@@ -430,10 +437,12 @@ private fun SelectedStoreCard(
                         Icon(
                             imageVector = ImageVector.vectorResource(R.drawable.ic_directions_walk),
                             contentDescription = null,
+                            tint = Gray900,
                         )
                         Text(
                             text = stringResource(homeR.string.home_walking_minutes, store.walkingMinutes),
                             style = MangroTheme.typography.caption.captionS,
+                            color = MangroTheme.colors.textBody,
                         )
                     }
                 },

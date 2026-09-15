@@ -8,7 +8,7 @@ data class OwnerTerm(
     val version: Int,
     val title: String,
     val requirement: TermsRequirement,
-    val effectiveDate: String,
+    val effectiveDate: String?,
 ) {
     val isCheckable: Boolean get() = requirement != TermsRequirement.NOTICE
     val selectionKey: String get() = "$id:$version"

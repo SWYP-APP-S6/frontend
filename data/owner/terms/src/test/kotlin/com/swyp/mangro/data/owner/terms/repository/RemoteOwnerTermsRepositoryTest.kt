@@ -45,6 +45,17 @@ class RemoteOwnerTermsRepositoryTest {
         assertEquals("/terms/7", server.takeRequest().path)
     }
 
+    @Test fun officialContractAcceptsMissingAndNullEffectiveDates() = runTest {
+        val withoutDate = document(7, "REQUIRED").replace(",\"effectiveDate\":\"2026-09-16\"", "")
+        enqueue("""{"documents":[$withoutDate]}""")
+        val list = repository.fetchTerms() as TermsResult.Success
+        assertNull(list.value.single().effectiveDate)
+        val detail = withoutDate.dropLast(1) + """, "role":"OWNER","effectiveDate":null,"contentMarkdown":"본문"}"""
+        enqueue(detail)
+        val result = repository.fetchTerm(7) as TermsResult.Success
+        assertNull(result.value.document.effectiveDate)
+    }
+
     @Test fun missingDocumentMapsToNotFound() = runTest {
         server.enqueue(MockResponse().setResponseCode(404).setBody("""{"code":"TERMS_DOCUMENT_NOT_FOUND"}"""))
         assertEquals(TermsResult.Failure(TermsFailure.NOT_FOUND), repository.fetchTerm(7))

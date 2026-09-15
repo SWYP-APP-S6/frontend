@@ -6,13 +6,12 @@ Auth·Consumer·Owner Android library에서 OpenAPI Generator 7.24.0으로 Kotli
 
 명세·매핑·체크섬·서버 전달사항은 비공개 자료로 Git에서 제외한다. 새로 클론한 개발자와 CI는 빌드 전에 팀의 비공개 전달 경로로 다음 파일을 받아 저장소 루트에 배치해야 한다.
 
-- `openapi/swyp-app-api-20260913-v2.json`
+- `openapi/mangro-app-openapi-2026-09-15.json`
 - `openapi/endpoint-map.json`
 - `openapi/model-map.json`
 - `openapi/spec.sha256`
-- `openapi/terms-supplement.json` (공식 최신 명세 접근 전의 로컬 보완 계약)
 
-자동 다운로드는 아직 구현되어 있지 않다. 위 파일 없이 코드 생성과 앱 빌드는 실패한다. 약관 보완 입력은 사용자 전달사항과 공개 응답을 바탕으로 작성한 클라이언트 계약이며 공식 명세가 아니다. 최신 명세 접근 시 대조 후 제거한다. 파일은 같은 버전의 묶음으로 전달하고, 명세와 체크섬이 일치해야 한다. 전달사항과 내부 보고서도 비공개로 공유한다.
+자동 다운로드는 아직 구현되어 있지 않다. 위 파일 없이 코드 생성과 앱 빌드는 실패한다. 파일은 같은 버전의 묶음으로 전달하고, 명세와 체크섬이 일치해야 한다. 전달사항과 내부 보고서도 비공개로 공유한다.
 
 Python 3과 Android/Java 개발 환경이 필요하다. 템플릿과 생성 스크립트는 저장소에서 관리한다. 원본 JSON → `prepareOpenApiSpecs` → 모듈별 `openApiValidate` → `openApiGenerate` 순서로 실행되며 Debug/Release 컴파일에 연결된다.
 

@@ -15,12 +15,12 @@ internal class RemoteOwnerTermsRepository @Inject constructor(
     private val service: TermsService,
 ) : OwnerTermsRepository {
     override suspend fun fetchTerms(): TermsResult<List<OwnerTerm>> = request {
-        val response = service.fetchTerms("OWNER")
+        val response = service.fetchTerms(TermsService.RoleFetchTerms.OWNER)
         if (!response.isSuccessful) return@request TermsResult.Failure(TermsFailure.SERVER)
         val body = requireNotNull(response.body())
         require(body.code == "OK" && body.status == 200)
         val documents = body.data.documents.map {
-            term(it.id, it.type, it.version, it.title, it.requirement, it.effectiveDate)
+            term(it.id, it.type.value, it.version, it.title, it.requirement.value, it.effectiveDate)
         }
         require(documents.isNotEmpty() && documents.map { it.id }.distinct().size == documents.size)
         TermsResult.Success(documents)
@@ -34,18 +34,18 @@ internal class RemoteOwnerTermsRepository @Inject constructor(
         val body = requireNotNull(response.body())
         require(body.code == "OK" && body.status == 200)
         val data = body.data
-        require(data.id == id && data.role == "OWNER" && data.contentMarkdown.isNotBlank())
+        require(data.id == id && data.role.value == "OWNER" && data.contentMarkdown.isNotBlank())
         TermsResult.Success(
             OwnerTermDetail(
-                term(data.id, data.type, data.version, data.title, data.requirement, data.effectiveDate),
+                term(data.id, data.type.value, data.version, data.title, data.requirement.value, data.effectiveDate),
                 data.contentMarkdown,
             ),
         )
     }
 
-    private fun term(id: Long, type: String, version: Int, title: String, requirement: String, effectiveDate: String): OwnerTerm {
+    private fun term(id: Long, type: String, version: Int, title: String, requirement: String, effectiveDate: String?): OwnerTerm {
         require(id > 0 && type.isNotBlank() && version > 0 && title.isNotBlank())
-        LocalDate.parse(effectiveDate)
+        effectiveDate?.let { LocalDate.parse(it) }
         return OwnerTerm(id, type, version, title, TermsRequirement.valueOf(requirement), effectiveDate)
     }
 

@@ -155,21 +155,13 @@ def prepare(source, mapping, policies):
 
 
 def load_inputs():
-    raw = (ROOT / 'openapi/swyp-app-api-20260913-v2.json').read_bytes()
+    raw = (ROOT / 'openapi/mangro-app-openapi-2026-09-15.json').read_bytes()
     expected = (ROOT / 'openapi/spec.sha256').read_text().split()[0]
     if hashlib.sha256(raw).hexdigest() != expected:
         raise ValueError('Source checksum mismatch; update the snapshot and checksum together')
     source = json.loads(raw)
     mapping = json.loads((ROOT / 'openapi/endpoint-map.json').read_text())
     policies = json.loads((ROOT / 'openapi/model-map.json').read_text())
-    # Private, explicitly labelled client contract until the new server snapshot is delivered.
-    supplement = json.loads((ROOT / 'openapi/terms-supplement.json').read_text())
-    for target, additions in [(source['paths'], supplement['paths']),
-                              (source['components']['schemas'], supplement['schemas']),
-                              (mapping, supplement['mapping'])]:
-        if set(target) & set(additions):
-            raise ValueError('Supplement conflicts with source; remove it after updating the official snapshot')
-        target.update(additions)
     return source, mapping, policies
 
 

@@ -256,6 +256,9 @@ class HomeViewModel @Inject constructor() : ViewModel() {
                 // TODO: 실제 권한 요청
                 _uiState.update { it.copy(isLocationPermissionGranted = true) }
             }
+            HomeUiAction.ExpandRadiusClicked -> {
+                // TODO: 반경 확장 후 재검색
+            }
             is HomeUiAction.ViewModeChanged -> {
                 _uiState.update { it.copy(viewMode = action.mode) }
             }

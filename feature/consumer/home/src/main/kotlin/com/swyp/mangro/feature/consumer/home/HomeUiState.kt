@@ -8,7 +8,7 @@ import com.swyp.mangro.core.designsystem.component.card.product.ProductCategory
 data class HomeUiState(
     val locationName: String = "",
     val viewMode: HomeViewMode = HomeViewMode.MAP,
-    val isLocationPermissionGranted: Boolean = true,
+    val isLocationPermissionGranted: Boolean = false,
     val storePins: List<StorePinMarker> = emptyList(),
     val selectedStore: SelectedStoreDetail? = null,
     val activeWish: ActiveWishSummary? = null,

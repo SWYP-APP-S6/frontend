@@ -190,9 +190,9 @@ private fun HomeMapContent(
     onAction: (HomeUiAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    if (!uiState.isLocationPermissionGranted) {
+    if (uiState.storePins.isEmpty()) {
         LocationPermissionRequiredContent(
-            onExpandRadiusClick = { onAction(HomeUiAction.PermissionBannerActionClicked) },
+            onExpandRadiusClick = { onAction(HomeUiAction.ExpandRadiusClicked) },
             modifier = Modifier.fillMaxSize(),
         )
         return

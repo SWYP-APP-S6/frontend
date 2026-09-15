@@ -5,4 +5,12 @@
     <string name="home_permission_required_title">내 주변 상품을 찾으려면\n위치 권한이 필요해요.</string>
     <string name="home_permission_required_description">위치를 켜면 가까운 매장부터 보여드려요</string>
     <string name="home_expand_radius_button">반경 5km로 넓히기</string>
+    <string name="home_store_walk">도보 %1$d분</string>
+    <string name="home_store_count">총 %1$d개</string>
+    <string name="home_closing_in_hours">%1$d시간 뒤 마감</string>
+    <string name="home_closing_in_minutes">%1$d분 뒤 마감</string>
+    <string name="home_sort_distance">거리순</string>
+    <string name="home_sort_deadline">마감임박순</string>
+    <string name="home_total_count">총 %1$d개</string>
+    <string name="product_category_all">전체</string>
 </resources>

@@ -23,6 +23,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.swyp.mangro.core.designsystem.R
 import com.swyp.mangro.core.designsystem.component.card.timer.rememberTimerCardState
@@ -117,4 +120,32 @@ private fun formatRemainingClock(millis: Long): String {
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60
     return "%02d:%02d".format(minutes, seconds)
+}
+
+private class CountdownCardPreviewProvider : PreviewParameterProvider<Long> {
+    override val values: Sequence<Long>
+        get() = sequenceOf(
+            9 * 60 * 1000L + 24 * 1000L,
+            2 * 60 * 1000L,
+            30 * 1000L,
+        )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CountdownCardPreview(
+    @PreviewParameter(CountdownCardPreviewProvider::class) remainingMillis: Long,
+) {
+    val now = System.currentTimeMillis()
+
+    MangroTheme {
+        CountdownCard(
+            storeName = "청과 마을",
+            productSummary = "복숭아 4입 · 1개",
+            requestTimeMillis = now - 5 * 60 * 1000,
+            endTimeMillis = now + remainingMillis,
+            onClick = {},
+            modifier = Modifier.padding(16.dp),
+        )
+    }
 }

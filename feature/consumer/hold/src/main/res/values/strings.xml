@@ -1,0 +1,29 @@
+<resources>
+    <string name="hold_title">찜 현황</string>
+    <string name="hold_description">픽업 시간 내로\n매장에 방문해주세요</string>
+    <string name="hold_notice">방문하시지 않으면 자동으로 찜이 취소돼요</string>
+    <string name="hold_store_info_title">매장 정보</string>
+    <string name="hold_phone_label">전화</string>
+    <string name="hold_address_label">주소 복사</string>
+    <string name="hold_wished_product_title">찜한 상품</string>
+    <string name="hold_cancel_button">찜 취소</string>
+    <string name="hold_retry_button">다시 찜하기</string>
+    <string name="hold_view_other_products_button">다른 상품 보기</string>
+    <string name="hold_wished_product_past_title">찜했던 상품</string>
+
+    <string name="store_info_card_copy_address">주소 복사</string>
+    <string name="store_info_card_call">전화</string>
+
+    <string name="hold_cancelled_notice">%1$s에서\n준비가 어려워졌어요</string>
+    <string name="hold_cancelled_reason">예약이 취소 되었어요</string>
+
+    <string name="hold_history_title">찜 내역</string>
+    <string name="hold_history_in_progress_title">진행 중</string>
+    <string name="hold_history_past_title">지난 내역</string>
+
+    <string name="hold_detail_title">찜 상세</string>
+    <string name="hold_detail_cancel_button">찜 취소</string>
+    <string name="hold_detail_store_label">상점</string>
+    <string name="hold_detail_requested_at_label">찜한 시각</string>
+    <string name="hold_detail_expired_at_label">만료 시각</string>
+</resources>

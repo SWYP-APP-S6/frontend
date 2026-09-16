@@ -1,6 +1,6 @@
 # Local storage
 
-AuthKey와 사용자 데이터 저장을 위한 Android library 모듈이다. 공통 AuthStore를 구현했으며 UserInfoStore와 앱 연결은 아직 없다.
+AuthKey와 사용자 데이터 저장을 위한 Android library 모듈이다. 공통 AuthStore와 Flavor별 UserInfoStore를 제공하며 앱 연결은 아직 없다.
 
 - `src/main`: 두 앱에서 공통으로 사용하는 AuthKey 저장소와 저장 관련 코드.
 - `src/consumer`: Consumer UserInfoStore와 사용자 모델.
@@ -24,6 +24,19 @@ Hilt로 `AuthStore`를 주입받아 사용한다. `authKey: Flow<AuthKey?>`로 �
 
 실제 로그인·토큰 갱신 API, 로그아웃 시 사용자 정보 제거, 계정 전환 중 진행 중인 요청 취소는 호출 계층에서 연결해야 한다.
 
+## UserInfoStore
+
+각 Flavor의 같은 패키지에 `UserInfo`, `UserInfoStore`, `UserInfoStoreImpl`, `UserInfoDiModule`을 정의한다. Hilt로 `UserInfoStore`를 주입하고 `userInfo: Flow<UserInfo?>`, `save(UserInfo)`, `clear()`를 사용한다.
+
+- Consumer: `userId`, `nickname`, `phone?`. `/users/me`의 `id`를 `userId`로 매핑한다.
+- Owner: `id`, `name`, `phone`, `postalCode?`, `address`, `addressDetail?`, `businessOpenTime`, `businessCloseTime`, `businessDays`. `/owner/stores/me`의 매장 정보를 사용하며 중첩된 점주 개인 정보는 저장하지 않는다.
+- `BusinessDay`는 Owner local 모델의 MONDAY~SUNDAY enum이다. Remote DTO 매핑은 호출 계층에서 수행한다.
+- 각 필드를 별도로 암호화한다. ID는 십진 문자열, 요일 목록은 enum 이름을 쉼표로 연결한 문자열로 변환한다. 빈 요일 목록은 빈 문자열로 암호화한다.
+- 모든 필드의 암호화가 성공한 뒤 한 번의 `edit`으로 저장한다. 선택 필드의 null은 해당 저장 키 제거로 표현한다.
+- 모든 필드가 없을 때만 null을 반환한다. 필수 필드 누락, 복호화 실패, 잘못된 숫자·요일은 예외로 전달한다.
+- 저장 파일은 `context.noBackupFilesDir/user_info.preferences_pb`이며 AuthStore와 분리한다. 로그아웃과 계정 변경 시 호출 계층에서 두 저장소를 모두 비워야 한다.
+- `UserInfo.toString()`은 개인정보를 출력하지 않는다.
+
 ## 빌드 확인
 
 ```sh
@@ -41,3 +54,5 @@ Hilt로 `AuthStore`를 주입받아 사용한다. `authKey: Flow<AuthKey?>`로 �
 ```
 
 실제 Keystore와 임시 DataStore 파일을 사용해 테스트용 JWT의 개별 암호화, 파일 재개방 후 복원, 갱신·삭제, 동시 저장, 암호화 실패 시 이전 값 보존, 손상·불완전 데이터 처리를 검증한다. 실제 서버 토큰은 사용하지 않는다.
+
+UserInfoStore도 테스트용 한국어 이름·주소·전화번호와 영업 요일로 같은 저장 동작을 확인하며, 선택 필드 제거와 빈 요일 목록의 복원을 검증한다.

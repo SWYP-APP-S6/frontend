@@ -1,6 +1,5 @@
 package com.swyp.mangro.feature.consumer.home
 
-import android.R.attr.top
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -33,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,9 +54,9 @@ import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
 import com.naver.maps.map.compose.MapEffect
 import com.naver.maps.map.compose.MarkerComposable
+import com.naver.maps.map.compose.MarkerState
 import com.naver.maps.map.compose.NaverMap
 import com.naver.maps.map.compose.rememberCameraPositionState
-import com.naver.maps.map.compose.rememberMarkerState
 import com.swyp.mangro.core.designsystem.R
 import com.swyp.mangro.core.designsystem.component.MangroStorePin
 import com.swyp.mangro.core.designsystem.component.appbar.ConsumerBottomAppBar
@@ -65,7 +65,6 @@ import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlig
 import com.swyp.mangro.core.designsystem.component.banner.ActionBanner
 import com.swyp.mangro.core.designsystem.component.card.map.MapStoreCard
 import com.swyp.mangro.core.designsystem.component.card.map.StoreProduct
-import com.swyp.mangro.core.designsystem.component.card.product.ProductCategory
 import com.swyp.mangro.core.designsystem.component.card.product.ProductListCard
 import com.swyp.mangro.core.designsystem.component.card.product.toLabelTextRes
 import com.swyp.mangro.core.designsystem.component.count
@@ -75,6 +74,7 @@ import com.swyp.mangro.core.designsystem.theme.Gray50
 import com.swyp.mangro.core.designsystem.theme.Gray900
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.designsystem.theme.White
+import com.swyp.mangro.core.model.product.ProductCategory
 import com.swyp.mangro.feature.consumer.home.HomeViewMode.LIST
 import com.swyp.mangro.feature.consumer.home.R as homeR
 import com.swyp.mangro.feature.consumer.home.component.CountdownCard
@@ -82,6 +82,7 @@ import com.swyp.mangro.feature.consumer.home.component.HomeCategoryChip
 import com.swyp.mangro.feature.consumer.home.component.LocationPermissionRequiredContent
 import com.swyp.mangro.feature.consumer.home.component.SortDropdown
 import com.swyp.mangro.feature.consumer.home.component.StoreGroupHeader
+import kotlin.collections.filter
 import kotlin.math.roundToInt
 import kotlinx.collections.immutable.toPersistentList
 
@@ -210,7 +211,9 @@ private fun HomeMapContent(
             MarkerComposable(
                 pin.storeId,
                 isSelected,
-                state = rememberMarkerState(position = LatLng(pin.latitude, pin.longitude)),
+                state = rememberSaveable(saver = MarkerState.Saver) {
+                    MarkerState(position = LatLng(pin.latitude, pin.longitude))
+                },
                 onClick = {
                     onAction(HomeUiAction.StorePinClicked(pin.storeId))
                     true

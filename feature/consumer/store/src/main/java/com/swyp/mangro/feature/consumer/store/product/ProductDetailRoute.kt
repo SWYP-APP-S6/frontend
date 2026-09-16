@@ -11,6 +11,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 fun ProductDetailRoute(
     onBackClick: () -> Unit,
     onNavigateToStoreDetail: () -> Unit,
+    onNavigateToHold: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ProductDetailViewModel = hiltViewModel(),
 ) {
@@ -20,7 +21,7 @@ fun ProductDetailRoute(
         viewModel.uiEvent.collect { event ->
             when (event) {
                 is ProductDetailUiEvent.NavigateToStoreDetail -> onNavigateToStoreDetail()
-                is ProductDetailUiEvent.WishConfirmed -> { }
+                is ProductDetailUiEvent.WishConfirmed -> onNavigateToHold("1")
             }
         }
     }

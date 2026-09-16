@@ -2,8 +2,8 @@ package com.swyp.mangro.feature.consumer.home
 
 import androidx.compose.runtime.Composable
 import com.swyp.mangro.core.designsystem.component.StorePinState
-import com.swyp.mangro.core.designsystem.component.card.product.Product
-import com.swyp.mangro.core.designsystem.component.card.product.ProductCategory
+import com.swyp.mangro.core.model.product.Product
+import com.swyp.mangro.core.model.product.ProductCategory
 
 data class HomeUiState(
     val locationName: String = "",

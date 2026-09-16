@@ -48,7 +48,7 @@
 - Flavor별 `MainScreen`: `app/src/consumer`, `app/src/owner`
   - Owner는 홈·점포 관리·찜·설정 Navigation을 사용한다. 온보딩 모듈의 실제 주소 검색은 연결되어 있으며 등록 API와 최상위 이동은 미연결이다.
   - 동일한 패키지와 함수 시그니처를 사용하며, 빌드 대상 Flavor의 구현만 포함한다.
-- Consumer `MainScreen`: `app/src/consumer`. `AppNavGraph`와 스플래시 시작 테마는 `app/src/main`에서 공유한다.
+- Consumer `MainScreen`과 `AppNavGraph`: `app/src/consumer`. Consumer 전용 Feature를 참조하는 그래프는 Consumer 빌드에만 포함하고, 스플래시 시작 테마는 `app/src/main`에서 공유한다.
   - Consumer는 스플래시에서 로그인 화면으로 진입하고, Owner Debug와 Release는 홈에서 상품·찜·설정 화면으로 이동한다.
   - Kotlin 함수는 소스셋 사이에서 덮어쓰지 않으므로 `MainScreen`은 각 빌드에서 하나만 포함한다.
 - Flavor별 로그인 UI: `feature/auth/src/owner`, `feature/auth/src/consumer`의 `LoginScreen`

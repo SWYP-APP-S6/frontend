@@ -1,6 +1,10 @@
 package com.swyp.mangro.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -9,10 +13,11 @@ import com.swyp.mangro.core.designsystem.component.appbar.ConsumerMenu
 import com.swyp.mangro.core.utils.HideNavigationBarWhileVisible
 import com.swyp.mangro.feature.auth.navigation.Login
 import com.swyp.mangro.feature.auth.navigation.authNavGraph
+import com.swyp.mangro.feature.consumer.hold.navigation.HoldHistoryDestination
+import com.swyp.mangro.feature.consumer.hold.navigation.holdDetailScreen
 import com.swyp.mangro.feature.consumer.hold.navigation.holdHistoryScreen
 import com.swyp.mangro.feature.consumer.hold.navigation.holdScreen
 import com.swyp.mangro.feature.consumer.hold.navigation.navigateToHold
-import com.swyp.mangro.feature.consumer.hold.navigation.navigateToHoldHistory
 import com.swyp.mangro.feature.consumer.home.navigation.Home
 import com.swyp.mangro.feature.consumer.home.navigation.homeNavGraph
 import com.swyp.mangro.feature.consumer.store.navigation.productDetailScreen
@@ -31,20 +36,32 @@ fun AppNavGraph(
     HideNavigationBarWhileVisible(hidden = hideNavigationBar)
 
     val onNavigateToMenu: (ConsumerMenu) -> Unit = { menu ->
-        when (menu) {
-            ConsumerMenu.HOME -> {
-                navController.navigate(Home) { popUpTo(Home) { inclusive = true } }
+        val destination = when (menu) {
+            ConsumerMenu.HOME -> Home
+            ConsumerMenu.WISH_LIST -> HoldHistoryDestination
+            ConsumerMenu.MY -> null
+        }
+
+        val isSameDestination = currentRoute == destination?.let { it::class.qualifiedName }
+
+        if (destination != null && !isSameDestination) {
+            navController.navigate(destination) {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
             }
-            ConsumerMenu.WISH_LIST -> {
-                navController.navigateToHoldHistory()
-            }
-            ConsumerMenu.MY -> { }
         }
     }
 
     NavHost(
         navController = navController,
         startDestination = Splash,
+        enterTransition = { fadeIn(animationSpec = tween(150)) },
+        exitTransition = { fadeOut(animationSpec = tween(150)) },
+        popEnterTransition = { fadeIn(animationSpec = tween(150)) },
+        popExitTransition = { fadeOut(animationSpec = tween(150)) },
     ) {
         splashNavGraph(
             navigateToLogin = {
@@ -76,6 +93,9 @@ fun AppNavGraph(
         holdHistoryScreen(
             navController = navController,
             onNavigateToMenu = onNavigateToMenu,
+        )
+        holdDetailScreen(
+            navController = navController,
         )
     }
 }

@@ -4,6 +4,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.swyp.mangro.core.designsystem.component.appbar.ConsumerMenu
+import com.swyp.mangro.feature.consumer.hold.detail.HoldDetailRoute
 import com.swyp.mangro.feature.consumer.hold.history.HoldHistoryRoute
 import com.swyp.mangro.feature.consumer.hold.hold.HoldRoute
 import kotlinx.serialization.Serializable
@@ -13,6 +14,9 @@ data class HoldDestination(val holdId: String)
 
 @Serializable
 data object HoldHistoryDestination
+
+@Serializable
+data class HoldDetailDestination(val holdId: String)
 
 fun NavGraphBuilder.holdScreen(
     navController: NavController,
@@ -32,8 +36,21 @@ fun NavGraphBuilder.holdHistoryScreen(
 ) {
     composable<HoldHistoryDestination> {
         HoldHistoryRoute(
-            onNavigateToHoldDetail = { holdId -> navController.navigateToHold(holdId) },
+            onNavigateToHoldDetail = { holdId -> navController.navigateToHoldDetail(holdId) },
             onNavigateToMenu = onNavigateToMenu,
+        )
+    }
+}
+
+fun NavGraphBuilder.holdDetailScreen(
+    navController: NavController,
+) {
+    composable<HoldDetailDestination> {
+        HoldDetailRoute(
+            onBackClick = { navController.popBackStack() },
+            onNavigateToHoldHistory = {
+                navController.popBackStack()
+            },
         )
     }
 }
@@ -44,4 +61,8 @@ fun NavController.navigateToHold(holdId: String) {
 
 fun NavController.navigateToHoldHistory() {
     navigate(HoldHistoryDestination)
+}
+
+fun NavController.navigateToHoldDetail(holdId: String) {
+    navigate(HoldDetailDestination(holdId = holdId))
 }

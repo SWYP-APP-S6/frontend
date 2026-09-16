@@ -153,6 +153,19 @@ class AuthStoreTest {
     }
 
     @Test
+    fun conditionalRefreshNeverRestoresLoggedOutOrReplacedSession() = runBlocking {
+        val updated = AuthKey(tokens.refreshToken, tokens.accessToken)
+        store.save(tokens)
+        assertTrue(store.replaceIfMatches(tokens, updated))
+        assertEquals(updated, store.authKey.first())
+        assertFalse(store.replaceIfMatches(tokens, tokens))
+        assertEquals(updated, store.authKey.first())
+        store.clear()
+        assertFalse(store.replaceIfMatches(updated, tokens))
+        assertNull(store.authKey.first())
+    }
+
+    @Test
     fun incompletePairFailsInsteadOfBeingReportedAsLoggedOut() = runBlocking {
         store.save(tokens)
         preferences.edit { it.remove(byteArrayPreferencesKey("refreshToken")) }

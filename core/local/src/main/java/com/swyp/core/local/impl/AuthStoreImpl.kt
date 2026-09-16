@@ -52,6 +52,22 @@ internal class AuthStoreImpl(
         }
     }
 
+    override suspend fun replaceIfMatches(expected: AuthKey, updated: AuthKey): Boolean = withContext(Dispatchers.IO) {
+        val accessToken = cryptoManager.encrypt(updated.accessToken.encodeToByteArray())
+        val refreshToken = cryptoManager.encrypt(updated.refreshToken.encodeToByteArray())
+        var replaced = false
+        dataStore.edit { preferences ->
+            val currentAccess = preferences[ACCESS_TOKEN]?.let { cryptoManager.decrypt(it).decodeToString(throwOnInvalidSequence = true) }
+            val currentRefresh = preferences[REFRESH_TOKEN]?.let { cryptoManager.decrypt(it).decodeToString(throwOnInvalidSequence = true) }
+            if (currentAccess == expected.accessToken && currentRefresh == expected.refreshToken) {
+                preferences[ACCESS_TOKEN] = accessToken
+                preferences[REFRESH_TOKEN] = refreshToken
+                replaced = true
+            }
+        }
+        replaced
+    }
+
     private companion object {
         val ACCESS_TOKEN = byteArrayPreferencesKey("accessToken")
         val REFRESH_TOKEN = byteArrayPreferencesKey("refreshToken")

@@ -1,8 +1,9 @@
 package com.swyp.mangro.remote.consumer
 
-import com.swyp.mangro.core.network.BearerTokenInterceptor
-import com.swyp.mangro.core.network.NetworkClient
-import com.swyp.mangro.core.network.readHttpError
+import com.swyp.mangro.core.network.Constants
+import com.swyp.mangro.core.network.di.NetworkModule
+import com.swyp.mangro.core.network.error.readHttpError
+import com.swyp.mangro.core.network.interceptor.AuthorizationInterceptor
 import com.swyp.mangro.remote.auth.model.ExchangeConsumerCodeRequest
 import com.swyp.mangro.remote.auth.model.ExchangeOwnerCodeRequest
 import com.swyp.mangro.remote.auth.model.IssueGuestTokenRequest
@@ -23,15 +24,23 @@ import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
 import org.junit.Test
 import retrofit2.Response
+import retrofit2.Retrofit
 
 /** Explicit opt-in only. One guest issuance followed by read-only requests; no account mutations. */
 class LiveApiSmokeTest {
+    private val json = NetworkModule.provideNetworkJson()
+
+    private fun createRetrofit(
+        baseUrl: String = Constants.BASE_URL,
+        client: OkHttpClient = OkHttpClient(),
+    ): Retrofit = NetworkModule.provideRetrofit(client, json).newBuilder().baseUrl(baseUrl).build()
+
     @Test
     fun guestBrowseAndMemberBoundary() {
         assumeTrue(System.getProperty("mangro.liveApi") == "true")
         runBlocking {
             val publicClient = OkHttpClient.Builder().callTimeout(20, TimeUnit.SECONDS).build()
-            val publicRetrofit = NetworkClient.create(client = publicClient)
+            val publicRetrofit = createRetrofit(client = publicClient)
             val publicServices = ConsumerServices(publicRetrofit)
             success("GET /ping", publicServices.health.checkHealth())
 
@@ -40,8 +49,8 @@ class LiveApiSmokeTest {
             val token = success("POST /auth/guest", issued).data.accessToken
             assertTrue("Guest response must contain a token", token.isNotBlank())
             // Keep the token in memory; never log the response body or auth header.
-            val client = publicClient.newBuilder().addInterceptor(BearerTokenInterceptor { token }).build()
-            val consumer = ConsumerServices(NetworkClient.create(client = client))
+            val client = publicClient.newBuilder().addInterceptor(AuthorizationInterceptor { token }).build()
+            val consumer = ConsumerServices(createRetrofit(client = client))
             val categories = success("GET /recipes/categories", consumer.recipe.fetchCategories())
             assertEquals("OK", categories.code)
             val recipes = success("GET /recipes?page=0&size=2&sort=id,asc", consumer.recipe.fetchRecipes(page = 0, size = 2, sort = listOf("id,asc")))
@@ -59,7 +68,7 @@ class LiveApiSmokeTest {
             assertEquals("OK", products.code)
             val denied = consumer.user.fetchMe()
             assertEquals("Guest member-only access", 403, denied.code())
-            assertEquals("LOGIN_REQUIRED", denied.readHttpError()?.code)
+            assertEquals("LOGIN_REQUIRED", denied.readHttpError(json)?.code)
             println("LIVE GET /users/me HTTP=403 code=LOGIN_REQUIRED")
             println("LIVE stores=${stores.data.stores.size}, products=${products.data.totalProductCount}")
             val storeId = stores.data.stores.firstOrNull()?.storeId ?: products.data.stores.content.firstOrNull()?.storeId
@@ -74,7 +83,7 @@ class LiveApiSmokeTest {
             } else {
                 println("LIVE SKIP GET /products/{productId}: no observed product ID")
             }
-            val owner = OwnerServices(NetworkClient.create(client = client))
+            val owner = OwnerServices(createRetrofit(client = client))
             val auth = AuthServices(publicRetrofit).auth
             val probes: List<Pair<String, suspend () -> Response<*>>> = listOf(
                 "GET /users/me/location" to { consumer.user.fetchMyLocation() },
@@ -98,7 +107,7 @@ class LiveApiSmokeTest {
             val failures = mutableListOf<String>()
             for ((label, call) in probes) {
                 val response = call()
-                val error = response.readHttpError()
+                val error = response.readHttpError(json)
                 println("LIVE NEGATIVE $label HTTP=${response.code()} code=${error?.code}")
                 if (response.code() !in setOf(400, 401, 403) || error?.code.isNullOrBlank()) {
                     failures += "$label HTTP=${response.code()}"

@@ -37,12 +37,12 @@ import com.swyp.mangro.core.designsystem.R as DesignR
 import com.swyp.mangro.core.designsystem.component.MangroButton
 import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
 import com.swyp.mangro.core.designsystem.component.MangroInputBox
-import com.swyp.mangro.core.designsystem.component.card.product.Product
-import com.swyp.mangro.core.designsystem.component.card.product.ProductCategory
 import com.swyp.mangro.core.designsystem.component.card.product.ProductListCard
 import com.swyp.mangro.core.designsystem.component.dropdown.MangroDropdownField
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.designsystem.theme.PretendardFont
+import com.swyp.mangro.core.model.product.Product
+import com.swyp.mangro.core.model.product.ProductCategory
 import com.swyp.mangro.feature.owner.product.R
 import com.swyp.mangro.feature.owner.product.component.OwnerProductLabel
 import com.swyp.mangro.feature.owner.product.component.OwnerProductScaffold

@@ -33,15 +33,15 @@ class OwnerContractTest {
     ): Retrofit = NetworkModule.provideRetrofit(client, json).newBuilder().baseUrl(baseUrl).build()
 
     @Test
-    fun stockUpdateUsesTotalStockAndCancelOverflow() = runTest {
+    fun stockUpdateUsesOnlyTotalStock() = runTest {
         MockWebServer().use { server ->
             server.enqueue(MockResponse().setBody("""{"status":200,"code":"OK","message":"ok","data":{}}"""))
             OwnerServices(createRetrofit(server.url("/").toString())).product
-                .updateStock(9L, UpdateStockRequest(stockQty = 12, cancelOverflow = true))
+                .updateStock(9L, UpdateStockRequest(stockQty = 12))
             val request = checkNotNull(server.takeRequest(5, TimeUnit.SECONDS))
             assertEquals("PATCH", request.method)
             assertEquals("/owner/products/9/stock", request.path)
-            assertEquals(json.parseToJsonElement("""{"stockQty":12,"cancelOverflow":true}"""), json.parseToJsonElement(request.body.readUtf8()))
+            assertEquals(json.parseToJsonElement("""{"stockQty":12}"""), json.parseToJsonElement(request.body.readUtf8()))
         }
     }
 

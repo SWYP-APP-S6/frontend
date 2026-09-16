@@ -6,7 +6,7 @@ Auth·User·Consumer·Owner Android library에서 OpenAPI Generator 7.24.0으로
 
 명세·매핑·체크섬·서버 전달사항은 비공개 자료로 Git에서 제외한다. 새로 클론한 개발자와 CI는 빌드 전에 팀의 비공개 전달 경로로 다음 파일을 받아 저장소 루트에 배치해야 한다.
 
-- `openapi/swyp-app-api-20260913-v2.json`
+- `openapi/mangro-app-openapi-2026-09-17-merged.json`
 - `openapi/endpoint-map.json`
 - `openapi/model-map.json`
 - `openapi/spec.sha256`
@@ -43,3 +43,11 @@ python3 scripts/openapi/check_generated.py
 ## 공통 응답 해제
 
 생성 서비스는 `@UnwrapBaseResponse`로 표시하며 `BaseResponseInterceptor`가 data를 추출한다. 호출부는 `body()`로 내부 DTO를 읽는다. 가입은 `Response<TokenResponse>`로 생성하며 응답의 서버 토큰 쌍을 저장한다. 직접 만든 Retrofit에도 Interceptor를 등록해야 한다.
+
+## 2026-09-17 점주 명세 반영
+
+현재 입력은 09-15 전체 명세에 09-17 점주 명세의 경로·스키마를 병합한 파일이다. 점주 부분 명세만으로 전체 입력을 대체하지 않는다. 소비자 전용 경로는 유지한다. 비공개 입력·매핑·체크섬은 같은 묶음으로 전달한다.
+
+알림 조회·읽음 처리·FCM 등록/삭제는 양쪽 역할의 공통 API이므로 `:remote:user`에서 생성하고 Hilt로 제공한다. 기존 `ConsumerServices.notification` 접근은 공통 생성 타입을 참조하도록 유지한다. `DELETE /users/me`도 공통 UserService에 포함한다.
+
+Owner HoldService에 재고 부족 취소 후보 조회·취소를 추가하고, 재고 수정 요청에서 `cancelOverflow`를 제거했다. 홈·찜 목록의 `serverTime`을 반영했으며, 점주 찜·공통 알림 목록은 새 명세의 `page`·`size`만 사용한다. 상품 업로드·미리보기·등록 계약은 동일하다.

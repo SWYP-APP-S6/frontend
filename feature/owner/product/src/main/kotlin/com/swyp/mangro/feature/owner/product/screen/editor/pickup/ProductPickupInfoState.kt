@@ -7,6 +7,7 @@ import java.io.Serializable
 data class ProductPickupInfoState(
     val product: OwnerProductModel? = null,
     val isLoading: Boolean = true,
+    val storeCategory: String? = null,
     val storeClosingTime: String = "",
     val storeOpeningTime: String = "",
     val pickupTimeOptions: List<String> = emptyList(),

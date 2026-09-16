@@ -32,7 +32,7 @@
     <string name="owner_product_price_error">가격은 1원 이상이며, 할인가는 정가 이하여야 해요.</string>
     <string name="owner_product_editor_info_heading">판매에 필요한 정보를\n더 알려주세요.</string>
     <string name="owner_product_pickup_end">픽업 종료시간</string>
-    <string name="owner_product_pickup_end_hint">미입력 시 기존 운영 시간으로 설정됩니다.</string>
+    <string name="owner_product_pickup_end_hint">기본값은 가게 운영 종료 시간이며, 변경할 수 있어요.</string>
     <string name="owner_product_pickup_today">오늘 %1$s</string>
     <string name="owner_product_editor_pickup_today">오늘 %1$s %2$s</string>
     <string name="owner_product_am">오전</string>
@@ -81,10 +81,12 @@
     <string name="owner_product_filter_expired">만료된 찜</string>
     <string name="owner_product_cancellation_needed_count">취소가 필요한 찜이 %1$d건 있어요.</string>
     <string name="owner_product_cancel_action">취소하기</string>
-    <string name="owner_product_pickup_time_unavailable">오늘 선택 가능한 픽업 시간이 없어요.</string>
+    <string name="owner_product_pickup_time_unavailable">오늘은 픽업 가능한 시간이 없어요.</string>
     <string name="product_registration_pending">상점 승인 대기 중이에요. 승인 완료 후 상품을 등록할 수 있어요.</string>
     <string name="product_registration_rejected">상점 등록이 반려되었어요. 승인 완료 후 상품을 등록할 수 있어요.</string>
     <string name="product_registration_check_failed">상점 승인 상태를 확인하지 못했어요. 다시 시도해주세요.</string>
     <string name="product_registration_retry">다시 확인</string>
     <string name="product_registration_back">돌아가기</string>
+    <string name="product_registration_failed">상품을 등록하지 못했어요. 입력 내용과 픽업 시간을 확인한 뒤 다시 시도해 주세요.</string>
+    <string name="product_registration_confirm">확인</string>
 </resources>

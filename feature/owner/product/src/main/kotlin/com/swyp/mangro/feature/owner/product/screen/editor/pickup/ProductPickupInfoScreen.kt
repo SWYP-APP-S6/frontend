@@ -67,14 +67,16 @@ internal fun ProductPickupInfoRoute(
     onBack: () -> Unit,
     onEditBasicInfo: () -> Unit,
     onSave: (OwnerProductModel) -> Unit,
+    storeCategory: String? = null,
     viewModel: ProductPickupInfoViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val owner = LocalLifecycleOwner.current
-    LaunchedEffect(viewModel, draft, storeClosingTime, storeOpeningTime) {
+    LaunchedEffect(viewModel, draft, storeClosingTime, storeOpeningTime, storeCategory) {
         draft?.let {
             viewModel.initialize(
                 input = it,
+                storeCategory = storeCategory,
                 storeClosingTime = storeClosingTime,
                 storeOpeningTime = storeOpeningTime,
             )
@@ -114,7 +116,6 @@ internal fun ProductPickupInfoScreen(
     val tag = rememberProductTextFieldState(value = uiState.tagInput) {
         onAction(ProductPickupInfoAction.TagChanged(it))
     }
-    val pickupTime = uiState.pickupTime
     val storeClosingTime = uiState.storeClosingTime
     val tags = uiState.tags
     val valid = uiState.canPreview
@@ -161,24 +162,10 @@ internal fun ProductPickupInfoScreen(
             )
             MangroDropdownField(
                 options = uiState.pickupTimeOptions,
-                selectedOption = pickupTime,
-                isError = pickupTime != null && pickupTime !in uiState.pickupTimeOptions,
+                selectedOption = uiState.pickupTime ?: storeClosingTime.takeIf { it in uiState.pickupTimeOptions },
+                isError = uiState.pickupTime != null && uiState.pickupTime !in uiState.pickupTimeOptions,
                 onOptionSelected = { onAction(ProductPickupInfoAction.PickupTimeChanged(it)) },
-                placeholder = if (storeClosingTime in uiState.pickupTimeOptions) {
-                    stringResource(
-                        R.string.owner_product_editor_pickup_today,
-                        stringResource(
-                            id = if (storeClosingTime.substringBefore(":").toInt() < 12) {
-                                R.string.owner_product_am
-                            } else {
-                                R.string.owner_product_pm
-                            },
-                        ),
-                        storeClosingTime,
-                    )
-                } else {
-                    stringResource(R.string.owner_product_pickup_time_unavailable)
-                },
+                placeholder = stringResource(R.string.owner_product_pickup_time_unavailable),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 16.dp),
@@ -280,7 +267,7 @@ internal fun ProductPickupInfoScreen(
                     name = draft.name,
                     price = draft.salePrice,
                     originalPrice = draft.originalPrice,
-                    category = ProductCategory.ETC,
+                    category = ProductCategory.fromStoreCategory(uiState.storeCategory),
                     remainingCount = draft.availableQuantity,
                 ),
                 modifier = Modifier

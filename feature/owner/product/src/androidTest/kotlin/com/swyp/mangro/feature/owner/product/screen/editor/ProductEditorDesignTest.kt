@@ -60,25 +60,23 @@ class ProductEditorDesignTest {
         capture("editor-price")
     }
 
-    @Test fun pickupMatchesFigma1155_14029AndTagsAreRemovable() {
+    @Test fun pickupDefaultsToStoreClosingTimeAndAllowsSelection() {
         val product = OwnerProductModel("peach", "복숭아", listOf("fixture"), 10000, 4000, 1, 1, pickupEndTime = "20:00")
         show {
             var state by remember { mutableStateOf(ProductPickupInfoState(product = product, storeClosingTime = "20:00", pickupTimeOptions = listOf("19:00", "20:00"), tags = listOf("복숭아", "청과"))) }
             ProductPickupInfoScreen(state) { action ->
-                if (action is ProductPickupInfoAction.TagRemoveClicked) state = state.copy(tags = state.tags - action.value)
                 if (action is ProductPickupInfoAction.PickupTimeChanged) state = state.copy(pickupTime = action.value)
+                if (action is ProductPickupInfoAction.TagRemoveClicked) state = state.copy(tags = state.tags - action.value)
             }
         }
         compose.onNodeWithText("판매에 필요한 정보를").assertIsDisplayed()
-        compose.onNodeWithText("오늘 오후 20:00").assertIsDisplayed()
+        compose.onNodeWithText("20:00").assertIsDisplayed()
         compose.onNodeWithText("태그 추가").assertDoesNotExist()
         compose.onNodeWithText("복숭아").assertIsDisplayed()
         compose.onNodeWithText("청과").assertIsDisplayed()
         compose.onNodeWithText("등록하기").assertIsEnabled()
         capture("editor-pickup")
-        compose.onNodeWithText("오늘 오후 20:00").performClick()
-        compose.onNodeWithText("19:00").assertIsDisplayed()
-        compose.onNodeWithText("18:00").assertDoesNotExist()
+        compose.onNodeWithText("20:00").performClick()
         compose.onNodeWithText("19:00").performClick()
         compose.onNodeWithText("19:00").assertIsDisplayed()
         compose.onNodeWithContentDescription("복숭아 태그 삭제").performClick()

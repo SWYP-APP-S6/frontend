@@ -9,6 +9,7 @@ import com.swyp.mangro.feature.owner.product.util.pickupTimeOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
 import java.time.LocalTime
+import java.time.ZoneId
 import java.util.Collections
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
@@ -16,12 +17,12 @@ import kotlinx.coroutines.flow.receiveAsFlow
 
 @HiltViewModel
 class ProductPickupInfoViewModel internal constructor(private val savedStateHandle: SavedStateHandle, private val clock: Clock) : ViewModel() {
-    @Inject constructor(savedStateHandle: SavedStateHandle) : this(savedStateHandle, Clock.systemDefaultZone())
+    @Inject constructor(savedStateHandle: SavedStateHandle) : this(savedStateHandle, Clock.system(ZoneId.of("Asia/Seoul")))
     val uiState = savedStateHandle.getStateFlow(STATE, ProductPickupInfoState())
     private val _event = Channel<ProductPickupInfoEvent>(Channel.BUFFERED)
     val event = _event.receiveAsFlow()
 
-    fun initialize(input: ProductDraftModel, storeClosingTime: String, storeOpeningTime: String) {
+    fun initialize(input: ProductDraftModel, storeClosingTime: String, storeOpeningTime: String, storeCategory: String? = null) {
         val draft = OwnerProductModel(
             id = input.id,
             name = input.name,
@@ -33,9 +34,9 @@ class ProductPickupInfoViewModel internal constructor(private val savedStateHand
             pickupEndTime = storeClosingTime,
         )
         if (uiState.value.product != null) {
-            update(uiState.value.copy(product = draft, storeClosingTime = storeClosingTime, storeOpeningTime = storeOpeningTime))
+            update(uiState.value.copy(product = draft, storeClosingTime = storeClosingTime, storeOpeningTime = storeOpeningTime, storeCategory = storeCategory))
         } else {
-            update(ProductPickupInfoState(isLoading = false, product = draft, storeClosingTime = storeClosingTime, storeOpeningTime = storeOpeningTime, tags = draft.tags))
+            update(ProductPickupInfoState(isLoading = false, product = draft, storeClosingTime = storeClosingTime, storeOpeningTime = storeOpeningTime, storeCategory = storeCategory, tags = draft.tags))
         }
         refreshTimeOptions()
     }
@@ -43,8 +44,7 @@ class ProductPickupInfoViewModel internal constructor(private val savedStateHand
     fun refreshTimeOptions() {
         val state = uiState.value
         val options = pickupTimeOptions(state.storeOpeningTime, state.storeClosingTime, LocalTime.now(clock))
-        val selected = state.pickupTime
-        update(state.copy(pickupTimeOptions = options, showPreview = state.showPreview && (selected ?: state.storeClosingTime) in options))
+        update(state.copy(pickupTimeOptions = options, showPreview = state.showPreview && (state.pickupTime ?: state.storeClosingTime) in options))
     }
 
     fun handleAction(action: ProductPickupInfoAction) {

@@ -90,4 +90,8 @@
     <string name="owner_product_sheet_cancel_reservations">찜 취소하기</string>
     <string name="owner_product_sheet_later">나중에 하기</string>
     <string name="owner_product_sheet_shortage_hint">선착순을 기준으로 부족한 수량만큼 찜을 취소해야 해요.</string>
+    <string name="product_category_fruit">과일</string>
+    <string name="product_category_dairy_egg">유제품/달걀</string>
+    <string name="product_category_bakery">베이커리</string>
+    <string name="product_category_prepared_food">조리식품</string>
 </resources>

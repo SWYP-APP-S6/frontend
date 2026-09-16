@@ -2,11 +2,11 @@ package com.swyp.mangro.remote.consumer.serivce
 
 import com.swyp.mangro.remote.consumer.service.HealthService
 import com.swyp.mangro.remote.consumer.service.HoldService
-import com.swyp.mangro.remote.consumer.service.NotificationService
 import com.swyp.mangro.remote.consumer.service.ProductService
 import com.swyp.mangro.remote.consumer.service.RecipeService
 import com.swyp.mangro.remote.consumer.service.StoreService
 import com.swyp.mangro.remote.consumer.service.UserService
+import com.swyp.mangro.remote.user.service.NotificationService
 import retrofit2.Retrofit
 
 /** Service instances share the caller-supplied network configuration. */

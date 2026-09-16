@@ -6,7 +6,7 @@ from prepare_specs import ROOT, operations, prepare
 
 class PrepareSpecsTest(unittest.TestCase):
     def setUp(self):
-        self.source = json.loads((ROOT / 'openapi/mangro-app-openapi-2026-09-15.json').read_text())
+        self.source = json.loads((ROOT / 'openapi/mangro-app-openapi-2026-09-17-merged.json').read_text())
         self.mapping = json.loads((ROOT / 'openapi/endpoint-map.json').read_text())
         self.policies = json.loads((ROOT / 'openapi/model-map.json').read_text())
 
@@ -24,9 +24,25 @@ class PrepareSpecsTest(unittest.TestCase):
     def test_partition_is_complete_and_disjoint(self):
         result = self.generate()
         counts = {k: len(list(operations(v))) for k, v in result.items()}
-        self.assertEqual(counts, {'consumer': 20, 'owner': 12, 'auth': 10, 'user': 1})
+        self.assertEqual(counts, {'consumer': 15, 'owner': 14, 'auth': 10, 'user': 7})
         endpoints = [f'{m} {p}' for v in result.values() for m, p, _ in operations(v)]
-        self.assertEqual(len(set(endpoints)), 43)
+        self.assertEqual(len(set(endpoints)), 46)
+
+    def test_owner_update_contracts(self):
+        result = self.generate()
+        self.assertIn('/notifications/device-tokens', result['user']['paths'])
+        self.assertNotIn('/notifications', result['consumer']['paths'])
+        self.assertIn('delete', result['user']['paths']['/users/me'])
+        self.assertIn('/owner/holds/cancel-candidates', result['owner']['paths'])
+        self.assertIn('/owner/holds/cancel', result['owner']['paths'])
+        schemas = result['owner']['components']['schemas']
+        self.assertNotIn('cancelOverflow', schemas['UpdateStockRequest']['properties'])
+        for name in ('OwnerHomeResponse', 'OwnerHoldListResponse'):
+            self.assertIn('serverTime', schemas[name]['required'])
+        for module, path in [('owner', '/owner/holds'), ('user', '/notifications')]:
+            params = result[module]['paths'][path]['get']['parameters']
+            self.assertNotIn('sort', [p['name'] for p in params])
+            self.assertEqual(100, next(p for p in params if p['name'] == 'size')['schema']['maximum'])
 
     def test_deterministic_and_does_not_mutate_source(self):
         before = copy.deepcopy(self.source)
@@ -103,7 +119,7 @@ class PrepareSpecsTest(unittest.TestCase):
         schema = photo['requestBody']['content']['multipart/form-data']['schema']
         self.assertEqual('binary', schema['properties']['file']['format'])
         self.assertEqual(['file'], schema['required'])
-        deleted = result['consumer']['paths']['/notifications/device-tokens']['delete']
+        deleted = result['user']['paths']['/notifications/device-tokens']['delete']
         self.assertTrue(deleted['x-delete-with-body'])
         self.assertIn('application/json', deleted['requestBody']['content'])
         self.assertNotIn('/owner/products/{id}/available-qty', result['owner']['paths'])

@@ -30,15 +30,8 @@ import com.swyp.mangro.core.designsystem.component.card.DiscountThumbnail
 import com.swyp.mangro.core.designsystem.component.label.MangroLabel
 import com.swyp.mangro.core.designsystem.theme.ConsumerMangroCaption
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
-
-enum class ProductCategory {
-    GRAINS,
-    VEGETABLES,
-    MEAT,
-    SEAFOOD,
-    NUTS,
-    ETC,
-}
+import com.swyp.mangro.core.model.product.Product
+import com.swyp.mangro.core.model.product.ProductCategory
 
 @Composable
 fun ProductCategory.toLabelColors(): Pair<Color, Color> = when (this) {
@@ -58,17 +51,6 @@ fun ProductCategory.toLabelTextRes(): Int = when (this) {
     ProductCategory.NUTS -> R.string.product_category_nuts
     ProductCategory.ETC -> R.string.product_category_etc
 }
-
-data class Product(
-    val id: String,
-    val imageUrl: String,
-    val discountRate: Int?,
-    val name: String,
-    val price: Int,
-    val originalPrice: Int?,
-    val category: ProductCategory,
-    val remainingCount: Int,
-)
 
 @Composable
 fun ProductListCard(
@@ -109,9 +91,10 @@ fun ProductListCard(
                     style = MangroTheme.typography.label.labelL,
                 )
 
-                if (product.originalPrice != null) {
+                val originalPrice = product.originalPrice
+                if (originalPrice != null) {
                     Text(
-                        text = stringResource(R.string.product_price, product.originalPrice),
+                        text = stringResource(R.string.product_price, originalPrice), // Int로 스마트캐스트 잘 됨
                         style = MangroTheme.typography.caption.captionS.copy(
                             textDecoration = TextDecoration.LineThrough,
                         ),

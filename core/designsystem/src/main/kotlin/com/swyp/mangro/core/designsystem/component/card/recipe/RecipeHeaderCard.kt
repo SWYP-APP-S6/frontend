@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.swyp.mangro.core.designsystem.R
 import com.swyp.mangro.core.designsystem.component.label.MangroLabel
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
+import com.swyp.mangro.core.model.recipe.RecipeDifficulty
 
 @Composable
 fun RecipeHeaderCard(

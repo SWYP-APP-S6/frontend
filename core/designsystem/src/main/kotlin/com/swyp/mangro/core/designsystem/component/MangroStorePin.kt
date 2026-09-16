@@ -67,6 +67,13 @@ fun storePinStateOf(
     else -> StorePinState.Default(count)
 }
 
+val StorePinState.count: Int
+    get() = when (this) {
+        is StorePinState.Empty -> count
+        is StorePinState.Default -> count
+        is StorePinState.Selected -> count
+    }
+
 @Composable
 fun MangroStorePin(
     state: StorePinState,

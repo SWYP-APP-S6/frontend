@@ -16,4 +16,14 @@
 
     <string name="hold_cancelled_notice">%1$s에서\n준비가 어려워졌어요</string>
     <string name="hold_cancelled_reason">예약이 취소 되었어요</string>
+
+    <string name="hold_history_title">찜 내역</string>
+    <string name="hold_history_in_progress_title">진행 중</string>
+    <string name="hold_history_past_title">지난 내역</string>
+
+    <string name="hold_detail_title">찜 상세</string>
+    <string name="hold_detail_cancel_button">찜 취소</string>
+    <string name="hold_detail_store_label">상점</string>
+    <string name="hold_detail_requested_at_label">찜한 시각</string>
+    <string name="hold_detail_expired_at_label">만료 시각</string>
 </resources>

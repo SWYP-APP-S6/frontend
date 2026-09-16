@@ -27,6 +27,12 @@ interface AuthStore {
     suspend fun save(authKey: AuthKey)
 
     /**
+     * 현재 토큰 쌍이 [expected]와 같을 때만 [updated]로 원자적으로 교체합니다.
+     * 갱신 요청 중 로그아웃이나 계정 변경이 발생했다면 false를 반환합니다.
+     */
+    suspend fun replaceIfMatches(expected: AuthKey, updated: AuthKey): Boolean
+
+    /**
      * 저장된 accessToken과 refreshToken을 함께 삭제합니다.
      *
      * 복호화를 수행하지 않으므로 손상된 토큰도 삭제할 수 있습니다.

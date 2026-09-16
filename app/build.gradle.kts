@@ -30,6 +30,8 @@ dependencies {
     add("ownerImplementation", project(":feature:owner:onboarding"))
 
     implementation(project(":remote:auth"))
+    implementation(libs.retrofit.kotlinx.serialization)
+    implementation(project(":core:local"))
     add("consumerImplementation", project(":remote:consumer"))
     add("ownerImplementation", project(":remote:owner"))
     implementation(project(":core:designsystem"))
@@ -65,6 +67,7 @@ dependencies {
     implementation(libs.material)
 
     testImplementation(libs.junit)
+    testImplementation(libs.okhttp.mockwebserver)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

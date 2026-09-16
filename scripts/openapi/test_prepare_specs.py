@@ -6,7 +6,7 @@ from prepare_specs import ROOT, operations, prepare
 
 class PrepareSpecsTest(unittest.TestCase):
     def setUp(self):
-        self.source = json.loads((ROOT / 'openapi/swyp-app-api-20260913-v2.json').read_text())
+        self.source = json.loads((ROOT / 'openapi/mangro-app-openapi-2026-09-15.json').read_text())
         self.mapping = json.loads((ROOT / 'openapi/endpoint-map.json').read_text())
         self.policies = json.loads((ROOT / 'openapi/model-map.json').read_text())
 
@@ -16,14 +16,24 @@ class PrepareSpecsTest(unittest.TestCase):
     def test_partition_is_complete_and_disjoint(self):
         result = self.generate()
         counts = {k: len(list(operations(v))) for k, v in result.items()}
-        self.assertEqual(counts, {'consumer': 21, 'owner': 12, 'auth': 8})
+        self.assertEqual(counts, {'consumer': 21, 'owner': 12, 'auth': 10})
         endpoints = [f'{m} {p}' for v in result.values() for m, p, _ in operations(v)]
-        self.assertEqual(len(set(endpoints)), 41)
+        self.assertEqual(len(set(endpoints)), 43)
 
     def test_deterministic_and_does_not_mutate_source(self):
         before = copy.deepcopy(self.source)
         self.assertEqual(self.generate(), self.generate())
         self.assertEqual(before, self.source)
+
+    def test_bearer_security_is_preserved_without_invented_operation_exceptions(self):
+        self.assertEqual(self.source['security'], [{'bearerAuth': []}])
+        for spec in self.generate().values():
+            self.assertEqual(spec['security'], self.source['security'])
+            self.assertEqual(spec['components']['securitySchemes'], self.source['components']['securitySchemes'])
+            for path, item in spec['paths'].items():
+                for method, operation in item.items():
+                    if method in ('get', 'post', 'put', 'patch', 'delete'):
+                        self.assertEqual(operation.get('security'), self.source['paths'][path][method].get('security'))
 
     def test_new_endpoint_fails_instead_of_being_silently_dropped(self):
         self.source['paths']['/new'] = {'get': {'operationId': 'new'}}

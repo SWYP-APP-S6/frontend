@@ -1,5 +1,7 @@
 package com.swyp.mangro.core.network
 
+import com.swyp.mangro.core.network.di.NetworkModule
+import com.swyp.mangro.core.network.interceptor.AuthorizationInterceptor
 import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -9,17 +11,19 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
-class NetworkClientTest {
+class NetworkModuleTest {
+    private val json = NetworkModule.provideNetworkJson()
+
     @Test
     fun productionBaseUrlIsConfigured() {
-        assertEquals("https://api.mangro.cloud/", NetworkClient.create().baseUrl().toString())
+        assertEquals("https://api.mangro.cloud/", NetworkModule.provideRetrofit(OkHttpClient(), json).baseUrl().toString())
     }
 
     @Test
     fun authenticatedClientReadsLatestTokenAndPreservesExplicitHeader() {
         MockWebServer().use { server ->
             var token: String? = "first"
-            val client = OkHttpClient.Builder().addInterceptor(BearerTokenInterceptor { token }).build()
+            val client = OkHttpClient.Builder().addInterceptor(AuthorizationInterceptor(server.url("/")) { token }).build()
             fun send(header: String? = null): String? {
                 server.enqueue(MockResponse())
                 val builder = Request.Builder().url(server.url("/"))

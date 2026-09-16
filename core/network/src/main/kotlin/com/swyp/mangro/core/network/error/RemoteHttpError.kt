@@ -1,6 +1,7 @@
-package com.swyp.mangro.core.network
+package com.swyp.mangro.core.network.error
 
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
@@ -15,11 +16,11 @@ data class RemoteHttpError(
     val code: String? get() = (body?.get("code") as? JsonPrimitive)?.contentOrNull
 }
 
-fun Response<*>.readHttpError(): RemoteHttpError? {
+fun Response<*>.readHttpError(json: Json): RemoteHttpError? {
     if (isSuccessful) return null
     val body = errorBody()?.use { responseBody ->
         try {
-            NetworkClient.json.parseToJsonElement(responseBody.string()) as? JsonObject
+            json.parseToJsonElement(responseBody.string()) as? JsonObject
         } catch (_: SerializationException) {
             null
         }

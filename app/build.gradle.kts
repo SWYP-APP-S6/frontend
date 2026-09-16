@@ -70,6 +70,7 @@ dependencies {
     add("consumerImplementation", project(":feature:consumer:store"))
     add("consumerImplementation", project(":feature:consumer:home"))
     add("consumerImplementation", project(":feature:consumer:hold"))
+    add("consumerImplementation", project(":feature:consumer:recipe"))
 
     add("ownerImplementation", project(":feature:splash"))
     add("ownerImplementation", project(":feature:auth"))

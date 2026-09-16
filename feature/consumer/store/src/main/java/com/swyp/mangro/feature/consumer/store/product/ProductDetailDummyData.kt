@@ -2,6 +2,7 @@ package com.swyp.mangro.feature.consumer.store.product
 
 import com.swyp.mangro.core.model.product.Product
 import com.swyp.mangro.core.model.product.ProductCategory
+import com.swyp.mangro.core.model.recipe.Recipe
 import com.swyp.mangro.core.model.recipe.RecipeDifficulty
 import com.swyp.mangro.core.model.store.StoreInfo
 import com.swyp.mangro.feature.consumer.store.wish.WishUiState

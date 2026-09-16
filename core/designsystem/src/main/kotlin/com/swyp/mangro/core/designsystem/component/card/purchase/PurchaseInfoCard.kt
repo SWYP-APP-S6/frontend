@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
@@ -45,9 +47,15 @@ fun PurchaseInfoCard(
                 offsetX = 0.dp,
                 offsetY = 0.dp,
             )
-            .clip(RoundedCornerShape(16.dp))
-            .background(MangroTheme.colors.surfaceNormal),
+            .clip(RoundedCornerShape(20.dp))
+            .background(MangroTheme.colors.surfaceNormal)
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
+        ReceiptRow(
+            label = stringResource(R.string.pickup_receipt_product),
+            value = receipt.productName,
+        )
         ReceiptRow(
             label = stringResource(R.string.pickup_receipt_date),
             value = receipt.date,
@@ -57,25 +65,25 @@ fun PurchaseInfoCard(
             value = receipt.storeName,
         )
         ReceiptRow(
-            label = stringResource(R.string.pickup_receipt_product),
-            value = receipt.productName,
-        )
-        ReceiptRow(
             label = stringResource(R.string.pickup_receipt_quantity),
-            value = receipt.quantity.toString(),
+            value = stringResource(R.string.product_quantity, receipt.quantity),
         )
 
+        Spacer(modifier = Modifier.height(10.dp))
+
         HorizontalDivider(
-            thickness = 0.5.dp,
+            thickness = 1.dp,
             color = MangroTheme.colors.borderDefault,
         )
+
+        Spacer(modifier = Modifier.height(10.dp))
 
         ReceiptRow(
             label = stringResource(R.string.pickup_receipt_price),
             value = stringResource(R.string.product_price, receipt.price),
             valueColor = MangroTheme.colors.primaryNormal,
-            labelStyle = MangroTheme.typography.title.titleM,
-            valueStyle = MangroTheme.typography.body.bodyL,
+            labelStyle = MangroTheme.typography.heading.headingXXS,
+            valueStyle = MangroTheme.typography.heading.headingXXS,
         )
     }
 }
@@ -87,15 +95,11 @@ private fun ReceiptRow(
     modifier: Modifier = Modifier,
     valueColor: Color = MangroTheme.colors.textTitle,
     labelStyle: TextStyle = MangroTheme.typography.label.labelM,
-    valueStyle: TextStyle = MangroTheme.typography.label.labelM,
+    valueStyle: TextStyle = MangroTheme.typography.body.bodyM,
 ) {
     Row(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(
-                vertical = 12.dp,
-                horizontal = 20.dp,
-            ),
+            .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(

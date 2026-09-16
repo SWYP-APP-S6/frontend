@@ -15,8 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.swyp.mangro.core.designsystem.R
 import com.swyp.mangro.core.designsystem.component.badge.MangroBadge
@@ -43,6 +41,7 @@ data class WishHistoryItem(
 )
 
 enum class WishStatus {
+    CHECKING_STOCK,
     IN_PROGRESS,
     PICKED_UP,
     EXPIRED,
@@ -56,6 +55,11 @@ data class WishStatusStyle(
 
 @Composable
 fun WishStatus.toStyle(): WishStatusStyle = when (this) {
+    WishStatus.CHECKING_STOCK -> WishStatusStyle(
+        labelTextRes = R.string.wish_status_checking_stock,
+        containerColor = MangroTheme.colors.surfaceAlter,
+        contentColor = MangroTheme.colors.textBody,
+    )
     WishStatus.IN_PROGRESS -> WishStatusStyle(
         labelTextRes = R.string.wish_status_in_progress,
         containerColor = MangroTheme.colors.warningBg,
@@ -79,7 +83,7 @@ fun WishHistoryCard(
     modifier: Modifier = Modifier,
 ) {
     when (item.status) {
-        WishStatus.IN_PROGRESS -> InProgressWishCard(item, modifier)
+        WishStatus.CHECKING_STOCK, WishStatus.IN_PROGRESS -> InProgressWishCard(item, modifier)
         WishStatus.PICKED_UP -> PickedUpWishCard(item, modifier)
         WishStatus.EXPIRED -> ExpiredWishCard(item, modifier)
     }
@@ -99,10 +103,7 @@ fun InProgressWishCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(
-                vertical = 16.dp,
-                horizontal = 20.dp,
-            ),
+            .padding(vertical = 16.dp, horizontal = 20.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -114,10 +115,7 @@ fun InProgressWishCard(
                 modifier = Modifier.width(72.dp),
             )
 
-            Column(
-                modifier = Modifier
-                    .weight(1f),
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -196,10 +194,7 @@ private fun PickedUpWishCard(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(
-                vertical = 16.dp,
-                horizontal = 20.dp,
-            ),
+            .padding(vertical = 16.dp, horizontal = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         DiscountThumbnail(
@@ -208,10 +203,7 @@ private fun PickedUpWishCard(
             modifier = Modifier.width(60.dp),
         )
 
-        Column(
-            modifier = Modifier
-                .weight(1f),
-        ) {
+        Column(modifier = Modifier.weight(1f)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -233,16 +225,13 @@ private fun PickedUpWishCard(
                 )
             }
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 item.dateLabel?.let {
                     Text(
                         text = it,
                         color = MangroTheme.colors.textSubtitle,
                         style = MangroTheme.typography.caption.captionS,
                     )
-
                     Text(
                         text = "·",
                         color = MangroTheme.colors.textSubtitle,
@@ -257,8 +246,7 @@ private fun PickedUpWishCard(
             }
 
             Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
@@ -288,10 +276,7 @@ private fun ExpiredWishCard(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(
-                vertical = 16.dp,
-                horizontal = 20.dp,
-            ),
+            .padding(vertical = 16.dp, horizontal = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         DiscountThumbnail(
@@ -300,10 +285,7 @@ private fun ExpiredWishCard(
             modifier = Modifier.width(60.dp),
         )
 
-        Column(
-            modifier = Modifier
-                .weight(1f),
-        ) {
+        Column(modifier = Modifier.weight(1f)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -325,16 +307,13 @@ private fun ExpiredWishCard(
                 )
             }
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 item.dateLabel?.let {
                     Text(
                         text = it,
                         color = MangroTheme.colors.textSubtitle,
                         style = MangroTheme.typography.caption.captionS,
                     )
-
                     Text(
                         text = "·",
                         color = MangroTheme.colors.textSubtitle,
@@ -360,57 +339,83 @@ private fun ExpiredWishCard(
     }
 }
 
-private class WishHistoryCardPreviewParamProvider : PreviewParameterProvider<WishHistoryItem> {
-    private val now = System.currentTimeMillis()
-
-    override val values = sequenceOf(
-        WishHistoryItem(
-            id = "1",
-            imageUrl = "",
-            discountRate = 60,
-            name = "복숭아 4입",
-            quantity = 1,
-            storeName = "청과마을",
-            price = 4000,
-            status = WishStatus.IN_PROGRESS,
-            requestTimeMillis = now - 5 * 60_000,
-            endTimeMillis = now + 9 * 60_000 + 24_000,
-        ),
-        WishHistoryItem(
-            id = "2",
-            imageUrl = "",
-            discountRate = 60,
-            name = "대파 1단",
-            quantity = 2,
-            storeName = "청과마을",
-            price = 7000,
-            status = WishStatus.PICKED_UP,
-            dateLabel = "어제",
-        ),
-        WishHistoryItem(
-            id = "3",
-            imageUrl = "",
-            discountRate = 50,
-            name = "알배추",
-            quantity = 1,
-            storeName = "청과마을",
-            price = 3500,
-            status = WishStatus.EXPIRED,
-            dateLabel = "3일 전",
-        ),
-    )
+@Preview(showBackground = true)
+@Composable
+private fun WishHistoryCardCheckingStockPreview() {
+    MangroTheme {
+        WishHistoryCard(
+            item = WishHistoryItem(
+                id = "1",
+                imageUrl = "",
+                discountRate = 40,
+                name = "양파 3입",
+                quantity = 1,
+                storeName = "청과마을",
+                price = 2_500,
+                status = WishStatus.CHECKING_STOCK,
+            ),
+        )
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
-private fun WishHistoryCardPreview(
-    @PreviewParameter(WishHistoryCardPreviewParamProvider::class) item: WishHistoryItem,
-) {
+private fun WishHistoryCardInProgressPreview() {
+    val now = System.currentTimeMillis()
     MangroTheme {
         WishHistoryCard(
-            item = item,
-            modifier = Modifier
-                .padding(20.dp),
+            item = WishHistoryItem(
+                id = "2",
+                imageUrl = "",
+                discountRate = 60,
+                name = "복숭아 4입",
+                quantity = 1,
+                storeName = "청과마을",
+                price = 4_000,
+                status = WishStatus.IN_PROGRESS,
+                requestTimeMillis = now - 5_000,
+                endTimeMillis = now + 9 * 60_000 + 24_000,
+            ),
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun WishHistoryCardPickedUpPreview() {
+    MangroTheme {
+        WishHistoryCard(
+            item = WishHistoryItem(
+                id = "3",
+                imageUrl = "",
+                discountRate = 60,
+                name = "대파 1단",
+                quantity = 2,
+                storeName = "청과마을",
+                price = 7_000,
+                status = WishStatus.PICKED_UP,
+                dateLabel = "어제",
+            ),
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun WishHistoryCardExpiredPreview() {
+    MangroTheme {
+        WishHistoryCard(
+            item = WishHistoryItem(
+                id = "4",
+                imageUrl = "",
+                discountRate = 50,
+                name = "알배추",
+                quantity = 1,
+                storeName = "청과마을",
+                price = 3_500,
+                status = WishStatus.EXPIRED,
+                dateLabel = "3일 전",
+            ),
         )
     }
 }

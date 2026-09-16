@@ -55,6 +55,7 @@
     <string name="owner_product_card_expected_visit_prefix">방문 예정</string>
     <string name="owner_product_card_unable_to_purchase">%1$d명은 제품 구매가 불가능해요</string>
 
+    <string name="wish_status_checking_stock">재고확인중</string>
     <string name="wish_status_in_progress">찜하는중</string>
     <string name="wish_status_picked_up">수령완료</string>
     <string name="wish_status_expired">시간만료</string>

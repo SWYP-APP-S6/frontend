@@ -5,11 +5,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.swyp.mangro.core.designsystem.component.appbar.ConsumerMenu
 import com.swyp.mangro.core.utils.HideNavigationBarWhileVisible
 import com.swyp.mangro.feature.auth.navigation.Login
 import com.swyp.mangro.feature.auth.navigation.authNavGraph
+import com.swyp.mangro.feature.consumer.hold.navigation.holdHistoryScreen
 import com.swyp.mangro.feature.consumer.hold.navigation.holdScreen
 import com.swyp.mangro.feature.consumer.hold.navigation.navigateToHold
+import com.swyp.mangro.feature.consumer.hold.navigation.navigateToHoldHistory
 import com.swyp.mangro.feature.consumer.home.navigation.Home
 import com.swyp.mangro.feature.consumer.home.navigation.homeNavGraph
 import com.swyp.mangro.feature.consumer.store.navigation.productDetailScreen
@@ -26,6 +29,18 @@ fun AppNavGraph(
         currentRoute == Login::class.qualifiedName
 
     HideNavigationBarWhileVisible(hidden = hideNavigationBar)
+
+    val onNavigateToMenu: (ConsumerMenu) -> Unit = { menu ->
+        when (menu) {
+            ConsumerMenu.HOME -> {
+                navController.navigate(Home) { popUpTo(Home) { inclusive = true } }
+            }
+            ConsumerMenu.WISH_LIST -> {
+                navController.navigateToHoldHistory()
+            }
+            ConsumerMenu.MY -> { }
+        }
+    }
 
     NavHost(
         navController = navController,
@@ -44,6 +59,7 @@ fun AppNavGraph(
         )
         homeNavGraph(
             navController = navController,
+            onNavigateToMenu = onNavigateToMenu,
         )
         productDetailScreen(
             navController = navController,
@@ -56,6 +72,10 @@ fun AppNavGraph(
                     popUpTo(Home) { inclusive = true }
                 }
             },
+        )
+        holdHistoryScreen(
+            navController = navController,
+            onNavigateToMenu = onNavigateToMenu,
         )
     }
 }

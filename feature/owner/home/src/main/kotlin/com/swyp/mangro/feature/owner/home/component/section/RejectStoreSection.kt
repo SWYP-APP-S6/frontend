@@ -30,7 +30,7 @@ internal fun RejectStoreSection() {
         )
 
         Text(
-            text = stringResource(R.string.owner_home_pending),
+            text = stringResource(R.string.owner_home_rejected),
             style = MangroTheme.typography.title.titleS ?: MangroTheme.typography.title.titleM,
             color = MangroTheme.colors.textBody,
             textAlign = TextAlign.Center,

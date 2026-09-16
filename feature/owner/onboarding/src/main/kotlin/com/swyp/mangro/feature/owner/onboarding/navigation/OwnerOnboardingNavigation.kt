@@ -10,7 +10,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navOptions
+import com.swyp.mangro.data.auth.model.SignupConsents
 import com.swyp.mangro.feature.owner.onboarding.Constants.BASIC_INFO
+import com.swyp.mangro.feature.owner.onboarding.Constants.SIGNUP_CONSENTS
 import com.swyp.mangro.feature.owner.onboarding.model.StoreAddressModel
 import com.swyp.mangro.feature.owner.onboarding.screen.address.AddressSearchDestination
 import com.swyp.mangro.feature.owner.onboarding.screen.address.AddressSearchWebView
@@ -28,8 +30,10 @@ data object OnboardingGraph
 @Composable
 fun OwnerOnboardingNavigation(
     navController: NavHostController,
-    onComplete: () -> Unit,
+    consents: SignupConsents,
     onBack: () -> Unit,
+    onComplete: () -> Unit,
+    onLoginRequired: () -> Unit,
 ) {
     NavHost(navController = navController, startDestination = OnboardingGraph) {
         navigation<OnboardingGraph>(startDestination = OwnerBasicInfoDestination) {
@@ -44,7 +48,7 @@ fun OwnerOnboardingNavigation(
 
                         navController.navigate(
                             destination.id,
-                            bundleOf(BASIC_INFO to basicInfo),
+                            bundleOf(BASIC_INFO to basicInfo, SIGNUP_CONSENTS to consents),
                             navOptions { launchSingleTop = true },
                         )
                     },
@@ -60,6 +64,7 @@ fun OwnerOnboardingNavigation(
             composable<OwnerOperatingInfoDestination> {
                 OwnerOperatingInfoRoute(
                     onComplete = onComplete,
+                    onLoginRequired = onLoginRequired,
                     navigateBack = { navController.popBackStack() },
                 )
             }

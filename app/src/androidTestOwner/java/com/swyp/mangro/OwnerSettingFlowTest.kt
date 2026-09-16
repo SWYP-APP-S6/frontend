@@ -22,7 +22,7 @@ import org.junit.Test
 
 class OwnerSettingFlowTest {
     @get:Rule
-    val compose = createAndroidComposeRule<MainActivity>()
+    val compose = createAndroidComposeRule<OwnerNavigationTestActivity>()
 
     @Test
     fun settingsCanBeOpenedFromBothTabsAndReselectedWithoutDuplicatingBackStack() {

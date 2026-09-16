@@ -3,6 +3,7 @@ package com.swyp.mangro.core.network.di
 import com.swyp.mangro.core.network.Constants.BASE_URL
 import com.swyp.mangro.core.network.TokenAuthenticator
 import com.swyp.mangro.core.network.interceptor.AuthorizationInterceptor
+import com.swyp.mangro.core.network.interceptor.BaseResponseInterceptor
 import com.swyp.mangro.core.network.provider.TokenProvider
 import dagger.Module
 import dagger.Provides
@@ -44,7 +45,7 @@ object NetworkModule {
         json: Json,
     ): Retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
-        .client(client)
+        .client(client.newBuilder().addInterceptor(BaseResponseInterceptor(json)).build())
         .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
 }

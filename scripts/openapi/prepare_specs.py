@@ -91,6 +91,10 @@ def prepare(source, mapping, policies):
                 else:
                     raise ValueError(f'Unsupported property: {name}.{field}: {prop}')
                 prop['x-kotlin-default'] = 'null' if nullable else default
+                # Member tokens and signup tokens are mutually exclusive in login responses.
+                if direction == 'Response' and name == 'KakaoLoginResponse' and field in ('accessToken', 'refreshToken', 'signupToken'):
+                    prop['x-kotlin-type'] = 'kotlin.String' if nullable else 'kotlin.String?'
+                    prop['x-kotlin-default'] = 'null'
             return target
 
         for method, path, original in operations(source):
@@ -117,6 +121,23 @@ def prepare(source, mapping, policies):
                     name = content['schema']['$ref'].split('/')[-1]
                     target = pascal(rule['method']) + 'Response' if code.startswith('2') else None
                     content['schema']['$ref'] = '#/components/schemas/' + clone(name, 'Response', target)
+                    if code.startswith('2'):
+                        envelope = generated[target]
+                        if not {'status', 'code', 'data'} <= envelope.get('properties', {}).keys():
+                            raise ValueError('Missing base response envelope: ' + name)
+                        data = envelope['properties']['data']
+                        if '$ref' in data:
+                            data_type = f"com.swyp.mangro.remote.{module}.model." + data['$ref'].split('/')[-1]
+                        elif data.get('type') == 'array' and data['items'].get('type') == 'string':
+                            data_type = 'kotlin.collections.List<kotlin.String>'
+                        elif data.get('x-kotlin-type') == 'kotlinx.serialization.json.JsonElement':
+                            data_type = 'kotlinx.serialization.json.JsonElement'
+                        else:
+                            raise ValueError('Unsupported response data: ' + name)
+                        if operation.get('x-response-data-type', data_type) != data_type:
+                            raise ValueError('Inconsistent success response data: ' + path)
+                        operation['x-response-data-type'] = data_type
+                        operation['x-response-nullable-data'] = data_type == 'kotlinx.serialization.json.JsonElement'
             # Backend confirmed page/size/repeated sort on 2026-09-13.
             parameters = []
             for parameter in operation.get('parameters', []):

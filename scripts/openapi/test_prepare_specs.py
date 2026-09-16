@@ -100,6 +100,16 @@ class PrepareSpecsTest(unittest.TestCase):
         self.assertIn('application/json', deleted['requestBody']['content'])
         self.assertNotIn('/owner/products/{id}/available-qty', result['owner']['paths'])
 
+    def test_login_allows_absent_tokens_but_signup_returns_token_response(self):
+        auth = self.generate()['auth']
+        properties = auth['components']['schemas']['KakaoLoginResponse']['properties']
+        for field in ('accessToken', 'refreshToken', 'signupToken'):
+            self.assertEqual('kotlin.String?', properties[field]['x-kotlin-type'])
+            self.assertEqual('null', properties[field]['x-kotlin-default'])
+        signup = auth['paths']['/auth/signup']['post']
+        self.assertEqual('com.swyp.mangro.remote.auth.model.TokenResponse', signup['x-response-data-type'])
+        self.assertFalse(signup['x-response-nullable-data'])
+
     def test_nullable_fields_and_all_defaults(self):
         for spec in self.generate().values():
             for model in spec['components']['schemas'].values():

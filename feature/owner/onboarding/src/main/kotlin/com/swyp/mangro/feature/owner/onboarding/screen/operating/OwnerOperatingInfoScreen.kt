@@ -1,5 +1,6 @@
 package com.swyp.mangro.feature.owner.onboarding.screen.operating
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
@@ -26,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
@@ -59,8 +61,10 @@ data object OwnerOperatingInfoDestination
 internal fun OwnerOperatingInfoRoute(
     onComplete: () -> Unit,
     navigateBack: () -> Unit,
+    onLoginRequired: () -> Unit = navigateBack,
     viewModel: OwnerOperatingInfoViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     BackHandler { viewModel.handleAction(OwnerOperatingInfoAction.NavigationBackClicked) }
@@ -69,7 +73,13 @@ internal fun OwnerOperatingInfoRoute(
         viewModel.event.collect { event ->
             when (event) {
                 OwnerOperatingInfoEvent.NavigateBack -> navigateBack()
+
                 OwnerOperatingInfoEvent.CompleteOnboarding -> onComplete()
+
+                OwnerOperatingInfoEvent.LoginRequired -> {
+                    Toast.makeText(context, R.string.signup_login_required, Toast.LENGTH_SHORT).show()
+                    onLoginRequired()
+                }
             }
         }
     }

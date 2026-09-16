@@ -66,6 +66,7 @@ dependencies {
 
     api(project(":core:network"))
     api(libs.retrofit.core)
+    implementation(libs.retrofit.kotlinx.serialization)
     api(libs.kotlinx.serialization.json)
     implementation(platform(libs.okhttp.bom))
     implementation(libs.okhttp.core)

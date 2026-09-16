@@ -33,7 +33,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.swyp.mangro.core.designsystem.component.KakaoButton
@@ -155,13 +154,5 @@ internal fun LoginScreen(
                 Spacer(modifier = Modifier.height(30.dp))
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun LoginScreenPreview() {
-    MangroTheme {
-        LoginScreen(uiState = LoginUiState(), onAction = {})
     }
 }

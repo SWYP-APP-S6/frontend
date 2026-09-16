@@ -35,3 +35,7 @@ python3 scripts/openapi/check_generated.py
 ## 템플릿
 
 `openapi/templates/kotlin/libraries/jvm-retrofit2/api.mustache`는 OpenAPI Generator 7.24.0 JAR의 동명 템플릿을 기반으로 DELETE-with-body 어노테이션 분기를 추가했다. 업그레이드 시 차이를 재검토한다. 생성 Kotlin은 직접 수정하지 않고 템플릿과 비공개 매핑을 수정한다.
+
+## 공통 응답 해제
+
+생성 서비스는 `@UnwrapBaseResponse`로 표시하며 `BaseResponseInterceptor`가 data를 추출한다. 호출부는 `body()`로 내부 DTO를 읽는다. 가입은 `Response<TokenResponse>`로 생성하며 응답의 서버 토큰 쌍을 저장한다. 직접 만든 Retrofit에도 Interceptor를 등록해야 한다.

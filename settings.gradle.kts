@@ -55,3 +55,6 @@ include(":remote:owner")
 include(":remote:auth")
 include(":core:crypto")
 include(":core:local")
+
+include(":data:auth")
+include(":data:owner:store")

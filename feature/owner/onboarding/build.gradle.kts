@@ -8,9 +8,12 @@ plugins {
 
 android {
     namespace = "com.swyp.mangro.feature.owner.onboarding"
+    defaultConfig { missingDimensionStrategy("role", "owner") }
 }
 
 dependencies {
+    implementation(project(":data:auth"))
+    implementation(project(":data:owner:store"))
     implementation(project(":core:designsystem"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.webkit)

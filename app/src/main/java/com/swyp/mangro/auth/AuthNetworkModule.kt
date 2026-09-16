@@ -1,6 +1,7 @@
 package com.swyp.mangro.auth
 
 import com.swyp.mangro.core.network.Constants.BASE_URL
+import com.swyp.mangro.core.network.interceptor.BaseResponseInterceptor
 import com.swyp.mangro.core.network.provider.TokenProvider
 import com.swyp.mangro.core.network.util.defaultTimeout
 import com.swyp.mangro.remote.auth.service.TokenRefreshService
@@ -31,6 +32,7 @@ abstract class AuthNetworkModule {
             val client = OkHttpClient
                 .Builder()
                 .defaultTimeout()
+                .addInterceptor(BaseResponseInterceptor(json))
                 .build()
 
             return Retrofit.Builder()

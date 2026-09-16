@@ -3,7 +3,14 @@ package com.swyp.mangro.feature.owner.onboarding.screen.operating
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.swyp.mangro.data.auth.model.AuthFailure
+import com.swyp.mangro.data.auth.model.AuthResult
+import com.swyp.mangro.data.auth.model.SignupConsents
+import com.swyp.mangro.data.auth.repository.AuthRepository
+import com.swyp.mangro.data.owner.store.model.StoreRegistration
+import com.swyp.mangro.data.owner.store.repository.StoreRepository
 import com.swyp.mangro.feature.owner.onboarding.Constants.BASIC_INFO
+import com.swyp.mangro.feature.owner.onboarding.Constants.SIGNUP_CONSENTS
 import com.swyp.mangro.feature.owner.onboarding.model.StoreBasicInfoModel
 import com.swyp.mangro.feature.owner.onboarding.model.StoreRegistrationModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,13 +21,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @HiltViewModel
 class OwnerOperatingInfoViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
+    private val storeRepository: StoreRepository,
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
+    private var signupCompleted: Boolean = savedStateHandle["signupCompleted"] ?: false
     private val basicInfo = requireNotNull(savedStateHandle.get<StoreBasicInfoModel>(BASIC_INFO))
     private val restored = savedStateHandle.get<StoreRegistrationModel>("registration")
     private val _uiState = MutableStateFlow(
@@ -83,8 +94,51 @@ class OwnerOperatingInfoViewModel @Inject constructor(
     private fun submit() {
         val state = _uiState.value
         if (!state.isSubmitEnabled) return
-        // TODO: 매장 등록 Repository 연결 후 실제 응답에 따라 상태를 갱신한다.
-        updateState(state.copy(dialog = OwnerOperatingInfoDialog.Error))
+        val registration = state.registration
+        val request = StoreRegistration(
+            name = registration.name,
+            categoryId = requireNotNull(registration.category).id,
+            postalCode = requireNotNull(registration.address).postalCode,
+            address = registration.address.address,
+            addressDetail = registration.detailAddress,
+            phone = registration.phone,
+            openingMinutes = requireNotNull(registration.openingMinutes),
+            closingMinutes = requireNotNull(registration.closingMinutes),
+            businessDays = registration.businessDays,
+        )
+
+        updateState(state.copy(isLoading = true, dialog = null))
+        viewModelScope.launch {
+            try {
+                if (!signupCompleted) {
+                    val consents = savedStateHandle.get<SignupConsents>(SIGNUP_CONSENTS)
+                    if (consents == null) {
+                        sendEvent(OwnerOperatingInfoEvent.LoginRequired)
+                        return@launch
+                    }
+                    when (val signup = authRepository.signup(consents).single()) {
+                        is AuthResult.Success -> {
+                            signupCompleted = true
+                            savedStateHandle["signupCompleted"] = true
+                        }
+
+                        is AuthResult.Failure -> {
+                            if (signup.reason == AuthFailure.SIGNUP_REQUIRED) {
+                                sendEvent(OwnerOperatingInfoEvent.LoginRequired)
+                            } else {
+                                updateState(_uiState.value.copy(dialog = OwnerOperatingInfoDialog.Error))
+                            }
+                            return@launch
+                        }
+                    }
+                }
+                storeRepository.register(request).collect { result ->
+                    updateState(_uiState.value.copy(dialog = if (result.isSuccess) OwnerOperatingInfoDialog.Submitted else OwnerOperatingInfoDialog.Error))
+                }
+            } finally {
+                updateState(_uiState.value.copy(isLoading = false))
+            }
+        }
     }
 
     private fun updateState(state: OwnerOperatingInfoState) {

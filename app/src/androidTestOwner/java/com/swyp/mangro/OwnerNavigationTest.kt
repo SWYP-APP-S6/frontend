@@ -14,7 +14,7 @@ import org.junit.Test
 
 class OwnerNavigationTest {
     @get:Rule
-    val compose = createAndroidComposeRule<MainActivity>()
+    val compose = createAndroidComposeRule<OwnerNavigationTestActivity>()
 
     @Test
     fun homeOpensProductManagementAndBackReturnsHome() {

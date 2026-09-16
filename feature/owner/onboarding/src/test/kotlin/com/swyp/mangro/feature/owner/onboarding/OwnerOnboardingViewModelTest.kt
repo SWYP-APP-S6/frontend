@@ -2,6 +2,13 @@ package com.swyp.mangro.feature.owner.onboarding
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelStore
+import com.swyp.mangro.data.auth.model.AuthFailure
+import com.swyp.mangro.data.auth.model.AuthResult
+import com.swyp.mangro.data.auth.model.LoginStatus
+import com.swyp.mangro.data.auth.model.SignupConsents
+import com.swyp.mangro.data.auth.repository.AuthRepository
+import com.swyp.mangro.data.owner.store.model.StoreRegistration
+import com.swyp.mangro.data.owner.store.repository.StoreRepository
 import com.swyp.mangro.feature.owner.onboarding.model.StoreAddressModel
 import com.swyp.mangro.feature.owner.onboarding.model.StoreBasicInfoModel
 import com.swyp.mangro.feature.owner.onboarding.model.StoreCategoryModel
@@ -11,10 +18,14 @@ import com.swyp.mangro.feature.owner.onboarding.screen.basic.OwnerBasicInfoViewM
 import com.swyp.mangro.feature.owner.onboarding.screen.operating.OwnerOperatingInfoAction
 import com.swyp.mangro.feature.owner.onboarding.screen.operating.OwnerOperatingInfoDialog
 import com.swyp.mangro.feature.owner.onboarding.screen.operating.OwnerOperatingInfoViewModel
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -30,6 +41,32 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class OwnerOnboardingViewModelTest {
+    private val consents = SignupConsents(true, true, false, false, false)
+    private var signupCalls = 0
+    private var signupResult: AuthResult<Unit> = AuthResult.Success(Unit)
+    private var pendingSignup: CompletableDeferred<AuthResult<Unit>>? = null
+    private val order = mutableListOf<String>()
+    private val authRepository = object : AuthRepository {
+        override fun hasSession() = flowOf(false)
+        override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = error("unused")
+        override fun signup(consents: SignupConsents) = flow {
+            signupCalls++
+            order.add("signup")
+            assertEquals(this@OwnerOnboardingViewModelTest.consents, consents)
+            emit(pendingSignup?.await() ?: signupResult)
+        }
+    }
+    private var pending: CompletableDeferred<Result<Unit>>? = null
+    private var calls = 0
+    private var submitted: StoreRegistration? = null
+    private val repository = object : StoreRepository {
+        override fun register(registration: StoreRegistration) = flow {
+            order.add("store")
+            calls++
+            submitted = registration
+            emit(pending?.await() ?: Result.failure(IllegalStateException("server")))
+        }
+    }
     private val dispatcher = StandardTestDispatcher()
     private val store = ViewModelStore()
     private val category = StoreCategoryModel.options[1]
@@ -45,8 +82,10 @@ class OwnerOnboardingViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun operating(handle: SavedStateHandle = SavedStateHandle(mapOf(Constants.BASIC_INFO to basicInfo))): OwnerOperatingInfoViewModel = OwnerOperatingInfoViewModel(
+    private fun operating(handle: SavedStateHandle = SavedStateHandle(mapOf(Constants.BASIC_INFO to basicInfo, Constants.SIGNUP_CONSENTS to consents))): OwnerOperatingInfoViewModel = OwnerOperatingInfoViewModel(
         handle,
+        repository,
+        authRepository,
     ).also { store.put("operating", it) }
 
     private fun fill(model: OwnerOperatingInfoViewModel) {
@@ -87,6 +126,17 @@ class OwnerOnboardingViewModelTest {
         assertTrue(restored.uiState.value.isNextEnabled)
         restored.handleAction(OwnerBasicInfoAction.NextClicked)
         assertEquals(OwnerBasicInfoEvent.NavigateToOperatingInfo(basicInfo.copy(detailedAddress = "")), restored.event.first())
+    }
+
+    @Test fun restoredSampleCategoryMustBeSelectedAgainFromServerCategories() = runTest {
+        val oldInfo = basicInfo.copy(category = StoreCategoryModel("debug-1", "과채류"))
+        val model = OwnerBasicInfoViewModel(SavedStateHandle(mapOf("basicInfo" to oldInfo)))
+        store.put("restoredBasic", model)
+        assertEquals(oldInfo.name, model.uiState.value.name)
+        assertEquals(null, model.uiState.value.category)
+        assertFalse(model.uiState.value.isNextEnabled)
+        model.handleAction(OwnerBasicInfoAction.CategorySelected(StoreCategoryModel.options[1]))
+        assertTrue(model.uiState.value.isNextEnabled)
     }
 
     @Test fun nextEventContainsOnlyTheLatestValidatedSnapshot() = runTest {
@@ -137,18 +187,90 @@ class OwnerOnboardingViewModelTest {
         val before = model.uiState.value
         model.handleAction(OwnerOperatingInfoAction.SubmitClicked)
         assertEquals(before, model.uiState.value)
+        assertEquals(0, signupCalls)
+        assertEquals(0, calls)
     }
 
-    @Test fun unconnectedRegistrationKeepsInputAndDoesNotReportSuccess() = runTest {
+    @Test fun failedRegistrationKeepsInputAndCanRetry() = runTest {
         val model = operating()
         fill(model)
         val registration = model.uiState.value.registration
         model.handleAction(OwnerOperatingInfoAction.SubmitClicked)
+        advanceUntilIdle()
         assertEquals(OwnerOperatingInfoDialog.Error, model.uiState.value.dialog)
         assertEquals(registration, model.uiState.value.registration)
         model.handleAction(OwnerOperatingInfoAction.DialogDismissed)
         model.handleAction(OwnerOperatingInfoAction.SubmitClicked)
+        advanceUntilIdle()
         assertEquals(OwnerOperatingInfoDialog.Error, model.uiState.value.dialog)
+        assertFalse(model.uiState.value.isLoading)
+        assertEquals(2, calls)
+        assertEquals(1, signupCalls)
+        assertEquals(listOf("signup", "store", "store"), order)
+    }
+
+    @Test fun submissionWaitsForServerAndCompletesOnceAfterConfirmation() = runTest {
+        pending = CompletableDeferred()
+        pendingSignup = CompletableDeferred()
+        val model = operating()
+        fill(model)
+        model.handleAction(OwnerOperatingInfoAction.SubmitClicked)
+        model.handleAction(OwnerOperatingInfoAction.SubmitClicked)
+        runCurrent()
+        assertTrue(model.uiState.value.isLoading)
+        assertEquals(1, signupCalls)
+        assertEquals(0, calls)
+        pendingSignup!!.complete(AuthResult.Success(Unit))
+        runCurrent()
+        assertEquals(1, calls)
+        assertEquals(listOf("signup", "store"), order)
+        assertEquals("FRUIT", submitted?.categoryId)
+        assertEquals("0212345678", submitted?.phone)
+        assertEquals(setOf(1), submitted?.businessDays)
+        val event = async { model.event.first() }
+        model.handleAction(OwnerOperatingInfoAction.NavigationBackClicked)
+        runCurrent()
+        assertFalse(event.isCompleted)
+        pending!!.complete(Result.success(Unit))
+        runCurrent()
+        assertFalse(model.uiState.value.isLoading)
+        assertEquals(OwnerOperatingInfoDialog.Submitted, model.uiState.value.dialog)
+        assertFalse(event.isCompleted)
+        model.handleAction(OwnerOperatingInfoAction.CompletionConfirmed)
+        model.handleAction(OwnerOperatingInfoAction.CompletionConfirmed)
+        runCurrent()
+        assertEquals(com.swyp.mangro.feature.owner.onboarding.screen.operating.OwnerOperatingInfoEvent.CompleteOnboarding, event.await())
+        val duplicate = async { model.event.first() }
+        runCurrent()
+        assertFalse(duplicate.isCompleted)
+        duplicate.cancel()
+    }
+
+    @Test fun signupFailureDoesNotRegisterStoreAndCanRetry() = runTest {
+        signupResult = AuthResult.Failure(AuthFailure.NETWORK)
+        val model = operating()
+        fill(model)
+        model.handleAction(OwnerOperatingInfoAction.SubmitClicked)
+        advanceUntilIdle()
+        assertEquals(1, signupCalls)
+        assertEquals(0, calls)
+        assertEquals(OwnerOperatingInfoDialog.Error, model.uiState.value.dialog)
+        signupResult = AuthResult.Success(Unit)
+        model.handleAction(OwnerOperatingInfoAction.DialogDismissed)
+        model.handleAction(OwnerOperatingInfoAction.SubmitClicked)
+        advanceUntilIdle()
+        assertEquals(2, signupCalls)
+        assertEquals(1, calls)
+    }
+
+    @Test fun expiredSignupSessionReturnsToLoginWithoutStoreRequest() = runTest {
+        signupResult = AuthResult.Failure(AuthFailure.SIGNUP_REQUIRED)
+        val model = operating()
+        fill(model)
+        model.handleAction(OwnerOperatingInfoAction.SubmitClicked)
+        advanceUntilIdle()
+        assertEquals(com.swyp.mangro.feature.owner.onboarding.screen.operating.OwnerOperatingInfoEvent.LoginRequired, model.event.first())
+        assertEquals(0, calls)
         assertFalse(model.uiState.value.isLoading)
     }
 

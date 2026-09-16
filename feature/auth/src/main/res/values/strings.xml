@@ -16,4 +16,19 @@
     <string name="terms_privacy_third_party">[필수] 개인정보 제3자 제공 동의</string>
     <string name="terms_marketing">[선택] 마케팅 정보 수신 동의</string>
     <string name="terms_confirm_button">확인하기</string>
+    <string name="kakao_login_success">카카오 인증에 성공했습니다.</string>
+    <string name="kakao_login_failed">카카오 로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.</string>
+    <string name="kakao_login_cancelled">카카오 로그인을 취소했습니다.</string>
+    <string name="kakao_login_unconfigured">카카오 네이티브 앱 키 설정 후 앱을 다시 빌드해 주세요.</string>
+    <string name="signup_failed">가입에 실패했습니다. 잠시 후 다시 시도해 주세요.</string>
+    <string name="signup_login_required">가입 정보가 없습니다. 뒤로 돌아가 다시 로그인해 주세요.</string>
+    <string name="auth_retry">다시 시도</string>
+    <string name="terms_load_failed">약관을 불러오지 못했습니다. 다시 시도해 주세요.</string>
+    <string name="terms_changed">약관이 변경되었습니다. 내용을 확인하고 다시 동의해 주세요.</string>
+    <string name="terms_required_title">[필수] %1$s</string>
+    <string name="terms_optional_title">[선택] %1$s</string>
+    <string name="auth_back">뒤로</string>
+    <string name="auth_network_failed">네트워크 연결을 확인하고 다시 시도해 주세요.</string>
+    <string name="auth_storage_failed">로그인 정보를 저장하지 못했습니다. 다시 시도해 주세요.</string>
+    <string name="auth_response_failed">로그인 응답을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.</string>
 </resources>

@@ -68,7 +68,7 @@ class StoreTokenProvider @Inject constructor(
 
         if (response.code() != 200) throw IOException("Unexpected token refresh response status")
 
-        val tokens = response.body()?.data ?: throw IOException("Missing token refresh response")
+        val tokens = response.body() ?: throw IOException("Missing token refresh response")
         if (tokens.accessToken.isBlank() || tokens.refreshToken.isBlank()) throw IOException("Incomplete token refresh response")
 
         val updated = AuthKey(tokens.accessToken, tokens.refreshToken)

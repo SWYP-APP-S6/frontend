@@ -67,12 +67,11 @@ fun AppNavGraph(
             navigateToLogin = {
                 navController.navigate(Login) { popUpTo(Splash) { inclusive = true } }
             },
-            navigateToHome = {},
+            navigateToHome = { navController.navigate(Home) { popUpTo<Splash> { inclusive = true } } },
         )
         authNavGraph(
             navController = navController,
-            navigateToHome = { navController.navigate(Home) },
-            navigateToPrivacyPolicy = {},
+            navigateToHome = { navController.navigate(Home) { popUpTo<Login> { inclusive = true } } },
         )
         homeNavGraph(
             navController = navController,

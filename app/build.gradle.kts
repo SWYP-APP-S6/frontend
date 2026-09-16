@@ -1,4 +1,5 @@
 import com.swyp.mangro.buildlogic.conf.configureBuildConfig
+import java.util.Properties
 
 plugins {
     id("mangro.android.application")
@@ -12,6 +13,22 @@ android {
     namespace = "com.swyp.mangro"
 
     configureBuildConfig(this)
+    buildFeatures { buildConfig = true }
+
+    val localProperties = Properties().apply {
+        rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use(::load)
+    }
+    productFlavors.configureEach {
+        val propertyName = "MANGRO_${name.uppercase()}_KAKAO_NATIVE_APP_KEY"
+        val nativeAppKey = providers.environmentVariable(propertyName)
+            .orElse(localProperties.getProperty(propertyName).orEmpty())
+            .get().trim()
+        require(nativeAppKey.matches(Regex("[a-zA-Z0-9]*"))) {
+            "$propertyName must contain only letters and digits."
+        }
+        buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"$nativeAppKey\"")
+        manifestPlaceholders["kakaoRedirectScheme"] = "kakao${nativeAppKey.ifBlank { "unconfigured.$name" }}"
+    }
 
     defaultConfig {
         applicationId = "com.swyp.mangro"
@@ -27,7 +44,9 @@ android {
 }
 
 dependencies {
+    implementation(libs.kakao.user)
     add("ownerImplementation", project(":feature:owner:onboarding"))
+    add("ownerImplementation", project(":data:auth"))
 
     implementation(project(":remote:auth"))
     implementation(libs.retrofit.kotlinx.serialization)
@@ -68,6 +87,7 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.okhttp.mockwebserver)
+    androidTestImplementation(project(":data:auth"))
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

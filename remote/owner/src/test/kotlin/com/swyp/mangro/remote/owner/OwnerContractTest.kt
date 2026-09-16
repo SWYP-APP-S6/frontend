@@ -69,7 +69,7 @@ class OwnerContractTest {
             val bytes = byteArrayOf(0x89.toByte(), 0x50, 0x4e, 0x47, 0x0d, 0x0a)
             val part = MultipartBody.Part.createFormData("file", "test.png", bytes.toRequestBody("image/png".toMediaType()))
             val response = OwnerServices(createRetrofit(server.url("/").toString())).product.uploadProductPhoto(part)
-            assertTrue(response.body()?.data?.photoUrl?.endsWith("test.png") == true)
+            assertTrue(response.body()?.photoUrl?.endsWith("test.png") == true)
             val request = checkNotNull(server.takeRequest(5, TimeUnit.SECONDS))
             assertEquals("POST", request.method)
             assertEquals("/owner/products/photos", request.path)

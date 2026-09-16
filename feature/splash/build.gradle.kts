@@ -17,6 +17,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":data:auth"))
+    testImplementation(libs.kotlinx.coroutines.test)
     implementation(project(":core:designsystem"))
     implementation(project(":core:utils"))
     implementation(libs.androidx.compose.runtime)

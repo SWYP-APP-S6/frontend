@@ -46,38 +46,34 @@ class LiveApiSmokeTest {
 
             val installId = UUID.nameUUIDFromBytes("mangro-remote-api-live-smoke-v1".toByteArray()).toString()
             val issued = AuthServices(publicRetrofit).auth.issueGuestToken(IssueGuestTokenRequest(installId = installId))
-            val token = success("POST /auth/guest", issued).data.accessToken
+            val token = success("POST /auth/guest", issued).accessToken
             assertTrue("Guest response must contain a token", token.isNotBlank())
             // Keep the token in memory; never log the response body or auth header.
             val client = publicClient.newBuilder().addInterceptor(AuthorizationInterceptor { token }).build()
             val consumer = ConsumerServices(createRetrofit(client = client))
-            val categories = success("GET /recipes/categories", consumer.recipe.fetchCategories())
-            assertEquals("OK", categories.code)
+            success("GET /recipes/categories", consumer.recipe.fetchCategories())
             val recipes = success("GET /recipes?page=0&size=2&sort=id,asc", consumer.recipe.fetchRecipes(page = 0, size = 2, sort = listOf("id,asc")))
-            assertEquals(0, recipes.data.page)
-            assertEquals(2, recipes.data.propertySize)
-            assertTrue("Live recipe dataset must be nonempty", recipes.data.content.isNotEmpty())
-            assertTrue("v2 sample recipe difficulty must be populated", recipes.data.content.all { it.difficulty != null })
-            assertTrue("v2 sample recipe cookTimeMinutes must be populated", recipes.data.content.all { it.cookTimeMinutes != null })
-            println("LIVE recipe items=${recipes.data.content.size}, total=${recipes.data.totalElements}, v2 difficulty/cookTime populated")
-            val recipe = success("GET /recipes/{id}", consumer.recipe.fetchRecipe(recipes.data.content.first().id))
-            assertEquals("OK", recipe.code)
+            assertEquals(0, recipes.page)
+            assertEquals(2, recipes.propertySize)
+            assertTrue("Live recipe dataset must be nonempty", recipes.content.isNotEmpty())
+            assertTrue("v2 sample recipe difficulty must be populated", recipes.content.all { it.difficulty != null })
+            assertTrue("v2 sample recipe cookTimeMinutes must be populated", recipes.content.all { it.cookTimeMinutes != null })
+            println("LIVE recipe items=${recipes.content.size}, total=${recipes.totalElements}, v2 difficulty/cookTime populated")
+            success("GET /recipes/{id}", consumer.recipe.fetchRecipe(recipes.content.first().id))
             val stores = success("GET /stores/nearby", consumer.store.fetchNearbyStores(37.56, 37.57, 126.97, 126.99))
-            assertEquals("OK", stores.code)
             val products = success("GET /products/nearby", consumer.product.fetchNearbyProducts(37.5665, 126.9780, radiusMeters = 1000, page = 0, size = 2))
-            assertEquals("OK", products.code)
             val denied = consumer.user.fetchMe()
             assertEquals("Guest member-only access", 403, denied.code())
             assertEquals("LOGIN_REQUIRED", denied.readHttpError(json)?.code)
             println("LIVE GET /users/me HTTP=403 code=LOGIN_REQUIRED")
-            println("LIVE stores=${stores.data.stores.size}, products=${products.data.totalProductCount}")
-            val storeId = stores.data.stores.firstOrNull()?.storeId ?: products.data.stores.content.firstOrNull()?.storeId
+            println("LIVE stores=${stores.stores.size}, products=${products.totalProductCount}")
+            val storeId = stores.stores.firstOrNull()?.storeId ?: products.stores.content.firstOrNull()?.storeId
             if (storeId != null) {
                 success("GET /stores/{storeId}/products", consumer.store.fetchStoreProducts(storeId, 37.5665, 126.9780))
             } else {
                 println("LIVE SKIP GET /stores/{storeId}/products: no observed store ID")
             }
-            val productId = products.data.stores.content.firstOrNull()?.products?.firstOrNull()?.id
+            val productId = products.stores.content.firstOrNull()?.products?.firstOrNull()?.id
             if (productId != null) {
                 success("GET /products/{productId}", consumer.product.fetchProduct(productId, 37.5665, 126.9780))
             } else {

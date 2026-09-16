@@ -5,7 +5,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 mapping = json.loads((ROOT / 'openapi/endpoint-map.json').read_text())
-for module, count in [('auth', 1), ('consumer', 7), ('owner', 4)]:
+for module in ('auth', 'consumer', 'owner'):
+    count = len({rule['section'] for rule in mapping.values() if rule['module'] == module})
     root = ROOT / 'remote' / module / 'build/generated/openapi'
     services = list(root.rglob('*Service.kt'))
     assert len(services) == count, (module, services)

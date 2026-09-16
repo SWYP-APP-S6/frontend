@@ -1,7 +1,8 @@
 package com.swyp.mangro.remote.auth.service
 
+import com.swyp.mangro.core.network.interceptor.UnwrapBaseResponse
 import com.swyp.mangro.remote.auth.model.RefreshUserAuthKeyRequest
-import com.swyp.mangro.remote.auth.model.RefreshUserAuthKeyResponse
+import com.swyp.mangro.remote.auth.model.TokenResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Header
@@ -12,9 +13,10 @@ import retrofit2.http.POST
  * 전역 bearerAuth에 따라 body의 refreshToken과 같은 시점의 accessToken을 명시적으로 전달합니다.
  */
 interface TokenRefreshService {
+    @UnwrapBaseResponse
     @POST("auth/refresh")
     suspend fun refresh(
         @Header("Authorization") authorization: String,
         @Body request: RefreshUserAuthKeyRequest,
-    ): Response<RefreshUserAuthKeyResponse>
+    ): Response<TokenResponse>
 }

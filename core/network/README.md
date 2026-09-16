@@ -29,3 +29,7 @@ Provider의 갱신 실패 IOException은 Authenticator에서 null로 처리하�
 - `:core:network:testDebugUnitTest`: 헤더, 401 재시도 제한, 외부 origin·리다이렉트, 명시적 인증, 403 처리.
 - `:app:testConsumerDebugUnitTest`, `:app:testOwnerDebugUnitTest`: StoreTokenProvider의 갱신 API body, 동시 갱신, 저장 실패, 로그아웃 중 갱신, 계정 변경 및 재요청 검증.
 - `:core:local:connectedConsumerDebugAndroidTest`, `:core:local:connectedOwnerDebugAndroidTest`: 실제 Keystore·DataStore의 조건부 토큰 교체 검증.
+
+## BaseResponse 처리
+
+`NetworkModule.provideRetrofit()`은 `BaseResponseInterceptor`를 추가한다. 표시된 Retrofit 메서드의 HTTP 2xx 응답에서 본문 status가 2xx이고 code가 OK인지 확인한 뒤 data만 반환한다. HTTP 오류의 본문과 헤더는 유지하며, 공통 형식/업무 오류는 BaseResponseException에 상태와 코드를 담아 전달한다. data 누락은 실패이며 null은 명시적으로 허용된 메서드만 수용한다. HTTP 204/205는 그대로 통과한다. 별도 로그인·약관·갱신 클라이언트에도 Interceptor를 등록한다.

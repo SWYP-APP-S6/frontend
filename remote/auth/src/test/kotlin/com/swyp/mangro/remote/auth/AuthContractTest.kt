@@ -31,11 +31,12 @@ class AuthContractTest {
     @Test
     fun signupSendsDefaultConsentFieldsAndAccepts201() = runTest {
         MockWebServer().use { server ->
-            server.enqueue(MockResponse().setResponseCode(201).setBody("""{"status":201,"code":"OK","message":"ok","data":{"accessToken":"access","refreshToken":"refresh"}}"""))
+            server.enqueue(MockResponse().setResponseCode(201).setBody("""{"status":201,"code":"CREATED","message":"ok","data":{"accessToken":"access","refreshToken":"refresh"}}"""))
             val service = AuthServices(createRetrofit(server.url("/").toString())).auth
             val response = service.registerUser(RegisterUserRequest(signupToken = "signup"))
             assertTrue(response.isSuccessful)
-            assertEquals("access", response.body()?.data?.accessToken)
+            assertEquals("access", response.body()?.accessToken)
+            assertEquals("refresh", response.body()?.refreshToken)
             val request = checkNotNull(server.takeRequest(5, TimeUnit.SECONDS))
             assertEquals("POST", request.method)
             assertEquals("/auth/signup", request.path)
@@ -67,8 +68,8 @@ class AuthContractTest {
             val response = AuthServices(createRetrofit(server.url("/").toString())).auth
                 .logout(LogoutRequest(refreshToken = "refresh"))
             assertTrue(response.isSuccessful)
-            assertEquals(200, response.body()?.status)
-            org.junit.Assert.assertNull(response.body()?.data)
+            assertEquals(200, response.code())
+            assertEquals(kotlinx.serialization.json.JsonNull, response.body())
         }
     }
 

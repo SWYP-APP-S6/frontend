@@ -1,0 +1,115 @@
+package com.swyp.mangro.feature.auth.terms.detail
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mikepenz.markdown.m3.Markdown
+import com.mikepenz.markdown.m3.markdownColor
+import com.mikepenz.markdown.m3.markdownTypography
+import com.swyp.mangro.core.designsystem.R as DesignR
+import com.swyp.mangro.core.designsystem.component.MangroButton
+import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
+import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
+import com.swyp.mangro.core.designsystem.theme.MangroTheme
+import com.swyp.mangro.feature.auth.R
+
+@Composable
+fun TermsDetailRoute(
+    onBackClick: () -> Unit,
+    viewModel: TermsDetailViewModel = hiltViewModel(),
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            MangroDefaultStartAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = state.title,
+                        style = MangroTheme.typography.label.labelL,
+                        color = MangroTheme.colors.textTitle,
+                    )
+                },
+                navigationIcon = {
+                    Icon(
+                        painter = painterResource(DesignR.drawable.ic_arrow_left),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .size(24.dp)
+                            .clickable(role = Role.Button, onClick = onBackClick),
+                        tint = MangroTheme.colors.textTitle,
+                    )
+                },
+            )
+        },
+        containerColor = MangroTheme.colors.surfaceNormal,
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState()),
+        ) {
+            when {
+                state.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator(color = MangroTheme.colors.primaryStrong)
+                    }
+                }
+
+                state.failed -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        Text(stringResource(R.string.terms_load_failed))
+
+                        MangroButton(
+                            onClick = viewModel::fetchTerm,
+                            text = stringResource(R.string.auth_retry),
+                            style = MangroButtonStyle.ACTIVE,
+                        )
+                    }
+                }
+
+                else -> SelectionContainer {
+                    Markdown(
+                        content = state.content,
+                        colors = markdownColor(text = MangroTheme.colors.textBody),
+                        typography = markdownTypography(paragraph = MangroTheme.typography.body.bodyM),
+                    )
+                }
+            }
+        }
+    }
+}

@@ -33,9 +33,7 @@ fun NavGraphBuilder.ownerProductNavGraph(
     }
     composable<OwnerProductDetailDestination> {
         ProductDetailRoute(
-            products = products,
             onBack = { navController.popBackStack() },
-            onSave = { onSaveProducts(listOf(it)) },
             onCancelReservations = { onCancelReservations(listOf(it)) },
         )
     }

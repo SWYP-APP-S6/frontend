@@ -24,12 +24,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.swyp.mangro.core.designsystem.R as DesignR
 import com.swyp.mangro.core.designsystem.component.MangroButton
 import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.owner.product.R
+import com.swyp.mangro.feature.owner.product.component.ManagementLoadStatus
 import com.swyp.mangro.feature.owner.product.component.OwnerProductScaffold
 import com.swyp.mangro.feature.owner.product.component.pickup.PickupTimer
 import com.swyp.mangro.feature.owner.product.model.PickupStatus
@@ -49,6 +51,10 @@ internal fun PickupDetailRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
+    LifecycleResumeEffect(viewModel) {
+        viewModel.refresh()
+        onPauseOrDispose {}
+    }
     BackHandler { viewModel.handleAction(PickupDetailAction.NavigationBackClicked) }
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
@@ -101,7 +107,7 @@ internal fun PickupDetailScreen(
                         onClick = { onAction(PickupDetailAction.CompleteClicked) },
                         style = MangroButtonStyle.OUTLINED,
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = uiState.canComplete,
+                        enabled = uiState.canComplete && uiState.status == PickupStatus.WAITING && !uiState.isSaving,
                         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
                         disabledContainerColor = MangroTheme.colors.surfaceAlter,
                     )
@@ -120,17 +126,18 @@ internal fun PickupDetailScreen(
             }
         },
     ) {
-        if (pickup == null) {
+        ManagementLoadStatus(uiState.isLoading || uiState.isSaving, uiState.hasError) { onAction(PickupDetailAction.Refresh) }
+        if (pickup == null && !uiState.isLoading && !uiState.hasError) {
             Text(
                 text = stringResource(R.string.pickup_empty),
                 modifier = Modifier.padding(vertical = 32.dp),
                 color = MangroTheme.colors.textSubtitle,
             )
-        } else {
+        } else if (pickup != null) {
             Text(
                 text = when (uiState.status) {
                     PickupStatus.WAITING -> stringResource(R.string.pickup_detail_deadline, pickupDate(pickup.deadline, "M월 d일 H시 mm분"))
-                    PickupStatus.COMPLETED -> stringResource(R.string.pickup_complete_heading, pickupDate(pickup.completedAt ?: pickup.deadline, "M월 d일 H시 mm분"))
+                    PickupStatus.COMPLETED -> pickup.completedAt?.let { stringResource(R.string.pickup_complete_heading, pickupDate(it, "M월 d일 H시 mm분")) } ?: stringResource(R.string.pickup_complete_done)
                     PickupStatus.CANCELED -> stringResource(R.string.pickup_canceled)
                     PickupStatus.UNAVAILABLE -> stringResource(R.string.pickup_unavailable)
                     else -> stringResource(R.string.pickup_expired_heading)
@@ -189,7 +196,7 @@ internal fun PickupDetailScreen(
                     color = MangroTheme.colors.textTitle,
                 )
                 Text(
-                    text = stringResource(R.string.pickup_quantity, pickup.productName, pickup.quantity),
+                    text = uiState.items.joinToString("\n") { "${it.name} * ${it.quantity}개" }.ifEmpty { stringResource(R.string.pickup_quantity, pickup.productName, pickup.quantity) },
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.End,
                     style = MangroTheme.typography.body.bodyM,
@@ -205,7 +212,7 @@ internal fun PickupDetailScreen(
                     color = MangroTheme.colors.textTitle,
                 )
                 Text(
-                    text = stringResource(R.string.pickup_price, NumberFormat.getIntegerInstance(Locale.KOREA).format(pickup.totalPrice)),
+                    text = stringResource(R.string.pickup_price, NumberFormat.getIntegerInstance(Locale.KOREA).format(uiState.totalPrice)),
                     style = MangroTheme.typography.heading.headingM,
                     color = MangroTheme.colors.primaryNormal,
                 )

@@ -103,7 +103,8 @@ class OwnerHomeViewModel @Inject constructor(
 
             OwnerHomeAction.ViewProducts -> _event.trySend(OwnerHomeEvent.NavigateToProducts)
 
-            is OwnerHomeAction.ViewProduct,
+            is OwnerHomeAction.ViewProduct -> _event.trySend(OwnerHomeEvent.NavigateToProduct(action.productId))
+
             is OwnerHomeAction.ViewPickup,
             OwnerHomeAction.ViewPickups,
             OwnerHomeAction.ViewCompletedPickups,

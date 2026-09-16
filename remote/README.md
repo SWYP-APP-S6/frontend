@@ -43,3 +43,7 @@ python3 scripts/openapi/check_generated.py
 ## 공통 응답 해제
 
 생성 서비스는 `@UnwrapBaseResponse`로 표시하며 `BaseResponseInterceptor`가 data를 추출한다. 호출부는 `body()`로 내부 DTO를 읽는다. 가입은 `Response<TokenResponse>`로 생성하며 응답의 서버 토큰 쌍을 저장한다. 직접 만든 Retrofit에도 Interceptor를 등록해야 한다.
+
+## 2026-09-17 입력
+
+9월 15일 전체 명세에 9월 17일 점주 명세를 병합한 비공개 입력을 사용한다. 체크섬 및 전달된 점주 경로 일치를 확인했다. 서버 명세 URL은 401로 실시간 비교하지 못했다. 재고 변경 요청에서 `cancelOverflow`가 제거되고 찜 취소 후보/취소 API와 서버 시각이 추가되었다. 공통 알림 생성 타입은 `:remote:user`로 이동했다. 비공개 입력·매핑·체크섬은 같은 묶음으로 준비한다.

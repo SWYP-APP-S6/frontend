@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
@@ -36,8 +37,8 @@ import com.swyp.mangro.core.designsystem.component.stepper.MangroStepperSize
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.designsystem.theme.PretendardFont
 import com.swyp.mangro.feature.owner.product.R
+import com.swyp.mangro.feature.owner.product.component.ManagementLoadStatus
 import com.swyp.mangro.feature.owner.product.component.OwnerProductScaffold
-import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import com.swyp.mangro.feature.owner.product.util.formatAmount
 import kotlinx.serialization.Serializable
 
@@ -46,23 +47,21 @@ data class OwnerProductDetailDestination(val productId: String)
 
 @Composable
 internal fun ProductDetailRoute(
-    products: List<OwnerProductModel>,
     onBack: () -> Unit,
-    onSave: (OwnerProductModel) -> Unit,
     onCancelReservations: (String) -> Unit,
     viewModel: ProductDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    LaunchedEffect(products) {
-        viewModel.updateProducts(products)
+    LifecycleResumeEffect(viewModel) {
+        viewModel.refresh()
+        onPauseOrDispose {}
     }
     LaunchedEffect(viewModel, lifecycleOwner) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             viewModel.event.collect { event ->
                 when (event) {
-                    is ProductDetailEvent.SaveProduct -> onSave(event.product)
                     ProductDetailEvent.NavigateBack -> onBack()
                     is ProductDetailEvent.NavigateToCancellations -> onCancelReservations(event.productId)
                 }
@@ -87,11 +86,14 @@ internal fun ProductDetailScreen(
             title = stringResource(R.string.owner_product_management_title),
             onBack = { onAction(ProductDetailAction.NavigationBackClicked) },
         ) {
-            Text(
-                text = stringResource(R.string.owner_product_product_missing),
-                style = MangroTheme.typography.caption.captionS,
-                color = MangroTheme.colors.textSubtitle,
-            )
+            ManagementLoadStatus(uiState.isLoading, uiState.hasError) { onAction(ProductDetailAction.Refresh) }
+            if (!uiState.isLoading && !uiState.hasError) {
+                Text(
+                    text = stringResource(R.string.owner_product_product_missing),
+                    style = MangroTheme.typography.caption.captionS,
+                    color = MangroTheme.colors.textSubtitle,
+                )
+            }
         }
         return
     }
@@ -111,6 +113,7 @@ internal fun ProductDetailScreen(
             )
         },
     ) {
+        ManagementLoadStatus(uiState.isSaving || uiState.isLoading, uiState.hasError) { onAction(ProductDetailAction.Refresh) }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -209,11 +212,11 @@ internal fun ProductDetailScreen(
                 )
                 ProductInfoRow(
                     label = stringResource(R.string.owner_product_pickup_end),
-                    value = stringResource(R.string.owner_product_pickup_today, product.pickupEndTime),
+                    value = product.pickupEndTime,
                 )
                 ProductInfoRow(
                     label = stringResource(R.string.owner_product_tags_label),
-                    value = product.tags.mapIndexed { index, tag -> if (index == 0) stringResource(R.string.owner_product_primary_tag, tag) else tag }.joinToString(" · ").ifEmpty { stringResource(R.string.owner_product_none) },
+                    value = if (!product.tagsResolved) "—" else product.tags.mapIndexed { index, tag -> if (index == 0) stringResource(R.string.owner_product_primary_tag, tag) else tag }.joinToString(" · ").ifEmpty { stringResource(R.string.owner_product_none) },
                 )
             }
 
@@ -246,7 +249,9 @@ internal fun ProductDetailScreen(
                     value = uiState.quantity,
                     onValueChange = { onAction(ProductDetailAction.QuantityChanged(it)) },
                     size = MangroStepperSize.LARGE,
-                    minValue = 0,
+                    minValue = minOf(product.minAdjustableQuantity, uiState.quantity),
+                    maxValue = maxOf(9999, uiState.quantity),
+                    enabled = product.stockEditable && !uiState.isSaving && !uiState.isLoading && !uiState.hasError,
                 )
                 NoticeBanner(
                     text = stringResource(R.string.owner_product_zero_quantity_hint),

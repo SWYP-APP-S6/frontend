@@ -87,4 +87,7 @@
     <string name="product_registration_check_failed">상점 승인 상태를 확인하지 못했어요. 다시 시도해주세요.</string>
     <string name="product_registration_retry">다시 확인</string>
     <string name="product_registration_back">돌아가기</string>
+    <string name="owner_product_catalog_unavailable">등록 상품 목록은 준비 중이에요.</string>
+    <string name="owner_management_retry">다시 시도</string>
+    <string name="owner_product_registered_title">등록된 상품</string>
 </resources>

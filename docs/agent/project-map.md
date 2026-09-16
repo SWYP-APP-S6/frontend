@@ -12,11 +12,12 @@
 | `:core:local` | Android library 모듈 | 공통 AuthStore의 개별 토큰 암호화·DataStore 저장. Consumer/Owner Flavor 선언, UserInfoStore는 미구현 |
 | `:remote:auth` | Android library 모듈 | 공통 인증 8 API 생성 |
 | `:data:auth` | Android library 모듈 | 역할별 서버 로그인·가입 및 회원 토큰 저장 |
-| `:remote:consumer` | Android library 모듈 | Consumer 20 API 생성 |
-| `:remote:user` | Android library 모듈 | Owner·Consumer 공통 `/users/me` API 생성 |
+| `:remote:consumer` | Android library 모듈 | Consumer 15 API 생성 |
+| `:remote:user` | Android library 모듈 | Owner·Consumer 공통 사용자·알림 7 API 생성 |
 | `:data:user` | Android library 모듈 | 사용자 프로필 조회 Flow Repository |
+| `:data:owner:product` | Android library 모듈 | 상품 상세·재고 수정·찜 목록/상세/완료·취소 후보 및 취소 Flow Repository |
 | `:data:owner:home` | Android library 모듈 | Owner 홈 조회·픽업 완료 Flow Repository |
-| `:remote:owner` | Android library 모듈 | Owner 12 API 생성 |
+| `:remote:owner` | Android library 모듈 | Owner 14 API 생성 |
 | `:core:designsystem` | Android library 모듈 | Compose 테마와 공통 UI 컴포넌트 |
 | `:core:utils` | Android library 모듈 | 네트워크 상태 관측 등 공통 Android 유틸리티용 모듈 골격 |
 | `:feature:owner:setting` | Android library 모듈 | 점주 상점 정보와 약관 목록·WebView |
@@ -76,7 +77,7 @@
 - `:core:utils`의 `NetworkConnectivityManager`는 기본 네트워크 콜백으로 연결 상태를 관측한다. `MangroApplication`에서 필드 주입받아 앱 시작 시 인스턴스를 생성한다.
 - 앱의 실제 기능 소스는 아직 초기 상태이며 예제 테스트가 남아 있다.
 - Compose convention plugin은 `:app`, `:core:designsystem`, `:feature:owner:home` 등 Compose UI 모듈에 적용되어 있다. Hilt 및 KSP 플러그인은 `:app`, `:core:utils`, `:core:network`, `:remote:auth`, `:remote:consumer`, `:remote:owner`, `:feature:owner:home` 등에 적용되어 있으며, 앱의 Hilt 진입점은 `MangroApplication`이다.
-- 점주 홈은 최초 안내·빈 상태·운영 현황을 표시한다. Owner Debug와 Release 모두 사용자·상점·홈 API를 조회한다. Preview와 UI 테스트만 샘플 데이터를 사용한다. 승인 완료 시 상품 등록을 허용하며 상품 등록 목적지에서도 서버 상태를 재검증한다. 상품·찜 상세 및 알림 목적지는 해당 기능의 API 연결 전까지 준비 중 안내를 표시한다.
+- 점주 홈은 최초 안내·빈 상태·운영 현황을 표시한다. Owner Debug와 Release 모두 사용자·상점·홈 API를 조회한다. Preview와 UI 테스트만 샘플 데이터를 사용한다. 승인 완료 시 상품 등록을 허용하며 상품 등록 목적지에서도 서버 상태를 재검증한다. 홈 상품 카드는 실제 상품 상세로 연결한다. 알림 목적지는 준비 중 안내를 표시한다.
 - 루트 `ktlintCheck`는 subproject를 집계하지만 included build인 `build-logic` 소스는 직접 검사하지 않는다.
 - `.github/workflows` 기반 CI는 아직 없다.
 
@@ -94,7 +95,7 @@
 
 - `:feature:owner:product`: 상품 등록 3단계, 미리보기, 목록·상세, 재고 재확인 및 찜 목록·상세·취소 UI.
 - `:app` Owner 소스셋에서만 의존하며 `OwnerNavHost`가 홈과 상품 Navigation 그래프를 조립한다. 상품 저장은 호출부 콜백으로 연결하고, 찜 상세·취소는 같은 product 모듈의 Navigation 그래프로 연결한다.
-- 현재 API 연결 이전의 UI 호스트 범위이며 상세 계약과 미확정 디자인 기준은 `feature/owner/product/README.md`를 참고한다.
+- 상품 상세·재고 수정 및 찜 현황·상세·완료·취소는 9월 17일 명세와 연결한다. 등록 상품 전체 목록은 서버 API 추가 대기이며 홈의 판매 중 상품으로 대체하지 않는다. `feature/owner/product/README.md` 참고.
 
 ## 점주 설정 화면
 

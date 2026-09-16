@@ -35,6 +35,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
@@ -47,6 +48,7 @@ import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProductCard
 import com.swyp.mangro.core.designsystem.component.chip.MangroChip
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.owner.product.R
+import com.swyp.mangro.feature.owner.product.component.ManagementLoadStatus
 import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import kotlinx.serialization.Serializable
 
@@ -65,8 +67,9 @@ internal fun ProductListRoute(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    LaunchedEffect(products) {
-        viewModel.updateContent(products = products)
+    LifecycleResumeEffect(viewModel) {
+        viewModel.refresh()
+        onPauseOrDispose {}
     }
     LaunchedEffect(
         viewModel,
@@ -125,14 +128,9 @@ fun ProductListScreen(
                 style = MangroTheme.typography.heading.headingXXS,
                 color = MangroTheme.colors.textTitle,
             )
-            if (uiState.hasPickupError) {
-                Text(
-                    text = stringResource(R.string.pickup_error),
-                    color = MangroTheme.colors.dangerNormal,
-                    modifier = Modifier.padding(horizontal = 20.dp),
-                )
+            if (uiState.tab == ProductListTab.PICKUPS) {
+                ManagementLoadStatus(uiState.isLoading, uiState.hasPickupError) { onAction(ProductListAction.Refresh) }
             }
-
             StoreTabs(
                 state = uiState,
                 onAction = onAction,
@@ -154,19 +152,21 @@ fun ProductListScreen(
                     )
                 }
             }
-            Text(
-                text = stringResource(
-                    R.string.owner_product_filtered_count,
-                    if (uiState.tab == ProductListTab.PRODUCTS) {
-                        uiState.filteredProducts.size
-                    } else {
-                        uiState.filteredPickups.size
-                    },
-                ),
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp),
-                style = MangroTheme.typography.body.bodyM,
-                color = MangroTheme.colors.textSubtitle,
-            )
+            if (uiState.tab == ProductListTab.PICKUPS && !uiState.isLoading && !uiState.hasPickupError) {
+                Text(
+                    text = stringResource(
+                        R.string.owner_product_filtered_count,
+                        if (uiState.tab == ProductListTab.PRODUCTS) {
+                            uiState.filteredProducts.size
+                        } else {
+                            uiState.filteredPickups.size
+                        },
+                    ),
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp),
+                    style = MangroTheme.typography.body.bodyM,
+                    color = MangroTheme.colors.textSubtitle,
+                )
+            }
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 val empty = if (uiState.tab == ProductListTab.PRODUCTS) {
                     uiState.filteredProducts.isEmpty()
@@ -174,7 +174,9 @@ fun ProductListScreen(
                     uiState.filteredPickups.isEmpty()
                 }
 
-                if (empty) {
+                if (uiState.tab == ProductListTab.PICKUPS && (uiState.isLoading || uiState.hasPickupError)) {
+                    // 오류를 빈 목록으로 표시하지 않는다.
+                } else if (empty) {
                     Column(
                         modifier = Modifier.align(Alignment.Center).padding(bottom = 144.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -187,7 +189,7 @@ fun ProductListScreen(
                             tint = MangroTheme.colors.textCanceled,
                         )
                         Text(
-                            text = stringResource(R.string.owner_product_empty_filter_title),
+                            text = stringResource(if (uiState.tab == ProductListTab.PRODUCTS) R.string.owner_product_catalog_unavailable else R.string.owner_product_empty_filter_title),
                             color = MangroTheme.colors.textSubtitle,
                             style = MangroTheme.typography.body.bodyL,
                         )
@@ -195,7 +197,7 @@ fun ProductListScreen(
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = if (uiState.cancellationNeeded.isEmpty()) 0.dp else 112.dp),
+                        contentPadding = PaddingValues(bottom = if (uiState.cancellationCount == 0) 0.dp else 112.dp),
                     ) {
                         if (uiState.tab == ProductListTab.PRODUCTS) {
                             items(
@@ -242,7 +244,7 @@ fun ProductListScreen(
                         }
                     }
                 }
-                if (uiState.cancellationNeeded.isNotEmpty()) {
+                if (uiState.cancellationCount > 0) {
                     Surface(
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
@@ -272,7 +274,7 @@ fun ProductListScreen(
                             Text(
                                 text = stringResource(
                                     R.string.owner_product_cancellation_needed_count,
-                                    uiState.cancellationNeeded.size,
+                                    uiState.cancellationCount,
                                 ),
                                 modifier = Modifier.weight(1f),
                                 color = MangroTheme.colors.textOnBrandWhite,
@@ -341,18 +343,22 @@ private fun StoreTabs(
                             )
                         }
                         Text(
-                            text = stringResource(
-                                if (tab == ProductListTab.PRODUCTS) {
-                                    R.string.owner_product_registered_count
-                                } else {
-                                    R.string.owner_product_pickup_count
-                                },
-                                if (tab == ProductListTab.PRODUCTS) {
-                                    state.products.size
-                                } else {
-                                    state.pickups.size
-                                },
-                            ),
+                            text = if (tab == ProductListTab.PRODUCTS) {
+                                stringResource(R.string.owner_product_registered_title)
+                            } else {
+                                stringResource(
+                                    if (tab == ProductListTab.PRODUCTS) {
+                                        R.string.owner_product_registered_count
+                                    } else {
+                                        R.string.owner_product_pickup_count
+                                    },
+                                    if (tab == ProductListTab.PRODUCTS) {
+                                        state.products.size
+                                    } else {
+                                        state.totalHolds
+                                    },
+                                )
+                            },
                             color = if (selected) MangroTheme.colors.primaryNormal else MangroTheme.colors.textCanceled,
                             style = MangroTheme.typography.label.labelM,
                         )

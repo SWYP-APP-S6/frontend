@@ -4,15 +4,18 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.swyp.mangro.feature.owner.product.data.OwnerPickupStore
-import com.swyp.mangro.feature.owner.product.data.pickupTime
-import com.swyp.mangro.feature.owner.product.model.canCompletePickup
+import com.swyp.mangro.data.owner.product.model.HoldDetail
+import com.swyp.mangro.data.owner.product.model.HoldStatus
+import com.swyp.mangro.data.owner.product.repository.OwnerProductRepository
+import com.swyp.mangro.feature.owner.product.model.Pickup
+import com.swyp.mangro.feature.owner.product.model.presentation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -20,33 +23,61 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class PickupDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val pickupStore: OwnerPickupStore,
+    private val repository: OwnerProductRepository,
 ) : ViewModel() {
-    private val pickupId = savedStateHandle.toRoute<OwnerPickupDetailDestination>().pickupId
+    private val pickupId = savedStateHandle.toRoute<OwnerPickupDetailDestination>().pickupId.toLongOrNull() ?: 0L
     private val _uiState = MutableStateFlow(PickupDetailState())
     val uiState = _uiState.asStateFlow()
     private val _event = Channel<PickupDetailEvent>(Channel.BUFFERED)
     val event = _event.receiveAsFlow()
+    private var offset = 0L
 
     init {
         viewModelScope.launch {
-            combine(pickupStore.snapshot, pickupTime()) { snapshot, now ->
-                val pickup = snapshot.pickups.find { it.id == pickupId }
-                PickupDetailState(
-                    pickup = pickup,
-                    storeName = snapshot.storeName,
-                    now = now,
-                    canComplete = snapshot.isDemo && pickup != null && canCompletePickup(pickup, snapshot.pickups, snapshot.stock, now),
-                )
-            }.collect { state -> _uiState.update { state.copy(hasError = it.hasError) } }
+            while (true) {
+                _uiState.update { it.copy(now = System.currentTimeMillis() + offset) }
+                delay(1000)
+            }
+        }
+    }
+
+    fun refresh() {
+        if (uiState.value.isLoading || uiState.value.isSaving) return
+        _uiState.update { it.copy(isLoading = true, hasError = false, canComplete = false) }
+        viewModelScope.launch {
+            repository.fetchHold(pickupId).first().fold(
+                onSuccess = ::show,
+                onFailure = { _uiState.update { it.copy(isLoading = false, hasError = true, canComplete = false) } },
+            )
+        }
+    }
+
+    private fun show(detail: HoldDetail) {
+        offset = detail.serverTime - System.currentTimeMillis()
+        val first = detail.items.firstOrNull()
+        _uiState.update {
+            it.copy(
+                pickup = first?.let { item -> Pickup(pickupId.toString(), item.productId.toString(), item.name, detail.nickname, item.quantity, item.unitPrice.toLong(), detail.heldAt, detail.expiresAt, detail.status.presentation(), detail.completedAt) },
+                items = detail.items, totalPrice = detail.totalPrice.toLong(), storeName = detail.storeName,
+                now = detail.serverTime, isLoading = false, isSaving = false, hasError = false,
+                canComplete = detail.status == HoldStatus.HOLDING && first != null,
+            )
         }
     }
 
     fun handleAction(action: PickupDetailAction) {
         when (action) {
+            PickupDetailAction.Refresh -> refresh()
             PickupDetailAction.CompleteClicked -> {
-                val completed = pickupStore.complete(pickupId)
-                _uiState.update { it.copy(hasError = !completed) }
+                val state = uiState.value
+                if (!state.canComplete || state.isSaving || state.isLoading || System.currentTimeMillis() + offset >= (state.pickup?.deadline ?: 0)) return
+                _uiState.update { it.copy(isSaving = true, canComplete = false, hasError = false) }
+                viewModelScope.launch {
+                    repository.markAsPickedUp(pickupId).first().fold(
+                        onSuccess = ::show,
+                        onFailure = { _uiState.update { it.copy(isSaving = false, canComplete = false, hasError = true) } },
+                    )
+                }
             }
             PickupDetailAction.HomeClicked -> _event.trySend(PickupDetailEvent.NavigateToHome)
             PickupDetailAction.NavigationBackClicked -> _event.trySend(PickupDetailEvent.NavigateBack)

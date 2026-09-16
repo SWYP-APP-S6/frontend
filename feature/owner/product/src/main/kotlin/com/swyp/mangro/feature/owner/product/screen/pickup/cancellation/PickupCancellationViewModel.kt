@@ -3,15 +3,16 @@ package com.swyp.mangro.feature.owner.product.screen.pickup.cancellation
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.swyp.mangro.feature.owner.product.data.OwnerPickupStore
-import com.swyp.mangro.feature.owner.product.data.pickupTime
-import com.swyp.mangro.feature.owner.product.model.pickupShortages
+import com.swyp.mangro.data.owner.product.model.HoldCancellations
+import com.swyp.mangro.data.owner.product.repository.OwnerProductRepository
+import com.swyp.mangro.feature.owner.product.model.CancellationGroup
+import com.swyp.mangro.feature.owner.product.model.CancellationTarget
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -19,66 +20,79 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class PickupCancellationViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val pickupStore: OwnerPickupStore,
+    private val repository: OwnerProductRepository,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(
-        PickupCancellationState(
-            excludedIds = savedStateHandle.get<ArrayList<String>>(EXCLUDED)?.toSet().orEmpty(),
-            showConfirmation = savedStateHandle[CONFIRMATION] ?: false,
-            confirmationIds = savedStateHandle.get<ArrayList<String>>(CONFIRMATION_IDS)?.toSet().orEmpty(),
-        ),
-    )
+    private val _uiState = MutableStateFlow(PickupCancellationState())
     val uiState = _uiState.asStateFlow()
     private val _event = Channel<PickupCancellationEvent>(Channel.BUFFERED)
     val event = _event.receiveAsFlow()
 
-    init {
+    fun refresh() {
+        if (uiState.value.isLoading || uiState.value.isSaving) return
+        _uiState.update { it.copy(isLoading = true, showConfirmation = false, hasError = false) }
         viewModelScope.launch {
-            combine(pickupStore.snapshot, pickupTime()) { snapshot, now ->
-                snapshot to pickupShortages(snapshot.pickups, snapshot.stock, now)
-            }.collect { (snapshot, shortages) ->
-                updateState { state ->
-                    val next = state.copy(shortages = shortages, storeName = snapshot.storeName, storePhone = snapshot.storePhone)
-                    next.copy(showConfirmation = next.showConfirmation && next.confirmationIds.isNotEmpty() && next.targets.map { it.id }.containsAll(next.confirmationIds))
-                }
-            }
+            repository.fetchCancellations().first().fold(
+                onSuccess = ::show,
+                onFailure = { _uiState.update { it.copy(isLoading = false, hasError = true) } },
+            )
         }
+    }
+
+    private fun show(result: HoldCancellations) {
+        val groups = result.products.map { product ->
+            CancellationGroup(
+                product.id.toString(),
+                product.name,
+                product.candidates.sortedByDescending { it.order }.map { CancellationTarget(it.id.toString(), it.nickname, it.quantity, it.heldAt) },
+                product.candidates.associate { it.id.toString() to it.order },
+            )
+        }
+        val suggested = result.products.flatMap { it.candidates }.filter { it.suggested }.take(100).map { it.id.toString() }.toSet()
+        _uiState.value = PickupCancellationState(
+            shortages = groups,
+            excludedIds = groups.flatMap { it.targets }.map { it.id }.toSet() - suggested,
+            noticeMessage = result.notice,
+            suggestedCount = result.suggestedCount,
+        )
     }
 
     fun handleAction(action: PickupCancellationAction) {
         when (action) {
+            PickupCancellationAction.Refresh -> refresh()
             is PickupCancellationAction.SelectionChanged -> {
-                if (uiState.value.showConfirmation || uiState.value.targets.none { it.id == action.id }) return
-                updateState { it.copy(excludedIds = if (action.selected) it.excludedIds - action.id else it.excludedIds + action.id) }
+                if (uiState.value.isLoading || uiState.value.isSaving || uiState.value.showConfirmation || uiState.value.targets.none { it.id == action.id }) return
+                if (action.selected && uiState.value.selectedIds.size >= 100) return
+                _uiState.update { it.copy(excludedIds = if (action.selected) it.excludedIds - action.id else it.excludedIds + action.id) }
             }
-            PickupCancellationAction.CancelClicked -> updateState { it.copy(showConfirmation = it.selectedIds.isNotEmpty(), confirmationIds = it.selectedIds, hasError = false) }
-            PickupCancellationAction.ConfirmationDismissed -> updateState { it.copy(showConfirmation = false, hasError = false) }
+            PickupCancellationAction.CancelClicked -> {
+                val state = uiState.value
+                if (state.isLoading || state.isSaving || state.hasError || state.selectedIds.size !in 1..100) return
+                _uiState.update { it.copy(showConfirmation = true, confirmationIds = it.selectedIds) }
+            }
+            PickupCancellationAction.ConfirmationDismissed -> if (!uiState.value.isSaving) _uiState.update { it.copy(showConfirmation = false) }
             PickupCancellationAction.ConfirmationClicked -> {
                 val state = uiState.value
-                if (!state.showConfirmation) return
-                val success = pickupStore.cancel(state.selectedIds)
-                updateState { it.copy(showConfirmation = !success, hasError = !success) }
+                if (!state.showConfirmation || state.isSaving || state.confirmationIds.size !in 1..100) return
+                _uiState.update { it.copy(isSaving = true, hasError = false) }
+                viewModelScope.launch {
+                    repository.cancelHolds(state.confirmationIds.map { it.toLong() }.toSet()).first().fold(
+                        onSuccess = ::show,
+                        onFailure = {
+                            // 409 또는 응답 유실 시에도 이전 선택을 자동 재전송하지 않는다.
+                            val latest = repository.fetchCancellations().first().getOrNull()
+                            if (latest != null) show(latest)
+                            _uiState.update { it.copy(isSaving = false, showConfirmation = false, hasError = true) }
+                        },
+                    )
+                }
             }
-            PickupCancellationAction.NavigationBackClicked -> {
+            PickupCancellationAction.NavigationBackClicked -> if (!uiState.value.isSaving) {
                 if (uiState.value.showConfirmation) {
-                    updateState { it.copy(showConfirmation = false) }
+                    _uiState.update { it.copy(showConfirmation = false) }
                 } else {
                     _event.trySend(PickupCancellationEvent.NavigateBack)
                 }
             }
         }
-    }
-
-    private fun updateState(transform: (PickupCancellationState) -> PickupCancellationState) {
-        _uiState.update(transform)
-        savedStateHandle[EXCLUDED] = ArrayList(uiState.value.excludedIds)
-        savedStateHandle[CONFIRMATION] = uiState.value.showConfirmation
-        savedStateHandle[CONFIRMATION_IDS] = ArrayList(uiState.value.confirmationIds)
-    }
-
-    private companion object {
-        const val EXCLUDED = "pickupCancellationExcluded"
-        const val CONFIRMATION_IDS = "pickupCancellationConfirmedIds"
-        const val CONFIRMATION = "pickupCancellationConfirmation"
     }
 }

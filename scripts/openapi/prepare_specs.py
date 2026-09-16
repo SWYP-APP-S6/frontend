@@ -188,7 +188,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=Path, default=ROOT / 'build/openapi')
     args = parser.parse_args()
-    raw = (ROOT / 'openapi/mangro-app-openapi-2026-09-15.json').read_bytes()
+    raw = (ROOT / 'openapi/mangro-app-openapi-2026-09-17-merged.json').read_bytes()
     expected = (ROOT / 'openapi/spec.sha256').read_text().split()[0]
     if hashlib.sha256(raw).hexdigest() != expected:
         raise ValueError('Source checksum mismatch; update the snapshot and checksum together')

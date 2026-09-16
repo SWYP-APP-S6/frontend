@@ -12,7 +12,10 @@
 | `:core:local` | Android library 모듈 | 공통 AuthStore의 개별 토큰 암호화·DataStore 저장. Consumer/Owner Flavor 선언, UserInfoStore는 미구현 |
 | `:remote:auth` | Android library 모듈 | 공통 인증 8 API 생성 |
 | `:data:auth` | Android library 모듈 | 역할별 서버 로그인·가입 및 회원 토큰 저장 |
-| `:remote:consumer` | Android library 모듈 | Consumer 21 API 생성 |
+| `:remote:consumer` | Android library 모듈 | Consumer 20 API 생성 |
+| `:remote:user` | Android library 모듈 | Owner·Consumer 공통 `/users/me` API 생성 |
+| `:data:user` | Android library 모듈 | 사용자 프로필 조회 Flow Repository |
+| `:data:owner:home` | Android library 모듈 | Owner 홈 조회·픽업 완료 Flow Repository |
 | `:remote:owner` | Android library 모듈 | Owner 12 API 생성 |
 | `:core:designsystem` | Android library 모듈 | Compose 테마와 공통 UI 컴포넌트 |
 | `:core:utils` | Android library 모듈 | 네트워크 상태 관측 등 공통 Android 유틸리티용 모듈 골격 |
@@ -73,7 +76,7 @@
 - `:core:utils`의 `NetworkConnectivityManager`는 기본 네트워크 콜백으로 연결 상태를 관측한다. `MangroApplication`에서 필드 주입받아 앱 시작 시 인스턴스를 생성한다.
 - 앱의 실제 기능 소스는 아직 초기 상태이며 예제 테스트가 남아 있다.
 - Compose convention plugin은 `:app`, `:core:designsystem`, `:feature:owner:home` 등 Compose UI 모듈에 적용되어 있다. Hilt 및 KSP 플러그인은 `:app`, `:core:utils`, `:core:network`, `:remote:auth`, `:remote:consumer`, `:remote:owner`, `:feature:owner:home` 등에 적용되어 있으며, 앱의 Hilt 진입점은 `MangroApplication`이다.
-- 점주 홈은 최초 안내·빈 상태·운영 현황을 표시한다. Owner Debug와 Release 모두 공통 샘플 데이터로 운영 현황을 표시하는 임시 구성이다. Preview는 Debug 전용이며 실제 데이터 조회는 미연결이며 상품 목록·상세·등록 및 찜 목적지는 Owner Navigation으로 연결한다.
+- 점주 홈은 최초 안내·빈 상태·운영 현황을 표시한다. Owner Debug와 Release 모두 사용자·상점·홈 API를 조회한다. Preview와 UI 테스트만 샘플 데이터를 사용한다. 승인 완료 시 상품 등록을 허용하며 상품 등록 목적지에서도 서버 상태를 재검증한다. 상품·찜 상세 및 알림 목적지는 해당 기능의 API 연결 전까지 준비 중 안내를 표시한다.
 - 루트 `ktlintCheck`는 subproject를 집계하지만 included build인 `build-logic` 소스는 직접 검사하지 않는다.
 - `.github/workflows` 기반 CI는 아직 없다.
 
@@ -110,4 +113,4 @@
 
 Owner·Consumer의 `:data:auth`는 Flow 기반 SDK 토큰 검증·가입·저장 세션 확인과 약관 조회를 제공한다. 검증 응답의 accessToken이 있으면 서버 토큰 쌍을 AuthStore에 저장하고, null이면 signupToken으로 가입한 뒤 가입 응답의 서버 토큰 쌍을 저장한다. `:feature:splash`에서 두 Flavor의 세션을 복원한다.
 
-`:data:owner:store`는 Owner 상점 등록 Flow Repository와 서버 요청 매핑을 소유한다. `:feature:owner:onboarding`은 이를 수집하며, Owner 신규 회원은 기본 정보 → 운영 정보 입력을 마친 뒤 signup → 상점 등록 → 접수 안내로 연결된다. Consumer에는 이 모듈을 연결하지 않는다.
+`:data:owner:store`는 Owner 상점 등록·내 상점 조회 Flow Repository, 승인 상태와 서버 요청 매핑을 소유한다. `:feature:owner:onboarding`은 이를 수집하며, Owner 신규 회원은 기본 정보 → 운영 정보 입력을 마친 뒤 signup → 상점 등록 → 접수 안내로 연결된다. Consumer에는 이 모듈을 연결하지 않는다.

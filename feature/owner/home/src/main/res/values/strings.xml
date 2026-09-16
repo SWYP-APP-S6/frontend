@@ -29,4 +29,14 @@
     <string name="owner_home_remaining">%1$d분 남음</string>
     <string name="owner_home_expired">시간 만료</string>
     <string name="owner_home_pickup_action">%1$s 님 픽업 완료</string>
+    <string name="owner_home_load_failed">홈 정보를 불러오지 못했어요. 다시 시도해주세요.</string>
+    <string name="owner_home_retry">다시 시도</string>
+    <string name="owner_home_pending">상점 승인 대기 중이에요.\n 승인 완료 후 상품을 등록할 수 있어요.</string>
+    <string name="owner_home_rejected">상점 등록이 반려되었어요. 승인 완료 후 상품을 등록할 수 있어요.</string>
+    <string name="owner_home_approval_unknown">상점 승인 상태를 확인하지 못했어요. 새로고침 후 다시 확인해주세요.</string>
+    <string name="owner_home_approval_required">상점 승인 완료 후 상품을 등록할 수 있어요.</string>
+    <string name="owner_home_unread_notifications">읽지 않은 알림 %1$d건</string>
+    <string name="owner_home_destination_unavailable">이 화면은 준비 중이에요.</string>
+    <string name="owner_home_pickup_completed">픽업 완료 처리했어요.</string>
+    <string name="owner_home_pickup_failed">픽업을 완료하지 못했어요. 최신 상태를 확인하고 다시 시도해주세요.</string>
 </resources>

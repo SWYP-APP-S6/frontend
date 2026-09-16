@@ -37,16 +37,19 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToIndex
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
+import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProduct
+import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProductCard
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.designsystem.theme.OwnerMangroTypography
 import com.swyp.mangro.feature.owner.home.component.card.VisitorCard
 import com.swyp.mangro.feature.owner.home.screen.OwnerHomeAction
 import com.swyp.mangro.feature.owner.home.screen.OwnerHomeScreen
 import com.swyp.mangro.feature.owner.home.screen.OwnerHomeUiState
-import com.swyp.mangro.feature.owner.home.screen.OwnerHomeViewModel
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -56,6 +59,54 @@ import org.junit.Test
 class OwnerHomeScreenTest {
     @get:Rule
     val composeRule = createComposeRule()
+
+    @Test
+    fun pullToRefreshIsEnabledOnlyAfterProductRegistration() {
+        var state by mutableStateOf(OwnerHomeSamples.welcome)
+        val actions = mutableListOf<OwnerHomeAction>()
+        composeRule.setContent {
+            MangroTheme(typography = OwnerMangroTypography) {
+                OwnerHomeScreen(state, onAction = actions::add)
+            }
+        }
+        composeRule.onAllNodes(hasScrollToIndexAction()).onFirst().performTouchInput { swipeDown() }
+        composeRule.runOnIdle {
+            assertTrue(actions.isEmpty())
+            state = OwnerHomeSamples.empty
+        }
+        composeRule.onAllNodes(hasScrollToIndexAction()).onFirst().performTouchInput { swipeDown() }
+        composeRule.runOnIdle { assertEquals(listOf(OwnerHomeAction.Refresh), actions) }
+    }
+
+    @Test
+    fun pendingStoreHasNoRegistrationAndLoadingDoesNotShowWelcome() {
+        var state by mutableStateOf(OwnerHomeUiState(isLoading = true))
+        composeRule.setContent { MangroTheme(typography = OwnerMangroTypography) { OwnerHomeScreen(state) {} } }
+        composeRule.onNodeWithText("첫 상품 등록하러 가기").assertDoesNotExist()
+        composeRule.runOnIdle {
+            state = OwnerHomeUiState(approvalStatus = com.swyp.mangro.data.owner.store.model.StoreApprovalStatus.PENDING)
+        }
+        val pendingMessage = InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.owner_home_pending)
+        composeRule.onNodeWithText(pendingMessage).assertIsDisplayed()
+        composeRule.onNodeWithText("첫 상품 등록하러 가기").assertDoesNotExist()
+        composeRule.runOnIdle { state = state.copy(errorMessage = R.string.owner_home_load_failed) }
+        composeRule.onNodeWithText("첫 상품 등록하러 가기").assertDoesNotExist()
+        composeRule.onNodeWithText("다시 시도").assertIsDisplayed()
+    }
+
+    @Test
+    fun productShortfallUsesQuantityAndDisappearsWhenResolved() {
+        var product by mutableStateOf(OwnerProduct("1", "", "시금치", 4000, 1, 3, 2))
+        composeRule.setContent {
+            MangroTheme(typography = OwnerMangroTypography) {
+                OwnerProductCard(product)
+            }
+        }
+        composeRule.onNodeWithText("찜한 수량보다 재고가 2개 부족해요").assertIsDisplayed()
+        composeRule.onNodeWithText("2명은 제품 구매가 불가능해요").assertDoesNotExist()
+        composeRule.runOnIdle { product = product.copy(shortfallQty = 0) }
+        composeRule.onNodeWithText("찜한 수량보다 재고가 2개 부족해요").assertDoesNotExist()
+    }
 
     @Test
     fun firstRegistrationShowsWelcomeAndSendsRegisterAction() {
@@ -81,13 +132,15 @@ class OwnerHomeScreenTest {
 
     @Test
     fun operatingScreenDismissesNoticesWithoutClearingUnderlyingIssues() {
-        val viewModel = OwnerHomeViewModel()
-        var state by mutableStateOf(viewModel.uiState.value)
+        var state by mutableStateOf(OwnerHomeSamples.operating())
         composeRule.setContent {
             MangroTheme(typography = OwnerMangroTypography) {
                 OwnerHomeScreen(state) { action ->
-                    viewModel.handleAction(action)
-                    state = viewModel.uiState.value
+                    state = when (action) {
+                        OwnerHomeAction.DismissAttention -> state.copy(isAttentionDismissed = true)
+                        OwnerHomeAction.ViewNewPickups -> state.copy(hasNewPickup = false)
+                        else -> state
+                    }
                 }
             }
         }
@@ -98,7 +151,7 @@ class OwnerHomeScreenTest {
         composeRule.onNodeWithContentDescription("확인 필요 안내 닫기").performClick()
         composeRule.onNodeWithText("확인이 필요한 문제가 있어요.").assertDoesNotExist()
         composeRule.onNodeWithText("지금 확인해야 할 문제는 없어요.").assertDoesNotExist()
-        assertTrue(viewModel.uiState.value.hasAttention)
+        assertTrue(state.hasAttention)
         capture("04-attention-dismissed")
 
         composeRule.onNodeWithText("확인하기").performClick()
@@ -125,7 +178,7 @@ class OwnerHomeScreenTest {
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             visitors.forEach { visitor ->
-                                VisitorCard(nowMillis, visitor, Modifier.testTag(visitor.id), actions::add)
+                                VisitorCard(nowMillis, visitor, Modifier.testTag(visitor.id), onAction = actions::add)
                             }
                         }
                     }
@@ -155,7 +208,7 @@ class OwnerHomeScreenTest {
         assertTrue(actions.isEmpty())
         composeRule.runOnIdle { nowMillis = 0 }
         completeButton.assertIsEnabled().performClick()
-        assertEquals(listOf(OwnerHomeAction.CompletePickup(visitors.first().id)), actions)
+        assertEquals(listOf(OwnerHomeAction.MarkAsPickedUp(visitors.first().id)), actions)
     }
 
     @Test
@@ -178,7 +231,7 @@ class OwnerHomeScreenTest {
     private fun showScreen(state: OwnerHomeUiState, onAction: (OwnerHomeAction) -> Unit = {}) {
         composeRule.setContent {
             MangroTheme(typography = OwnerMangroTypography) {
-                OwnerHomeScreen(state, onAction)
+                OwnerHomeScreen(state, onAction = onAction)
             }
         }
     }

@@ -68,7 +68,7 @@ internal fun AttentionCard(
             ) {
                 Icon(
                     painter = painterResource(DesignR.drawable.ic_x_20px),
-                    contentDescription = null,
+                    contentDescription = stringResource(R.string.owner_home_dismiss_attention),
                     tint = MangroTheme.colors.dangerNormal,
                     modifier = Modifier.size(20.dp),
                 )

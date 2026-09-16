@@ -1,4 +1,4 @@
-package com.swyp.mangro.feature.owner.home.component
+package com.swyp.mangro.feature.owner.home.component.section
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -18,7 +18,7 @@ import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.owner.home.R
 
 @Composable
-internal fun RegisterNewProductSection(onClick: () -> Unit) {
+internal fun RegisterNewProductSection(enabled: Boolean = true, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -52,6 +52,7 @@ internal fun RegisterNewProductSection(onClick: () -> Unit) {
         MangroButton(
             text = stringResource(R.string.owner_home_first_product),
             onClick = onClick,
+            enabled = enabled,
             style = MangroButtonStyle.ACTIVE,
             modifier = Modifier
                 .padding(top = 40.dp)

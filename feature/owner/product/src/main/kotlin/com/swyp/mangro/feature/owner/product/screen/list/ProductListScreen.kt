@@ -214,10 +214,8 @@ fun ProductListScreen(
                                             name = product.name,
                                             price = product.salePrice,
                                             remainingCount = product.remainingQuantity,
-                                            expectedVisitCount = product.reservedQuantity,
-                                            unableToPurchaseCount = uiState.cancellationNeeded.count {
-                                                it.productId == product.id
-                                            },
+                                            expectedVisitCount = product.reservedQuantity.toLong(),
+                                            shortfallQty = product.shortageQuantity,
                                         ),
                                         modifier = Modifier
                                             .clickable {

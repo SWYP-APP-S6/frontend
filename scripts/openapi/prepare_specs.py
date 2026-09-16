@@ -31,13 +31,22 @@ def pascal(value):
     return value[0].upper() + value[1:]
 
 
+def client_mapping(mapping):
+    # /users/me belongs to both roles. Keep older private mapping bundles usable.
+    result = copy.deepcopy(mapping)
+    if 'GET /users/me' in result:
+        result['GET /users/me']['module'] = 'user'
+    return result
+
+
 def prepare(source, mapping, policies):
+    mapping = client_mapping(mapping)
     actual = {f'{m.upper()} {p}' for m, p, _ in operations(source)}
     if actual != set(mapping):
         raise ValueError(f'Endpoint mapping mismatch: {actual ^ set(mapping)}')
     output = {}
     schemas = source['components']['schemas']
-    for module in ('auth', 'consumer', 'owner'):
+    for module in ('auth', 'consumer', 'owner', 'user'):
         spec = {k: copy.deepcopy(v) for k, v in source.items() if k not in ('paths', 'components', 'tags', 'servers')}
         spec['servers'] = [{'url': policies['baseUrl']}]
         spec['paths'] = {}

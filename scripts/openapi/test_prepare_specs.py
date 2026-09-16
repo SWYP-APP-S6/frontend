@@ -13,10 +13,18 @@ class PrepareSpecsTest(unittest.TestCase):
     def generate(self):
         return prepare(self.source, self.mapping, self.policies)
 
+    def test_legacy_mapping_moves_only_profile_to_shared_user_module(self):
+        self.mapping['GET /users/me']['module'] = 'consumer'
+        result = self.generate()
+        self.assertIn('/users/me', result['user']['paths'])
+        self.assertNotIn('/users/me', result['consumer']['paths'])
+        self.assertIn('/users/me/location', result['consumer']['paths'])
+        self.assertEqual('consumer', self.mapping['GET /users/me']['module'])
+
     def test_partition_is_complete_and_disjoint(self):
         result = self.generate()
         counts = {k: len(list(operations(v))) for k, v in result.items()}
-        self.assertEqual(counts, {'consumer': 21, 'owner': 12, 'auth': 10})
+        self.assertEqual(counts, {'consumer': 20, 'owner': 12, 'auth': 10, 'user': 1})
         endpoints = [f'{m} {p}' for v in result.values() for m, p, _ in operations(v)]
         self.assertEqual(len(set(endpoints)), 43)
 

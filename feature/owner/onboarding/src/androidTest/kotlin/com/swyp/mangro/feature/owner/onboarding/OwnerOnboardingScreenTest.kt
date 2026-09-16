@@ -66,6 +66,8 @@ class OwnerOnboardingScreenTest {
     }
 
     private val repository = object : StoreRepository {
+        override fun fetchMyStore(): kotlinx.coroutines.flow.Flow<Result<com.swyp.mangro.data.owner.store.model.OwnerStore>> = error("Not used in onboarding")
+
         override fun register(registration: StoreRegistration): Flow<Result<Unit>> {
             requests += "store"
             return flowOf(registrationResult)

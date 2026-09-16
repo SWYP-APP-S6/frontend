@@ -1,6 +1,6 @@
 # Remote API
 
-Auth·Consumer·Owner Android library에서 OpenAPI Generator 7.24.0으로 Kotlin Retrofit Service와 DTO를 생성한다. 생성 코드는 각 모듈의 `build/generated/openapi`에 두며 커밋하지 않는다.
+Auth·User·Consumer·Owner Android library에서 OpenAPI Generator 7.24.0으로 Kotlin Retrofit Service와 DTO를 생성한다. 생성 코드는 각 모듈의 `build/generated/openapi`에 두며 커밋하지 않는다.
 
 ## 개발 환경 준비
 
@@ -15,17 +15,21 @@ Auth·Consumer·Owner Android library에서 OpenAPI Generator 7.24.0으로 Kotli
 
 Python 3과 Android/Java 개발 환경이 필요하다. 템플릿과 생성 스크립트는 저장소에서 관리한다. 원본 JSON → `prepareOpenApiSpecs` → 모듈별 `openApiValidate` → `openApiGenerate` 순서로 실행되며 Debug/Release 컴파일에 연결된다.
 
+## 공통 사용자 API
+
+`GET /users/me`는 `:remote:user`에서 생성하고 `:data:user`가 공통 사용자 모델로 변환한다. 위치 조회·수정은 Consumer UserService에 유지한다. 생성 스크립트의 `client_mapping`이 이전 비공개 매핑 묶음의 `/users/me`도 공통 모듈로 옮기므로 매핑 파일의 별도 배포를 기다릴 필요가 없다. 생성 결과 검증에도 같은 규칙을 적용한다.
+
 ## DI
 
 Hilt `SingletonComponent`에서 공통 OkHttpClient·Retrofit과 각 Service 인터페이스를 싱글턴으로 제공한다. app은 Auth를 공통 의존성으로, Consumer/Owner를 각각 Flavor 의존성으로 포함한다. Service 인터페이스를 생성자 주입으로 사용한다.
 
-기본 클라이언트에는 인증 인터셉터가 없다. 토큰 저장·인증 헤더·갱신과 화면 연동은 후속 작업이다. `AuthServices`, `ConsumerServices`, `OwnerServices` 팩토리는 테스트나 별도 Retrofit을 직접 구성할 때 사용할 수 있다.
+기본 클라이언트는 저장된 서버 토큰으로 인증 헤더·401 갱신 및 BaseResponse 해제를 처리한다. `AuthServices`, `ConsumerServices`, `OwnerServices` 팩토리는 테스트나 별도 Retrofit을 직접 구성할 때 사용할 수 있다.
 
 ## 검증
 
 ```sh
 python3 -m unittest discover -s scripts/openapi -p 'test_*.py'
-./gradlew :remote:auth:openApiGenerate :remote:consumer:openApiGenerate :remote:owner:openApiGenerate
+./gradlew :remote:auth:openApiGenerate :remote:consumer:openApiGenerate :remote:owner:openApiGenerate :remote:user:openApiGenerate
 python3 scripts/openapi/check_generated.py
 ./gradlew :core:network:testDebugUnitTest :remote:auth:testDebugUnitTest :remote:consumer:testDebugUnitTest :remote:owner:testDebugUnitTest
 ```

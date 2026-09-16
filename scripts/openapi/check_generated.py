@@ -2,10 +2,11 @@
 import re
 import json
 from pathlib import Path
+from prepare_specs import client_mapping
 
 ROOT = Path(__file__).resolve().parents[2]
-mapping = json.loads((ROOT / 'openapi/endpoint-map.json').read_text())
-for module in ('auth', 'consumer', 'owner'):
+mapping = client_mapping(json.loads((ROOT / 'openapi/endpoint-map.json').read_text()))
+for module in ('auth', 'consumer', 'owner', 'user'):
     count = len({rule['section'] for rule in mapping.values() if rule['module'] == module})
     root = ROOT / 'remote' / module / 'build/generated/openapi'
     services = list(root.rglob('*Service.kt'))

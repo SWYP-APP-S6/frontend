@@ -36,6 +36,20 @@ class StoreRepositoryTest {
         server.enqueue(MockResponse().setResponseCode(201).setBody("""{"status":201,"code":"CREATED","data":$data}"""))
     }
 
+    @Test fun fetchesStoreAndOnlyExactApprovedStatusAllowsRegistration() = runTest {
+        for (status in listOf("PENDING", "APPROVED", "REJECTED", "NEW_STATUS", "")) {
+            server.enqueue(MockResponse().setBody("""{"status":200,"code":"OK","data":{"id":9,"name":"상점","status":"$status","businessOpenTime":"09:00:00","businessCloseTime":"20:00:00"}}"""))
+            val store = repository.fetchMyStore().single().getOrThrow()
+            assertEquals("/owner/stores/me", server.takeRequest().path)
+            assertEquals(status == "APPROVED", store.canRegisterProduct)
+            assertEquals("09:00:00", store.businessOpenTime)
+        }
+        success("null")
+        assertTrue(repository.fetchMyStore().single().isFailure)
+        server.enqueue(MockResponse().setResponseCode(403))
+        assertTrue(repository.fetchMyStore().single().isFailure)
+    }
+
     @Test fun sendsServerCategoryAddressHoursDaysAndEmptyOptionalInputsWithAppToken() = runTest {
         for (category in listOf("VEGETABLE", "FRUIT", "MEAT", "SEAFOOD", "DAIRY_EGG", "BAKERY", "PREPARED_FOOD", "ETC")) {
             success()

@@ -59,3 +59,6 @@ include(":core:local")
 
 include(":data:auth")
 include(":data:owner:store")
+include(":remote:user")
+include(":data:user")
+include(":data:owner:home")

@@ -36,6 +36,7 @@ internal fun VisitorCard(
     nowMillis: Long,
     visitor: OwnerHomeVisitor,
     modifier: Modifier = Modifier,
+    isCompleting: Boolean = false,
     onAction: (OwnerHomeAction) -> Unit,
 ) {
     val minutes = remainingPickupMinutes(visitor.pickupDeadlineMillis, nowMillis)
@@ -102,8 +103,8 @@ internal fun VisitorCard(
                 .fillMaxWidth()
                 .background(if (minutes > 0) Color(0xFFFFD2B2) else MangroTheme.colors.borderDefault)
                 .clickable(
-                    enabled = minutes > 0,
-                    onClick = { onAction(OwnerHomeAction.CompletePickup(visitor.id)) },
+                    enabled = minutes > 0 && !isCompleting,
+                    onClick = { onAction(OwnerHomeAction.MarkAsPickedUp(visitor.id)) },
                 )
                 .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,

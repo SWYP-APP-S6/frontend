@@ -114,3 +114,9 @@
 Owner·Consumer의 `:data:auth`는 Flow 기반 SDK 토큰 검증·가입·저장 세션 확인과 약관 조회를 제공한다. 검증 응답의 accessToken이 있으면 서버 토큰 쌍을 AuthStore에 저장하고, null이면 signupToken으로 가입한 뒤 가입 응답의 서버 토큰 쌍을 저장한다. `:feature:splash`에서 두 Flavor의 세션을 복원한다.
 
 `:data:owner:store`는 Owner 상점 등록·내 상점 조회 Flow Repository, 승인 상태와 서버 요청 매핑을 소유한다. `:feature:owner:onboarding`은 이를 수집하며, Owner 신규 회원은 기본 정보 → 운영 정보 입력을 마친 뒤 signup → 상점 등록 → 접수 안내로 연결된다. Consumer에는 이 모듈을 연결하지 않는다.
+
+## 점주 알림
+
+- `:data:owner:notification`: 공통 `:remote:user` NotificationService로 FCM 기기 토큰 등록·해제.
+- `app/src/owner/.../notification`: FCM 수신·알림 표시·권한 및 WorkManager 토큰 동기화.
+- [설정과 미확인 payload 계약](../features/owner-notifications.md).

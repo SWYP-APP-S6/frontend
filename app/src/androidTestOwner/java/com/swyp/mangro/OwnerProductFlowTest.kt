@@ -142,7 +142,7 @@ class OwnerProductFlowTest {
     ) {
         val navController = rememberNavController()
         NavHost(navController, startDestination = if (startInEditor) OwnerProductEditorDestination else OwnerProductListDestination) {
-            ownerProductNavGraph(navController, products, storeClosingTime, "09:00", onSave, onCancel, {}, {})
+            ownerProductNavGraph(navController, products, onSave, onCancel, {}, {})
         }
     }
 

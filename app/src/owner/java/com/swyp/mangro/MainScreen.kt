@@ -1,10 +1,12 @@
 package com.swyp.mangro
 
+import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -19,12 +21,21 @@ import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import com.swyp.mangro.feature.splash.navigation.Splash
 import com.swyp.mangro.feature.splash.navigation.splashNavGraph
 import com.swyp.mangro.navigation.OwnerNavHost
+import com.swyp.mangro.notification.OwnerNotificationPermission
+import com.swyp.mangro.notification.OwnerNotificationReadWorker
+import com.swyp.mangro.notification.model.OwnerNotificationOpen
 import com.swyp.mangro.theme.MangroTheme
 import kotlinx.serialization.Serializable
 
 /** Local UI host until the catalog repository is connected. */
 @Composable
-internal fun MainScreen() {
+internal fun MainScreen(notificationIntent: Intent? = null) {
+    val context = LocalContext.current
+    val opened = OwnerNotificationOpen.from(notificationIntent?.getStringExtra("type"), notificationIntent?.getStringExtra("notificationId"))
+    val openKey = opened?.let { "${it.type}:${it.notificationId}" }
+    var consumedKey by rememberSaveable { mutableStateOf<String?>(null) }
+    val pendingOpen = openKey?.takeIf { it != consumedKey }
+
     val navController = rememberNavController()
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
@@ -62,7 +73,12 @@ internal fun MainScreen() {
                 onBack = { navController.popBackStack() },
             )
         }
-        composable<OwnerMain> { OwnerMainContent() }
+        composable<OwnerMain> {
+            OwnerMainContent(notificationKey = pendingOpen, onNotificationOpened = {
+                opened?.notificationId?.let { OwnerNotificationReadWorker.enqueue(context, it) }
+                consumedKey = openKey
+            })
+        }
     }
 }
 
@@ -73,10 +89,13 @@ private data object OwnerMain
 private data class OwnerOnboarding(val service: Boolean, val privacy: Boolean, val location: Boolean, val thirdParty: Boolean, val marketing: Boolean)
 
 @Composable
-internal fun OwnerMainContent() {
+internal fun OwnerMainContent(notificationKey: String? = null, onNotificationOpened: () -> Unit = {}) {
+    OwnerNotificationPermission()
     var products by rememberSaveable { mutableStateOf(emptyList<OwnerProductModel>()) }
     MangroTheme {
         OwnerNavHost(
+            notificationKey = notificationKey,
+            onNotificationOpened = onNotificationOpened,
             products = products,
             onSaveProducts = { changed ->
                 val ids = changed.map { it.id }.toSet()

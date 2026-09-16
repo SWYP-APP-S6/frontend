@@ -21,10 +21,17 @@ class PrepareSpecsTest(unittest.TestCase):
         self.assertIn('/users/me/location', result['consumer']['paths'])
         self.assertEqual('consumer', self.mapping['GET /users/me']['module'])
 
+    def test_notifications_are_shared_by_owner_and_consumer(self):
+        result = self.generate()
+        for path in self.source['paths']:
+            if path.startswith('/notifications'):
+                self.assertIn(path, result['user']['paths'])
+                self.assertNotIn(path, result['consumer']['paths'])
+
     def test_partition_is_complete_and_disjoint(self):
         result = self.generate()
         counts = {k: len(list(operations(v))) for k, v in result.items()}
-        self.assertEqual(counts, {'consumer': 20, 'owner': 12, 'auth': 10, 'user': 1})
+        self.assertEqual(counts, {'consumer': 15, 'owner': 12, 'auth': 10, 'user': 6})
         endpoints = [f'{m} {p}' for v in result.values() for m, p, _ in operations(v)]
         self.assertEqual(len(set(endpoints)), 43)
 
@@ -103,7 +110,7 @@ class PrepareSpecsTest(unittest.TestCase):
         schema = photo['requestBody']['content']['multipart/form-data']['schema']
         self.assertEqual('binary', schema['properties']['file']['format'])
         self.assertEqual(['file'], schema['required'])
-        deleted = result['consumer']['paths']['/notifications/device-tokens']['delete']
+        deleted = result['user']['paths']['/notifications/device-tokens']['delete']
         self.assertTrue(deleted['x-delete-with-body'])
         self.assertIn('application/json', deleted['requestBody']['content'])
         self.assertNotIn('/owner/products/{id}/available-qty', result['owner']['paths'])

@@ -62,3 +62,5 @@ include(":data:owner:store")
 include(":remote:user")
 include(":data:user")
 include(":data:owner:home")
+
+include(":data:owner:notification")

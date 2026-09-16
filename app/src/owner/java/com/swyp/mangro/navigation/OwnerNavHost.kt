@@ -1,6 +1,7 @@
 package com.swyp.mangro.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
@@ -22,6 +23,8 @@ import com.swyp.mangro.feature.owner.setting.navigation.ownerSettingNavGraph
 internal fun OwnerNavHost(
     products: List<OwnerProductModel>,
     onSaveProducts: (List<OwnerProductModel>) -> Unit,
+    notificationKey: String? = null,
+    onNotificationOpened: () -> Unit = {},
 ) {
     val navController = rememberNavController()
     NavHost(navController, startDestination = OwnerHomeDestination) {
@@ -80,5 +83,14 @@ internal fun OwnerNavHost(
             navigateBack = { navController.popBackStack() },
             navigateToHome = { navController.popBackStack<OwnerHomeDestination>(inclusive = false) },
         )
+    }
+    LaunchedEffect(notificationKey) {
+        if (notificationKey != null) {
+            navController.navigate(OwnerHomeDestination) {
+                popUpTo<OwnerHomeDestination> { inclusive = true }
+                launchSingleTop = true
+            }
+            onNotificationOpened()
+        }
     }
 }

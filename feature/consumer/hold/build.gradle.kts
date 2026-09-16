@@ -7,24 +7,21 @@ plugins {
 }
 
 android {
-    namespace = "com.swyp.mangro.feature.consumer.home"
+    namespace = "com.swyp.mangro.feature.consumer.hold"
 }
 
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:utils"))
     implementation(project(":core:model"))
-    implementation(project(":feature:consumer:store"))
+
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
 
     implementation(libs.kotlinx.collections.immutable)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.hilt.navigation.compose)
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-
-    implementation(libs.naver.maps)
-    implementation(libs.naver.maps.compose)
 
     testImplementation(libs.junit)
 }

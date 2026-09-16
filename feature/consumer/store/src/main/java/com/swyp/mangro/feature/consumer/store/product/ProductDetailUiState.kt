@@ -2,17 +2,9 @@ package com.swyp.mangro.feature.consumer.store.product
 
 import com.swyp.mangro.core.model.product.Product
 import com.swyp.mangro.core.model.recipe.RecipeDifficulty
+import com.swyp.mangro.core.model.store.StoreInfo
 import com.swyp.mangro.feature.consumer.store.wish.WishUiState
 import kotlinx.collections.immutable.ImmutableList
-
-data class StoreInfo(
-    val id: Long,
-    val name: String,
-    val address: String,
-    val distanceMeters: Int,
-    val travelInfo: String,
-    val closingTime: String,
-)
 
 data class Recipe(
     val id: Long,

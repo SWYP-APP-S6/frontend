@@ -3,6 +3,7 @@ package com.swyp.mangro.feature.consumer.store.product
 import com.swyp.mangro.core.model.product.Product
 import com.swyp.mangro.core.model.product.ProductCategory
 import com.swyp.mangro.core.model.recipe.RecipeDifficulty
+import com.swyp.mangro.core.model.store.StoreInfo
 import com.swyp.mangro.feature.consumer.store.wish.WishUiState
 import kotlinx.collections.immutable.persistentListOf
 
@@ -23,6 +24,7 @@ val dummyProductInfo = ProductInfo(
         id = 1L,
         name = "청과마을",
         address = "서울 마포구 망원로 12",
+        phoneNumber = "02-5894-1982",
         distanceMeters = 450,
         travelInfo = "도보 7분",
         closingTime = "오늘 20:00까지",

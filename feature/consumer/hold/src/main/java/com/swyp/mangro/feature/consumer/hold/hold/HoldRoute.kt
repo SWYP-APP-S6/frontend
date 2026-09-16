@@ -1,4 +1,4 @@
-package com.swyp.mangro.feature.consumer.store.product
+package com.swyp.mangro.feature.consumer.hold.hold
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -8,28 +8,30 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
-fun ProductDetailRoute(
-    onBackClick: () -> Unit,
-    onNavigateToStoreDetail: () -> Unit,
-    onNavigateToHold: (String) -> Unit,
+fun HoldRoute(
+    onNavigateToProductDetail: () -> Unit,
+    onNavigateToHomeList: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ProductDetailViewModel = hiltViewModel(),
+    viewModel: HoldViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
             when (event) {
-                is ProductDetailUiEvent.NavigateToStoreDetail -> onNavigateToStoreDetail()
-                is ProductDetailUiEvent.WishConfirmed -> onNavigateToHold("1")
+                is HoldUiEvent.NavigateToProductDetail -> onNavigateToProductDetail()
+                is HoldUiEvent.NavigateToHomeList -> onNavigateToHomeList()
+                is HoldUiEvent.OpenMapDirections -> {}
+                is HoldUiEvent.CopyAddress -> {}
+                is HoldUiEvent.OpenDialer -> {}
             }
         }
     }
 
-    ProductDetailScreen(
+    HoldScreen(
         uiState = uiState,
         onAction = viewModel::handleAction,
-        onBackClick = onBackClick,
+        onCloseClick = onNavigateToProductDetail,
         modifier = modifier,
     )
 }

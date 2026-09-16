@@ -4,10 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.swyp.mangro.core.designsystem.component.appbar.ConsumerMenu
 import com.swyp.mangro.core.designsystem.component.card.map.StoreProduct
-import com.swyp.mangro.core.designsystem.component.card.product.Product
-import com.swyp.mangro.core.designsystem.component.card.product.ProductCategory
 import com.swyp.mangro.core.designsystem.component.count
 import com.swyp.mangro.core.designsystem.component.storePinStateOf
+import com.swyp.mangro.core.model.product.Product
+import com.swyp.mangro.core.model.product.ProductCategory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.channels.Channel

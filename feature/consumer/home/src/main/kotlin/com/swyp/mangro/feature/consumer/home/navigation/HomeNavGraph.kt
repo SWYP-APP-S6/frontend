@@ -4,6 +4,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.swyp.mangro.feature.consumer.home.HomeRoute
+import com.swyp.mangro.feature.consumer.store.navigation.navigateToProductDetail
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -15,7 +16,9 @@ fun NavGraphBuilder.homeNavGraph(
     composable<Home> {
         HomeRoute(
             navigateToLocationSelector = { },
-            navigateToProductDetail = { },
+            navigateToProductDetail = { productId ->
+                navController.navigateToProductDetail(productId)
+            },
             navigateToWishList = { },
             navigateToMy = { },
         )

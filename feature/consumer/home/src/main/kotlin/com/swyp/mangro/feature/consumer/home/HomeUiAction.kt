@@ -2,7 +2,7 @@ package com.swyp.mangro.feature.consumer.home
 
 import com.swyp.mangro.core.designsystem.component.appbar.ConsumerMenu
 import com.swyp.mangro.core.designsystem.component.card.map.StoreProduct
-import com.swyp.mangro.core.designsystem.component.card.product.ProductCategory
+import com.swyp.mangro.core.model.product.ProductCategory
 
 sealed interface HomeUiAction {
     data object PermissionBannerActionClicked : HomeUiAction

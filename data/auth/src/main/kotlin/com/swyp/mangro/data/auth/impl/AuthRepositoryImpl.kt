@@ -8,6 +8,9 @@ import com.swyp.mangro.data.auth.model.AuthResult
 import com.swyp.mangro.data.auth.model.LoginStatus
 import com.swyp.mangro.data.auth.model.SignupConsents
 import com.swyp.mangro.data.auth.repository.AuthRepository
+import com.swyp.mangro.data.auth.util.AuthException
+import com.swyp.mangro.data.auth.util.authRequest
+import com.swyp.mangro.data.auth.util.checked
 import com.swyp.mangro.remote.auth.model.RegisterUserRequest
 import com.swyp.mangro.remote.auth.model.VerifyConsumerKakaoTokenAndLoginRequest
 import com.swyp.mangro.remote.auth.model.VerifyOwnerKakaoTokenAndLoginRequest

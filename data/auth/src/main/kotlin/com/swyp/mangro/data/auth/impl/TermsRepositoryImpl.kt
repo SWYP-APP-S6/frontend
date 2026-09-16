@@ -5,6 +5,8 @@ import com.swyp.mangro.data.auth.model.AuthResult
 import com.swyp.mangro.data.auth.model.TermsDocument
 import com.swyp.mangro.data.auth.model.TermsKind
 import com.swyp.mangro.data.auth.repository.TermsRepository
+import com.swyp.mangro.data.auth.util.authRequest
+import com.swyp.mangro.data.auth.util.checked
 import com.swyp.mangro.remote.auth.service.TermsService
 import javax.inject.Inject
 import javax.inject.Named

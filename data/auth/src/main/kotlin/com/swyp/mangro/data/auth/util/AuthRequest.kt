@@ -1,4 +1,4 @@
-package com.swyp.mangro.data.auth.impl
+package com.swyp.mangro.data.auth.util
 
 import com.swyp.mangro.core.network.exception.BaseResponseException
 import com.swyp.mangro.data.auth.model.AuthFailure

@@ -17,8 +17,6 @@ data object OwnerProductEditorDestination
 fun NavGraphBuilder.ownerProductNavGraph(
     navController: NavHostController,
     products: List<OwnerProductModel>,
-    storeClosingTime: String,
-    storeOpeningTime: String,
     onSaveProducts: (List<OwnerProductModel>) -> Unit,
     onCancelReservations: (List<String>) -> Unit,
     onMenuClick: (OwnerMenu) -> Unit,
@@ -42,9 +40,7 @@ fun NavGraphBuilder.ownerProductNavGraph(
         )
     }
     composable<OwnerProductEditorDestination> {
-        ProductEditorNavHost(
-            storeClosingTime = storeClosingTime,
-            storeOpeningTime = storeOpeningTime,
+        ProductRegistrationRoute(
             onBack = { navController.popBackStack() },
             onSave = {
                 onSaveProducts(listOf(it))

@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
-import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProduct
 import com.swyp.mangro.feature.owner.home.navigation.OwnerHomeDestination
 import com.swyp.mangro.feature.owner.home.navigation.ownerHomeNavGraph
 import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
@@ -18,21 +17,15 @@ import com.swyp.mangro.feature.owner.product.screen.pickup.detail.OwnerPickupDet
 import com.swyp.mangro.feature.owner.setting.navigation.OwnerPolicyDestination
 import com.swyp.mangro.feature.owner.setting.navigation.OwnerSettingDestination
 import com.swyp.mangro.feature.owner.setting.navigation.ownerSettingNavGraph
-import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 internal fun OwnerNavHost(
     products: List<OwnerProductModel>,
-    storeClosingTime: String,
-    storeOpeningTime: String,
     onSaveProducts: (List<OwnerProductModel>) -> Unit,
 ) {
     val navController = rememberNavController()
     NavHost(navController, startDestination = OwnerHomeDestination) {
         ownerHomeNavGraph(
-            products = products.map {
-                OwnerProduct(it.id, it.photos.firstOrNull().orEmpty(), it.name, it.salePrice, it.remainingQuantity, it.reservedQuantity, 0)
-            }.toPersistentList(),
             navigateToProducts = {
                 navController.navigate(OwnerProductListDestination) {
                     popUpTo<OwnerHomeDestination> { saveState = true }
@@ -54,8 +47,6 @@ internal fun OwnerNavHost(
         ownerProductNavGraph(
             navController = navController,
             products = products,
-            storeClosingTime = storeClosingTime,
-            storeOpeningTime = storeOpeningTime,
             onSaveProducts = onSaveProducts,
             onCancelReservations = { navController.navigate(OwnerPickupCancellationDestination) },
             onMenuClick = { menu ->

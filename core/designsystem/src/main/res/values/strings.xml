@@ -53,7 +53,7 @@
 
     <string name="owner_product_card_remaining_prefix">남은 수량</string>
     <string name="owner_product_card_expected_visit_prefix">방문 예정</string>
-    <string name="owner_product_card_unable_to_purchase">%1$d명은 제품 구매가 불가능해요</string>
+    <string name="owner_product_card_stock_shortfall">찜한 수량보다 재고가 %1$d개 부족해요</string>
 
     <string name="wish_status_checking_stock">재고확인중</string>
     <string name="wish_status_in_progress">찜하는중</string>

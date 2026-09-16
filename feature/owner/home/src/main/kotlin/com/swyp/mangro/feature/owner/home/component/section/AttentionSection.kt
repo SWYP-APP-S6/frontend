@@ -1,4 +1,4 @@
-package com.swyp.mangro.feature.owner.home.component
+package com.swyp.mangro.feature.owner.home.component.section
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Column

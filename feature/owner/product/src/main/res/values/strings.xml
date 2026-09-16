@@ -82,4 +82,9 @@
     <string name="owner_product_cancellation_needed_count">취소가 필요한 찜이 %1$d건 있어요.</string>
     <string name="owner_product_cancel_action">취소하기</string>
     <string name="owner_product_pickup_time_unavailable">오늘 선택 가능한 픽업 시간이 없어요.</string>
+    <string name="product_registration_pending">상점 승인 대기 중이에요. 승인 완료 후 상품을 등록할 수 있어요.</string>
+    <string name="product_registration_rejected">상점 등록이 반려되었어요. 승인 완료 후 상품을 등록할 수 있어요.</string>
+    <string name="product_registration_check_failed">상점 승인 상태를 확인하지 못했어요. 다시 시도해주세요.</string>
+    <string name="product_registration_retry">다시 확인</string>
+    <string name="product_registration_back">돌아가기</string>
 </resources>

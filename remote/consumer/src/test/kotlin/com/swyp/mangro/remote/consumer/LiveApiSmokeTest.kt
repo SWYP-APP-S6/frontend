@@ -62,7 +62,7 @@ class LiveApiSmokeTest {
             success("GET /recipes/{id}", consumer.recipe.fetchRecipe(recipes.content.first().id))
             val stores = success("GET /stores/nearby", consumer.store.fetchNearbyStores(37.56, 37.57, 126.97, 126.99))
             val products = success("GET /products/nearby", consumer.product.fetchNearbyProducts(37.5665, 126.9780, radiusMeters = 1000, page = 0, size = 2))
-            val denied = consumer.user.fetchMe()
+            val denied = createRetrofit(client = client).create(com.swyp.mangro.remote.user.service.UserService::class.java).fetchMe()
             assertEquals("Guest member-only access", 403, denied.code())
             assertEquals("LOGIN_REQUIRED", denied.readHttpError(json)?.code)
             println("LIVE GET /users/me HTTP=403 code=LOGIN_REQUIRED")

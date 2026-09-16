@@ -50,6 +50,8 @@ class OnboardingSavedStateTest {
     }
 
     private val repository = object : StoreRepository {
+        override fun fetchMyStore(): kotlinx.coroutines.flow.Flow<Result<com.swyp.mangro.data.owner.store.model.OwnerStore>> = error("Not used in onboarding")
+
         override fun register(registration: StoreRegistration) = flowOf(Result.failure<Unit>(IllegalStateException("server")))
     }
 

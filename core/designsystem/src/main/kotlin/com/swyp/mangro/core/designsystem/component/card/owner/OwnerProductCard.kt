@@ -35,8 +35,8 @@ data class OwnerProduct(
     val name: String,
     val price: Int,
     val remainingCount: Int,
-    val expectedVisitCount: Int,
-    val unableToPurchaseCount: Int,
+    val expectedVisitCount: Long,
+    val shortfallQty: Int,
 )
 
 @Composable
@@ -125,11 +125,11 @@ fun OwnerProductCard(
             }
         }
 
-        if (product.unableToPurchaseCount > 0) {
+        if (product.shortfallQty > 0) {
             NoticeBanner(
                 text = stringResource(
-                    R.string.owner_product_card_unable_to_purchase,
-                    product.unableToPurchaseCount,
+                    R.string.owner_product_card_stock_shortfall,
+                    product.shortfallQty,
                 ),
             )
         }
@@ -145,7 +145,7 @@ private class OwnerProductCardPreviewParamProvider : PreviewParameterProvider<Ow
             price = 4_000,
             remainingCount = 6,
             expectedVisitCount = 4,
-            unableToPurchaseCount = 2,
+            shortfallQty = 2,
         ),
         OwnerProduct(
             id = "2",
@@ -154,7 +154,7 @@ private class OwnerProductCardPreviewParamProvider : PreviewParameterProvider<Ow
             price = 4_000,
             remainingCount = 3,
             expectedVisitCount = 3,
-            unableToPurchaseCount = 0,
+            shortfallQty = 0,
         ),
     )
 }

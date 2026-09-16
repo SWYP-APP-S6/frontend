@@ -1,14 +1,15 @@
 package com.swyp.mangro.feature.owner.home
 
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProduct
+import com.swyp.mangro.data.owner.store.model.StoreApprovalStatus
 import com.swyp.mangro.feature.owner.home.screen.OwnerHomeUiState
 import com.swyp.mangro.feature.owner.home.screen.OwnerHomeVisitor
 import kotlinx.collections.immutable.persistentListOf
 
-/** Temporary UI sample data for Debug and Release until the data layer is connected. */
+/** Preview and UI test fixtures only. Production uses OwnerHomeViewModel repositories. */
 object OwnerHomeSamples {
-    val welcome = OwnerHomeUiState()
-    val empty = OwnerHomeUiState(hasRegisteredProduct = true, storeName = "청과마을", storeCategory = "과채류")
+    val welcome = OwnerHomeUiState(approvalStatus = StoreApprovalStatus.APPROVED, canRegisterProduct = true, attentionAvailable = true)
+    val empty = OwnerHomeUiState(approvalStatus = StoreApprovalStatus.APPROVED, canRegisterProduct = true, attentionAvailable = true, hasRegisteredProduct = true, storeName = "청과마을", storeCategory = "과채류")
 
     fun operating(nowMillis: Long = System.currentTimeMillis()): OwnerHomeUiState = empty.copy(
         expectedVisitCount = 10,

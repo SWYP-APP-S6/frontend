@@ -18,6 +18,7 @@ import com.swyp.mangro.feature.consumer.hold.navigation.holdDetailScreen
 import com.swyp.mangro.feature.consumer.hold.navigation.holdHistoryScreen
 import com.swyp.mangro.feature.consumer.hold.navigation.holdScreen
 import com.swyp.mangro.feature.consumer.hold.navigation.navigateToHold
+import com.swyp.mangro.feature.consumer.hold.navigation.pickupCompleteScreen
 import com.swyp.mangro.feature.consumer.home.navigation.Home
 import com.swyp.mangro.feature.consumer.home.navigation.homeNavGraph
 import com.swyp.mangro.feature.consumer.store.navigation.productDetailScreen
@@ -96,6 +97,11 @@ fun AppNavGraph(
         )
         holdDetailScreen(
             navController = navController,
+        )
+        pickupCompleteScreen(
+            navController = navController,
+            onNavigateToRecipeDetail = { },
+            onNavigateToMenu = onNavigateToMenu,
         )
     }
 }

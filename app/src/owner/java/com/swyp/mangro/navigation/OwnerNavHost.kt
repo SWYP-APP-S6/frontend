@@ -22,6 +22,7 @@ import com.swyp.mangro.feature.owner.setting.navigation.ownerSettingNavGraph
 internal fun OwnerNavHost(
     products: List<OwnerProductModel>,
     onSaveProducts: (List<OwnerProductModel>) -> Unit,
+    onLogout: () -> Unit,
 ) {
     val navController = rememberNavController()
     NavHost(navController, startDestination = OwnerHomeDestination) {
@@ -64,6 +65,7 @@ internal fun OwnerNavHost(
         )
 
         ownerSettingNavGraph(
+            navigateToLogin = onLogout,
             navigateToHome = { navController.popBackStack<OwnerHomeDestination>(inclusive = false, saveState = true) },
             navigateToProducts = {
                 navController.navigate(OwnerProductListDestination) {

@@ -26,6 +26,7 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class LoginViewModelTest {
     private val repository = object : AuthRepository {
+        override fun logout(): kotlinx.coroutines.flow.Flow<com.swyp.mangro.data.auth.model.AuthResult<Unit>> = error("unused")
         override fun hasSession(): Flow<Boolean> = flowOf(false)
         override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = flowOf(AuthResult.Success(LoginStatus.SIGNUP_REQUIRED))
         override fun signup(consents: SignupConsents): Flow<AuthResult<Unit>> = flowOf(AuthResult.Success(Unit))
@@ -88,6 +89,7 @@ class LoginViewModelTest {
         val pending = CompletableDeferred<AuthResult<LoginStatus>>()
         var calls = 0
         val repository = object : AuthRepository {
+            override fun logout(): kotlinx.coroutines.flow.Flow<com.swyp.mangro.data.auth.model.AuthResult<Unit>> = error("unused")
             override fun hasSession(): Flow<Boolean> = flowOf(false)
             override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = flow {
                 assertEquals("kakao-raw", kakaoAccessToken)
@@ -112,6 +114,7 @@ class LoginViewModelTest {
     @Test
     fun serverRejectionDoesNotNavigateAfterSdkSuccess() = runTest {
         val repository = object : AuthRepository {
+            override fun logout(): kotlinx.coroutines.flow.Flow<com.swyp.mangro.data.auth.model.AuthResult<Unit>> = error("unused")
             override fun hasSession(): Flow<Boolean> = flowOf(false)
             override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = flowOf(AuthResult.Failure(AuthFailure.INVALID_OAUTH_TOKEN))
             override fun signup(consents: SignupConsents): Flow<AuthResult<Unit>> = error("unused")

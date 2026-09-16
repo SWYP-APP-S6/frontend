@@ -49,6 +49,7 @@ class TermsViewModelTest {
         val pending = CompletableDeferred<AuthResult<Unit>>()
         var calls = 0
         val repository = object : AuthRepository {
+            override fun logout(): kotlinx.coroutines.flow.Flow<com.swyp.mangro.data.auth.model.AuthResult<Unit>> = error("unused")
             override fun hasSession(): Flow<Boolean> = flowOf(false)
             override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = error("unused")
             override fun signup(consents: SignupConsents): Flow<AuthResult<Unit>> = flow {
@@ -75,6 +76,7 @@ class TermsViewModelTest {
     @Test fun missingSignupSessionKeepsTermsAndAsksForLogin() = runTest {
         org.junit.Assume.assumeFalse(BuildConfig.IS_OWNER)
         val repository = object : AuthRepository {
+            override fun logout(): kotlinx.coroutines.flow.Flow<com.swyp.mangro.data.auth.model.AuthResult<Unit>> = error("unused")
             override fun hasSession(): Flow<Boolean> = flowOf(false)
             override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = error("unused")
             override fun signup(consents: SignupConsents): Flow<AuthResult<Unit>> = flowOf(AuthResult.Failure(AuthFailure.SIGNUP_REQUIRED))
@@ -92,6 +94,7 @@ class TermsViewModelTest {
         var listCalls = 0
         var signupCalls = 0
         val auth = object : AuthRepository {
+            override fun logout(): kotlinx.coroutines.flow.Flow<com.swyp.mangro.data.auth.model.AuthResult<Unit>> = error("unused")
             override fun hasSession() = flowOf(false)
             override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = error("unused")
             override fun signup(consents: SignupConsents): Flow<AuthResult<Unit>> {
@@ -117,6 +120,7 @@ class TermsViewModelTest {
         org.junit.Assume.assumeTrue(BuildConfig.IS_OWNER)
         var submitted: SignupConsents? = null
         val auth = object : AuthRepository {
+            override fun logout(): kotlinx.coroutines.flow.Flow<com.swyp.mangro.data.auth.model.AuthResult<Unit>> = error("unused")
             override fun hasSession() = flowOf(false)
             override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = error("unused")
             override fun signup(consents: SignupConsents): Flow<AuthResult<Unit>> {
@@ -142,6 +146,7 @@ class TermsViewModelTest {
     @Test fun failedTermsLoadCanRetryAndDoesNotAllowConsent() = runTest {
         var listCalls = 0
         val auth = object : AuthRepository {
+            override fun logout(): kotlinx.coroutines.flow.Flow<com.swyp.mangro.data.auth.model.AuthResult<Unit>> = error("unused")
             override fun hasSession() = flowOf(false)
             override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = error("unused")
             override fun signup(consents: SignupConsents): Flow<AuthResult<Unit>> = error("must not signup")
@@ -164,6 +169,7 @@ class TermsViewModelTest {
         org.junit.Assume.assumeTrue(BuildConfig.IS_OWNER)
         var submitted: SignupConsents? = null
         val auth = object : AuthRepository {
+            override fun logout(): kotlinx.coroutines.flow.Flow<com.swyp.mangro.data.auth.model.AuthResult<Unit>> = error("unused")
             override fun hasSession() = flowOf(false)
             override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = error("unused")
             override fun signup(consents: SignupConsents): Flow<AuthResult<Unit>> {

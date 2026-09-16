@@ -38,11 +38,12 @@ class StoreRepositoryTest {
 
     @Test fun fetchesStoreAndOnlyExactApprovedStatusAllowsRegistration() = runTest {
         for (status in listOf("PENDING", "APPROVED", "REJECTED", "NEW_STATUS", "")) {
-            server.enqueue(MockResponse().setBody("""{"status":200,"code":"OK","data":{"id":9,"name":"상점","status":"$status","businessOpenTime":"09:00:00","businessCloseTime":"20:00:00"}}"""))
+            server.enqueue(MockResponse().setBody("""{"status":200,"code":"OK","data":{"id":9,"name":"상점","phone":"0212345678","status":"$status","businessOpenTime":"09:00:00","businessCloseTime":"20:00:00"}}"""))
             val store = repository.fetchMyStore().single().getOrThrow()
             assertEquals("/owner/stores/me", server.takeRequest().path)
             assertEquals(status == "APPROVED", store.canRegisterProduct)
             assertEquals("09:00:00", store.businessOpenTime)
+            assertEquals("0212345678", store.phone)
         }
         success("null")
         assertTrue(repository.fetchMyStore().single().isFailure)

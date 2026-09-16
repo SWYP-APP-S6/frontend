@@ -1,16 +1,8 @@
 # Owner Setting
 
-점주 설정의 상점 정보와 약관 WebView를 소유하는 `:feature:owner:setting` 모듈이다.
+- `GET /owner/stores/me`로 상점 이름·전화번호를 표시한다. 진입·복귀 시 갱신하고 조회 오류는 재시도할 수 있다. 예시 정보는 Preview에만 둔다.
+- 로그아웃은 인증된 `POST /auth/logout`에 refreshToken을 전달하고 토큰·사용자 정보·가입 대기 정보를 삭제한다. 성공 후 Owner 화면 스택을 제거하고 로그인으로 이동한다. 서버/저장 실패 시 재시도하며, 이미 만료된 세션(401)은 로컬 정보를 정리한다.
+- 약관 목록은 Owner role로 조회하고 SERVICE 및 PRIVACY_POLICY 문서 ID로 상세 Markdown을 조회한다. 문서 누락·오류는 재시도 화면을 표시한다.
+- Repository는 Flow, 화면은 StateFlow와 Action/Event를 사용한다.
 
-- 상점 이름·전화번호는 읽기 전용이다. Debug는 예시 값, Release는 미등록 상태이며 상점 조회 API는 아직 연결하지 않았다.
-- 서비스 이용약관·개인정보 처리방침을 선택하면 앱 내 WebView로 이동한다. URL이 없어 현재 `about:blank`와 준비 중 안내를 표시한다.
-- 확정 URL은 `OwnerPolicyViewModel`에서 `OwnerPolicyUiState.url`로 전달한다. 실제 웹 문서 로딩은 URL 확정 후 검증한다.
-- 두 화면은 각각 State·Action·Event·ViewModel을 사용하며, `OwnerNavHost`가 홈·점포 관리·설정을 연결한다.
-- 공통 상단바·Owner 하단바, 테마 색상·타이포그래피와 기존 VectorDrawable을 재사용한다.
-
-## 검증 진입점
-
-- `:feature:owner:setting:ktlintCheck`, `:feature:owner:setting:compileReleaseKotlin`
-- `app/src/androidTestOwner/.../OwnerSettingFlowTest.kt`: 실제 Owner 앱에서 탭 이동, 약관 WebView 생성, 화면 재생성과 뒤로 가기.
-- `app/src/androidTestOwner/.../OwnerSettingLayoutTest.kt`: 미등록 정보, 긴 상점 이름과 1.5배 글씨에서 약관 목록 접근.
-- 설정 UI 테스트만 실행: `./gradlew :app:connectedOwnerDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.swyp.mangro.OwnerSettingFlowTest,com.swyp.mangro.OwnerSettingLayoutTest --console=plain`
+검증: 설정 ViewModel 단위 테스트, 인증 양쪽 Flavor 및 상점 Repository 테스트, 설정·약관 Compose 기기 테스트. 실제 계정 로그아웃은 자동 테스트에서 실행하지 않는다.

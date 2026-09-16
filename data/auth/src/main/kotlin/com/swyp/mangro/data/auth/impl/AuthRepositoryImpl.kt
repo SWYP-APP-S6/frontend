@@ -2,6 +2,7 @@ package com.swyp.mangro.data.auth.impl
 
 import com.swyp.core.local.model.AuthKey
 import com.swyp.core.local.store.AuthStore
+import com.swyp.core.local.store.UserInfoStore
 import com.swyp.mangro.data.auth.BuildConfig
 import com.swyp.mangro.data.auth.model.AuthFailure
 import com.swyp.mangro.data.auth.model.AuthResult
@@ -11,6 +12,7 @@ import com.swyp.mangro.data.auth.repository.AuthRepository
 import com.swyp.mangro.data.auth.util.AuthException
 import com.swyp.mangro.data.auth.util.authRequest
 import com.swyp.mangro.data.auth.util.checked
+import com.swyp.mangro.remote.auth.model.LogoutRequest
 import com.swyp.mangro.remote.auth.model.RegisterUserRequest
 import com.swyp.mangro.remote.auth.model.VerifyConsumerKakaoTokenAndLoginRequest
 import com.swyp.mangro.remote.auth.model.VerifyOwnerKakaoTokenAndLoginRequest
@@ -27,6 +29,8 @@ import kotlinx.coroutines.flow.flowOn
 internal class AuthRepositoryImpl @Inject constructor(
     @param:Named("login") private val service: AuthService,
     private val store: AuthStore,
+    private val authenticatedService: AuthService,
+    private val userInfoStore: UserInfoStore,
 ) : AuthRepository {
     private var signupToken: String? = null
     private var pendingSignupKeys: AuthKey? = null
@@ -94,6 +98,24 @@ internal class AuthRepositoryImpl @Inject constructor(
             storage { store.save(keys) }
             pendingSignupKeys = null
             signupToken = null
+        }
+        emit(result)
+    }.flowOn(Dispatchers.IO)
+
+    override fun logout(): Flow<AuthResult<Unit>> = flow {
+        val result = authRequest {
+            val keys = storage { store.authKey.first() }
+            if (keys != null) {
+                val response = authenticatedService.logout(LogoutRequest(keys.refreshToken))
+                if (!response.isSuccessful && response.code() != 401) response.checked()
+                response.errorBody()?.close()
+            }
+            storage {
+                userInfoStore.clear()
+                store.clear()
+            }
+            signupToken = null
+            pendingSignupKeys = null
         }
         emit(result)
     }.flowOn(Dispatchers.IO)

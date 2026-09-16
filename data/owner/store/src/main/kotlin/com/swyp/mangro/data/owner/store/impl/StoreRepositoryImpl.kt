@@ -29,6 +29,7 @@ internal class StoreRepositoryImpl @Inject constructor(private val service: Stor
                     StoreApprovalStatus.from(body.status),
                     body.businessOpenTime,
                     body.businessCloseTime,
+                    body.phone,
                 ),
             )
         } catch (error: CancellationException) {

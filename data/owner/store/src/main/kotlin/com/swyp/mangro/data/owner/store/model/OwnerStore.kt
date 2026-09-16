@@ -19,6 +19,7 @@ data class OwnerStore(
     val status: StoreApprovalStatus,
     val businessOpenTime: String,
     val businessCloseTime: String,
+    val phone: String = "",
 ) {
     val canRegisterProduct: Boolean get() = status == StoreApprovalStatus.APPROVED
 }

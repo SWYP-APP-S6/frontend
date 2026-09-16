@@ -47,6 +47,7 @@ class OwnerOnboardingViewModelTest {
     private var pendingSignup: CompletableDeferred<AuthResult<Unit>>? = null
     private val order = mutableListOf<String>()
     private val authRepository = object : AuthRepository {
+        override fun logout(): kotlinx.coroutines.flow.Flow<com.swyp.mangro.data.auth.model.AuthResult<Unit>> = error("unused")
         override fun hasSession() = flowOf(false)
         override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = error("unused")
         override fun signup(consents: SignupConsents) = flow {

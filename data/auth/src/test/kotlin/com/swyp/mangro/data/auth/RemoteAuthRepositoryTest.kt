@@ -1,8 +1,11 @@
 package com.swyp.mangro.data.auth
 
 import com.swyp.core.local.model.AuthKey
+import com.swyp.core.local.model.UserInfo
 import com.swyp.core.local.store.AuthStore
+import com.swyp.core.local.store.UserInfoStore
 import com.swyp.mangro.core.network.di.NetworkModule
+import com.swyp.mangro.core.network.interceptor.AuthorizationInterceptor
 import com.swyp.mangro.core.network.interceptor.BaseResponseInterceptor
 import com.swyp.mangro.data.auth.impl.AuthRepositoryImpl
 import com.swyp.mangro.data.auth.model.AuthFailure
@@ -36,7 +39,22 @@ class RemoteAuthRepositoryTest {
             .client(OkHttpClient.Builder().addInterceptor(BaseResponseInterceptor(Json)).build())
             .build().create(AuthService::class.java)
     }
-    private fun repository() = AuthRepositoryImpl(service, store)
+    private var userCleared = false
+    private val userStore = object : UserInfoStore {
+        override val userInfo = MutableStateFlow<UserInfo?>(null)
+        override suspend fun save(userInfo: UserInfo) {
+            this.userInfo.value = userInfo
+        }
+        override suspend fun clear() {
+            userCleared = true
+            userInfo.value = null
+        }
+    }
+    private val authenticatedService by lazy {
+        val client = OkHttpClient.Builder().addInterceptor(AuthorizationInterceptor(server.url("/")) { store.authKey.value?.accessToken }).build()
+        NetworkModule.provideRetrofit(client, NetworkModule.provideNetworkJson()).newBuilder().baseUrl(server.url("/")).build().create(AuthService::class.java)
+    }
+    private fun repository() = AuthRepositoryImpl(service, store, authenticatedService, userStore)
     private fun enqueue(data: String) {
         server.enqueue(MockResponse().setBody("""{"status":200,"code":"OK","data":$data}"""))
     }
@@ -45,6 +63,36 @@ class RemoteAuthRepositoryTest {
     private val consents = SignupConsents(true, true, true, true, false)
 
     @After fun tearDown() = server.shutdown()
+
+    @Test fun logoutSendsRefreshTokenAndClearsSessionAndUser() = runTest {
+        store.save(AuthKey("access", "refresh"))
+        enqueue("null")
+        assertEquals(AuthResult.Success(Unit), repository().logout().single())
+        val request = server.takeRequest()
+        assertEquals("POST", request.method)
+        assertEquals("/auth/logout", request.path)
+        assertEquals("Bearer access", request.getHeader("Authorization"))
+        assertEquals("""{"refreshToken":"refresh"}""", request.body.readUtf8())
+        assertNull(store.authKey.value)
+        assertTrue(userCleared)
+    }
+
+    @Test fun failedLogoutKeepsSessionForRetry() = runTest {
+        val keys = AuthKey("access", "refresh")
+        store.save(keys)
+        server.enqueue(MockResponse().setResponseCode(503))
+        assertEquals(AuthResult.Failure(AuthFailure.SERVER), repository().logout().single())
+        assertEquals(keys, store.authKey.value)
+        assertEquals(false, userCleared)
+    }
+
+    @Test fun alreadyExpiredSessionCanLogout() = runTest {
+        store.save(AuthKey("access", "refresh"))
+        server.enqueue(MockResponse().setResponseCode(401))
+        assertEquals(AuthResult.Success(Unit), repository().logout().single())
+        assertNull(store.authKey.value)
+        assertTrue(userCleared)
+    }
 
     @Test fun buildFlavorUsesItsEndpointAndSendsRawKakaoToken() = runTest {
         enqueue(member)

@@ -62,7 +62,14 @@ internal fun MainScreen() {
                 onBack = { navController.popBackStack() },
             )
         }
-        composable<OwnerMain> { OwnerMainContent() }
+        composable<OwnerMain> {
+            OwnerMainContent(onLogout = {
+                navController.navigate(Login) {
+                    popUpTo<OwnerMain> { inclusive = true }
+                    launchSingleTop = true
+                }
+            })
+        }
     }
 }
 
@@ -73,10 +80,11 @@ private data object OwnerMain
 private data class OwnerOnboarding(val service: Boolean, val privacy: Boolean, val location: Boolean, val thirdParty: Boolean, val marketing: Boolean)
 
 @Composable
-internal fun OwnerMainContent() {
+internal fun OwnerMainContent(onLogout: () -> Unit = {}) {
     var products by rememberSaveable { mutableStateOf(emptyList<OwnerProductModel>()) }
     MangroTheme {
         OwnerNavHost(
+            onLogout = onLogout,
             products = products,
             onSaveProducts = { changed ->
                 val ids = changed.map { it.id }.toSet()

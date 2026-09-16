@@ -18,9 +18,11 @@ fun NavGraphBuilder.ownerSettingNavGraph(
     navigateToProducts: () -> Unit,
     navigateToPolicy: (OwnerPolicy) -> Unit,
     navigateBack: () -> Unit,
+    navigateToLogin: () -> Unit,
 ) {
     composable<OwnerSettingDestination> {
         OwnerSettingRoute(
+            navigateToLogin = navigateToLogin,
             navigateToHome = navigateToHome,
             navigateToProducts = navigateToProducts,
             navigateToPolicy = navigateToPolicy,

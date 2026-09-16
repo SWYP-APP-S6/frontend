@@ -11,6 +11,8 @@ data class OwnerBasicInfoState(
 ) {
     val isNextEnabled: Boolean
         get() = name.isNotBlank() &&
+            name.trim().length <= 100 &&
+            detailedAddress.trim().length <= 255 &&
             category != null &&
-            address?.let { it.postalCode.matches(Regex("[0-9]{5}")) && it.address.isNotBlank() } == true
+            address?.let { it.postalCode.matches(Regex("[0-9]{5}")) && it.address.isNotBlank() && it.address.length <= 255 } == true
 }

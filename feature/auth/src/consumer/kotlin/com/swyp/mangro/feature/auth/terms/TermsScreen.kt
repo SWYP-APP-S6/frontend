@@ -76,10 +76,10 @@ fun TermsScreen(
         },
         bottomBar = {
             MangroButton(
-                text = stringResource(R.string.terms_confirm_button),
-                onClick = { onAction(TermsUiAction.ConfirmClicked) },
+                text = stringResource(if (uiState.loadFailed) R.string.auth_retry else R.string.terms_confirm_button),
+                onClick = { onAction(if (uiState.loadFailed) TermsUiAction.RetryClicked else TermsUiAction.ConfirmClicked) },
                 style = MangroButtonStyle.ACTIVE,
-                enabled = uiState.isRequiredAllChecked,
+                enabled = (uiState.loadFailed || uiState.isRequiredAllChecked) && !uiState.isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .navigationBarsPadding()
@@ -231,7 +231,7 @@ private fun TermsRow(
         Spacer(modifier = Modifier.width(4.dp))
 
         Text(
-            text = stringResource(item.type.toLabelRes()),
+            text = if (item.title.isBlank()) stringResource(item.type.toLabelRes()) else stringResource(if (item.required) R.string.terms_required_title else R.string.terms_optional_title, item.title),
             style = MangroTheme.typography.body.bodyM,
             color = MangroTheme.colors.textTitle,
             modifier = Modifier.weight(1f),

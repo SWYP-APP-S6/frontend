@@ -15,8 +15,10 @@ data class StoreRegistrationModel(
 ) : Serializable {
     val isBasicInfoValid: Boolean
         get() = name.isNotBlank() &&
-            category != null &&
-            address?.let { it.postalCode.matches(Regex("[0-9]{5}")) && it.address.isNotBlank() } == true
+            name.length <= 100 &&
+            detailAddress.length <= 255 &&
+            category in StoreCategoryModel.options &&
+            address?.let { it.postalCode.matches(Regex("[0-9]{5}")) && it.address.isNotBlank() && it.address.length <= 255 } == true
 
     val isPhoneValid: Boolean
         get() = phone.matches(Regex("0[0-9]{8,10}"))

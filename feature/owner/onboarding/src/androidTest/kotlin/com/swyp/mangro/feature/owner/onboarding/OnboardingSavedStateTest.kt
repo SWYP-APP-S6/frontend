@@ -18,6 +18,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.createGraph
 import androidx.test.platform.app.InstrumentationRegistry
+import com.swyp.mangro.data.auth.model.AuthResult
+import com.swyp.mangro.data.auth.model.LoginStatus
+import com.swyp.mangro.data.auth.model.SignupConsents
+import com.swyp.mangro.data.auth.repository.AuthRepository
+import com.swyp.mangro.data.owner.store.model.StoreRegistration
+import com.swyp.mangro.data.owner.store.repository.StoreRepository
 import com.swyp.mangro.feature.owner.onboarding.model.StoreAddressModel
 import com.swyp.mangro.feature.owner.onboarding.model.StoreBasicInfoModel
 import com.swyp.mangro.feature.owner.onboarding.model.StoreCategoryModel
@@ -29,16 +35,38 @@ import com.swyp.mangro.feature.owner.onboarding.screen.operating.OwnerOperatingI
 import com.swyp.mangro.feature.owner.onboarding.screen.operating.OwnerOperatingInfoState
 import com.swyp.mangro.feature.owner.onboarding.screen.operating.OwnerOperatingInfoViewModel
 import kotlinx.collections.immutable.persistentSetOf
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotSame
 import org.junit.Test
 
 @SuppressLint("RestrictedApi") // Test the actual SavedStateHandle persistence format across a Parcel boundary.
 class OnboardingSavedStateTest {
+    private val authRepository = object : AuthRepository {
+        override fun hasSession() = flowOf(false)
+        override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = error("unused")
+        override fun signup(consents: SignupConsents) = flowOf(AuthResult.Success(Unit))
+    }
+
+    private val repository = object : StoreRepository {
+        override fun register(registration: StoreRegistration) = flowOf(Result.failure<Unit>(IllegalStateException("server")))
+    }
+
+    @Test
+    fun signupConsentsSurviveSavedStateRoundTrip() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val consents = SignupConsents(true, true, true, false, false)
+            val restored = roundTrip(SavedStateHandle(mapOf(Constants.SIGNUP_CONSENTS to consents)))
+            assertEquals(consents, restored.get<SignupConsents>(Constants.SIGNUP_CONSENTS))
+            assertNotSame(consents, restored.get<SignupConsents>(Constants.SIGNUP_CONSENTS))
+        }
+    }
+
     @Test
     fun nestedObjectsAndLatestSnapshotSurviveSavedStateRoundTrip() {
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
-            val original = StoreBasicInfoModel("가게 / & ?", StoreCategoryModel("fruit", "과채류"), StoreAddressModel("03965", "서울 마포구 망원로 12"), "1층")
+            val original = StoreBasicInfoModel("가게 / & ?", StoreCategoryModel("FRUIT", "과일"), StoreAddressModel("03965", "서울 마포구 망원로 12"), "1층")
             val latest = original.copy(name = "수정한 가게", detailedAddress = "2층")
             val handle = SavedStateHandle()
             handle["basicInfo"] = original
@@ -65,7 +93,7 @@ class OnboardingSavedStateTest {
     fun registrationWithBusinessDaysSurvivesSavedStateRoundTrip() {
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             val state = OwnerOperatingInfoState(
-                basicInfo = StoreBasicInfoModel("가게", StoreCategoryModel("fruit", "과채류"), StoreAddressModel("03965", "서울 마포구 망원로 12")),
+                basicInfo = StoreBasicInfoModel("가게", StoreCategoryModel("FRUIT", "과일"), StoreAddressModel("03965", "서울 마포구 망원로 12")),
                 phoneNumber = "02-1234-5678",
                 openingMinutes = 540,
                 closingMinutes = 1200,
@@ -80,7 +108,7 @@ class OnboardingSavedStateTest {
     @Test
     fun viewModelInitializesFromRestoredArgumentsAndDraft() {
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
-            val latest = StoreBasicInfoModel("수정한 가게", StoreCategoryModel("fruit", "과채류"), StoreAddressModel("03965", "서울 마포구 망원로 12"))
+            val latest = StoreBasicInfoModel("수정한 가게", StoreCategoryModel("FRUIT", "과일"), StoreAddressModel("03965", "서울 마포구 망원로 12"))
             val draft = OwnerOperatingInfoState(
                 basicInfo = latest.copy(name = "이전 가게"),
                 openingMinutes = 540,
@@ -90,7 +118,7 @@ class OnboardingSavedStateTest {
             val handle = roundTrip(SavedStateHandle(mapOf(Constants.BASIC_INFO to latest, "registration" to draft.registration)))
             val store = ViewModelStore()
             try {
-                val model = OwnerOperatingInfoViewModel(handle)
+                val model = OwnerOperatingInfoViewModel(handle, repository, authRepository)
                 store.put("operating", model)
                 assertEquals(latest, model.uiState.value.basicInfo)
                 assertEquals(540, model.uiState.value.openingMinutes)
@@ -123,12 +151,12 @@ class OnboardingSavedStateTest {
                 }
                 val factory = viewModelFactory {
                     initializer { OwnerBasicInfoViewModel(createSavedStateHandle()) }
-                    initializer { OwnerOperatingInfoViewModel(createSavedStateHandle()) }
+                    initializer { OwnerOperatingInfoViewModel(createSavedStateHandle(), repository, authRepository) }
                 }
                 val basicEntry = requireNotNull(navController.currentBackStackEntry)
                 val basicModel = ViewModelProvider(basicEntry, factory)[OwnerBasicInfoViewModel::class.java]
                 val destination = requireNotNull(basicEntry.destination.parent?.findNode<OwnerOperatingInfoDestination>())
-                val original = StoreBasicInfoModel("첫 가게", StoreCategoryModel("fruit", "과채류"), StoreAddressModel("03965", "서울 마포구 망원로 12"))
+                val original = StoreBasicInfoModel("첫 가게", StoreCategoryModel("FRUIT", "과일"), StoreAddressModel("03965", "서울 마포구 망원로 12"))
                 navController.navigate(destination.id, bundleOf(Constants.BASIC_INFO to original))
                 val operatingEntry = requireNotNull(navController.currentBackStackEntry)
                 val first = ViewModelProvider(operatingEntry, factory)[OwnerOperatingInfoViewModel::class.java]

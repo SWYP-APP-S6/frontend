@@ -21,7 +21,7 @@ class OwnerBasicInfoViewModel @Inject constructor(
 ) : ViewModel() {
     private val restored = savedStateHandle.get<StoreBasicInfoModel>("basicInfo") ?: StoreBasicInfoModel()
 
-    private val _uiState = MutableStateFlow(OwnerBasicInfoState(restored.name, restored.detailedAddress, restored.category, restored.address))
+    private val _uiState = MutableStateFlow(OwnerBasicInfoState(restored.name, restored.detailedAddress, restored.category?.takeIf { it in StoreCategoryModel.options }, restored.address))
     val uiState = _uiState.asStateFlow()
 
     private val _event = Channel<OwnerBasicInfoEvent>(Channel.BUFFERED)

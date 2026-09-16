@@ -4,11 +4,11 @@ Figma [Step1](https://www.figma.com/design/hqglQXERCwjFx1W4amjPHI?node-id=1172-1
 
 ## 호출 계약
 
-`OwnerOnboardingNavigation`은 `navController`, `onComplete`, `onBack`을 받는 Navigation 진입점이다. 각 입력 화면은 자신의 Hilt ViewModel만 사용한다. 각 Route에서 화면 백스택 엔트리 범위의 ViewModel을 생성한다.
+`OwnerOnboardingNavigation`은 `navController`, 약관 동의 값 `consents`, `onComplete`, `onBack`, `onLoginRequired`를 받는 Navigation 진입점이다. 각 입력 화면은 자신의 Hilt ViewModel만 사용한다. 각 Route에서 화면 백스택 엔트리 범위의 ViewModel을 생성한다.
 
-- `StoreCategoryModel.options`의 `debug-*` 가게 종류 ID는 샘플이며 실제 서버 코드가 아니다.
+- `StoreCategoryModel.options`는 서버 분류 코드(VEGETABLE, FRUIT, MEAT, SEAFOOD, DAIRY_EGG, BAKERY, PREPARED_FOOD, ETC)를 사용한다. 기존 샘플 분류가 저장돼 있으면 다시 선택해야 한다.
 - 주소 검색: 등록 폼을 대신하는 별도 화면으로 카카오 우편번호 WebView를 표시한다. Dialog를 사용하지 않으며, 취소 또는 시스템 뒤로가기로 등록 폼에 복귀한다. 선택한 주소 종류에 따라 도로명/지번 주소와 5자리 우편번호를 반영하며, 상세 주소는 기존 네이티브 필드에서 입력한다. 취소하면 기존 입력을 유지한다. Navigation에서 `AddressSearchWebView`를 직접 호출한다. Route의 화면 이동 콜백과 WebView의 주소 결과 전달은 각각 계측 테스트로 검증한다.
-- 등록 Repository/API는 미연결이다. 등록 버튼을 누르면 입력값을 유지한 채 오류 안내를 표시하며, 실제 요청이나 샘플 성공 처리는 하지 않는다.
+- `OwnerOperatingInfoViewModel`은 모든 상점 입력이 유효할 때 전달받은 약관 동의로 `AuthRepository.signup()`을 호출한다. 가입과 토큰 저장이 성공해야 `:data:owner:store`의 `StoreRepository.register()` Flow를 수집하여 `POST /owner/stores`를 호출한다. 실제 성공 응답의 상점 ID를 확인한 뒤 접수 안내를 표시한다. 실패하면 입력을 유지하고 재시도할 수 있다. 요청 중 중복 제출과 뒤로가기는 막는다.
 - `onComplete`: 성공 안내의 확인 버튼에서 앱 경로 이동 요청. 승인 완료를 의미하지 않는다. 실제 심사 상태별 분기는 #56에서 연결한다.
 - `onBack`: Step1에서만 외부로 전달. Step2에서는 Step1로 돌아가며 운영 정보 ViewModel은 해제된다.
 
@@ -24,9 +24,9 @@ Figma [Step1](https://www.figma.com/design/hqglQXERCwjFx1W4amjPHI?node-id=1172-1
 
 ## 앱 조립
 
-`:app`은 `ownerImplementation`으로 이 모듈에 의존한다. `ownerDebug/MainScreen`은 실제 카카오 주소 검색과 등록 폼 UI를 실행한다. 검색어는 카카오 서비스로 전송되지만 등록 신청은 전송되지 않는다. 완료 확인은 Debug Activity를 종료한다.
+`:app`은 `ownerImplementation`으로 이 모듈에 의존한다. Owner 신규 회원은 카카오 검증 → 약관 동의 → 기본 정보 → 운영 정보 → signup → 상점 등록 순서로 진행한다. 약관 동의 값은 Navigation 인자로 운영 ViewModel의 SavedStateHandle에 전달한다. 등록 성공 안내를 확인하면 홈으로 이동한다. 기존 Owner 회원은 로그인 후 홈으로 이동한다. Consumer는 가입 후 기존 홈 경로를 유지한다.
 
-`ownerRelease/MainScreen`은 기존 Owner 진입 화면을 유지한다. Consumer 진입 코드는 변경하지 않는다. 기존 `feat/owner-home`과 합칠 때 두 Feature 의존성/등록을 유지하고 MainScreen 선택은 #56에서 조립해야 한다.
+상점 등록에는 저장된 맹그로 accessToken을 사용한다. 화면에 없는 `businessRegistrationNumber`와 `applicationNote`는 확인된 계약에 따라 빈 문자열로 전송한다. 실제 계정으로 등록하는 검증은 MockWebServer 및 UI 테스트와 별도다.
 
 ## 리소스
 
@@ -37,7 +37,7 @@ Figma [Step1](https://www.figma.com/design/hqglQXERCwjFx1W4amjPHI?node-id=1172-1
 - [공식 가이드](https://postcode.map.kakao.com/guide)의 `kakao.Postcode().embed()`를 사용한다. 별도 API 키나 호스팅 서버는 필요 없다.
 - `assets/postcode/index.html`을 `WebViewAssetLoader`의 HTTPS 앱 자산 URL로 로드한다. 공식 CDN 스크립트와 검색 iframe은 네트워크로 불러오며 카카오 로고를 유지한다.
 - `WebMessageListener`는 앱 자산 origin의 메인 프레임에만 허용한다. 외부 iframe에는 네이티브 결과 전달 객체를 노출하지 않는다. 파일/콘텐츠 접근과 외부 메인 프레임 이동은 허용하지 않는다.
-- 기존 앱의 `INTERNET` 권한을 사용한다. 위치 권한은 필요하지 않다. 주소의 좌표 변환 및 실제 매장 등록 API는 별도 연결 대상이다.
+- 기존 앱의 `INTERNET` 권한을 사용한다. 위치 권한은 필요하지 않다. 현재 등록 API는 우편번호와 주소를 받으며 좌표 변환은 요청 필드에 없다.
 - 초기 로딩 오류에는 공통 네트워크 오류 화면에서 재시도를 제공하며 상단 뒤로가기로 취소할 수 있다. 별도 로딩 타임아웃은 없다. 지원되지 않는 오래된 WebView에서도 오류 안내를 표시한다. 재시도하면 WebView를 새로 생성한다.
 
 ## 화면과 Navigation
@@ -55,10 +55,10 @@ Figma [Step1](https://www.figma.com/design/hqglQXERCwjFx1W4amjPHI?node-id=1172-1
 
 - `screen/basic`: `OwnerBasicInfoState`, `OwnerBasicInfoAction`, `OwnerBasicInfoEvent`, ViewModel, Route, Screen.
 - `screen/operating`: `OwnerOperatingInfoState`, `OwnerOperatingInfoAction`, `OwnerOperatingInfoEvent`, ViewModel, Route, Screen.
-- State는 기본값이 있는 `data class`와 `val`로 선언하고 `copy`로 교체한다. 문자열 입력을 사용하며 요일 컬렉션은 persistent collection으로 노출한다. 카테고리는 `StoreCategoryModel.options`의 고정 메뉴(곡류·과채류·육류·어류·견과류·기타)를 사용하고, State에는 선택값만 보관한다. `TextFieldState`, Compose mutable state, 콜백을 포함하지 않는다.
+- State는 기본값이 있는 `data class`와 `val`로 선언하고 `copy`로 교체한다. 문자열 입력을 사용하며 요일 컬렉션은 persistent collection으로 노출한다. 카테고리는 `StoreCategoryModel.options`의 서버 분류 8개 메뉴를 사용하고, State에는 선택값만 보관한다. `TextFieldState`, Compose mutable state, 콜백을 포함하지 않는다.
 - 화면의 입력·선택한 시간·등록 로딩·오류·접수 안내는 ViewModel이 관리한다. 운영 ViewModel이 자신의 `SavedStateHandle`에 전달된 불변 `StoreBasicInfoModel` 값을 최종 등록 데이터와 결합한다.
 - Navigation 입력은 Action → ViewModel의 Event → Route → NavGraph 순서로 처리한다. 주소 검색 결과만 기본 정보 Action으로 전달하며, 취소는 결과 변경 없이 백스택을 되돌린다.
-- 등록 연동 시 운영 ViewModel에서 Repository를 직접 호출한다.
+- 운영 ViewModel은 AuthRepository.signup Flow 성공 후 StoreRepository.register Flow를 수집한다. signup 실패 시 상점 요청은 보내지 않으며, signup 성공 뒤 상점 등록만 실패하면 현재 운영 화면의 재시도에서 signup을 반복하지 않는다. 가입 토큰이 만료됐거나 사라졌으면 로그인으로 돌아간다.
 - `MangroTextField`에 `value`/`onValueChange` 오버로드를 추가했다. 기존 TextFieldState API와 장식 레이아웃을 공유하며, 화면은 입력을 별도 Compose 상태로 복제하지 않는다.
 
 ## UI 모델

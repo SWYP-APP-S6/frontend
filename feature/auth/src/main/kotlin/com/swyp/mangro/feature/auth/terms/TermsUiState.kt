@@ -14,14 +14,20 @@ enum class TermsType(val isRequired: Boolean) {
 data class TermsItem(
     val type: TermsType,
     val isChecked: Boolean = false,
+    val required: Boolean = type.isRequired,
+    val documentId: Long = 0,
+    val version: Int = 0,
+    val title: String = "",
+
 )
 
 data class TermsUiState(
-    val items: List<TermsItem> = TermsType.entries.map { it.toUiModel() },
+    val isLoading: Boolean = false,
+    val documentsLoaded: Boolean = false,
+    val loadFailed: Boolean = false,
+    val items: List<TermsItem> = emptyList(),
 ) {
-    val isAllChecked: Boolean get() = items.all { it.isChecked }
+    val isAllChecked: Boolean get() = items.isNotEmpty() && items.all { it.isChecked }
     val isRequiredAllChecked: Boolean
-        get() = items.filter { it.type.isRequired }.all { it.isChecked }
+        get() = documentsLoaded && items.isNotEmpty() && items.filter { it.required }.all { it.isChecked }
 }
-
-private fun TermsType.toUiModel() = TermsItem(type = this)

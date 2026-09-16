@@ -17,6 +17,9 @@ android {
 }
 
 dependencies {
+    implementation(libs.markdown.renderer)
+    implementation(project(":data:auth"))
+    implementation(libs.kakao.user)
     implementation(project(":core:designsystem"))
     implementation(project(":core:utils"))
 
@@ -27,4 +30,5 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }

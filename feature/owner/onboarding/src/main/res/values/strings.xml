@@ -1,4 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="signup_login_required">가입을 계속하려면 카카오 로그인을 다시 진행해 주세요.</string>
     <string name="store_info">상점 정보</string>
     <string name="back">뒤로가기</string>
     <string name="next">다음</string>
@@ -11,7 +12,7 @@
     <string name="name_placeholder">청과마을</string>
     <string name="category">가게 종류</string>
     <string name="category_hint">가게에서 주로 판매하시는 품목을 선택해주세요.</string>
-    <string name="category_placeholder">과채류</string>
+    <string name="category_placeholder">가게 종류 선택</string>
     <string name="address">주소</string>
     <string name="address_hint">주소를 기입해주세요.</string>
     <string name="postal_code">우편번호</string>

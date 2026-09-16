@@ -15,6 +15,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -28,6 +29,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelStore
 import androidx.test.platform.app.InstrumentationRegistry
+import com.swyp.mangro.data.auth.model.AuthResult
+import com.swyp.mangro.data.auth.model.LoginStatus
+import com.swyp.mangro.data.auth.model.SignupConsents
+import com.swyp.mangro.data.auth.repository.AuthRepository
+import com.swyp.mangro.data.owner.store.model.StoreRegistration
+import com.swyp.mangro.data.owner.store.repository.StoreRepository
 import com.swyp.mangro.feature.owner.onboarding.model.StoreAddressModel
 import com.swyp.mangro.feature.owner.onboarding.model.StoreBasicInfoModel
 import com.swyp.mangro.feature.owner.onboarding.model.StoreCategoryModel
@@ -38,6 +45,8 @@ import com.swyp.mangro.feature.owner.onboarding.screen.operating.OwnerOperatingI
 import com.swyp.mangro.feature.owner.onboarding.screen.operating.OwnerOperatingInfoRoute
 import com.swyp.mangro.feature.owner.onboarding.screen.operating.OwnerOperatingInfoViewModel
 import java.io.File
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -45,6 +54,24 @@ import org.junit.Rule
 import org.junit.Test
 
 class OwnerOnboardingScreenTest {
+    private val requests = mutableListOf<String>()
+    private var registrationResult: Result<Unit> = Result.failure(IllegalStateException("server"))
+    private val authRepository = object : AuthRepository {
+        override fun hasSession() = flowOf(false)
+        override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = error("unused")
+        override fun signup(consents: SignupConsents): Flow<AuthResult<Unit>> {
+            requests += "signup"
+            return flowOf(AuthResult.Success(Unit))
+        }
+    }
+
+    private val repository = object : StoreRepository {
+        override fun register(registration: StoreRegistration): Flow<Result<Unit>> {
+            requests += "store"
+            return flowOf(registrationResult)
+        }
+    }
+
     @get:Rule val compose = createComposeRule()
     private lateinit var basicModel: OwnerBasicInfoViewModel
     private lateinit var operatingModel: OwnerOperatingInfoViewModel
@@ -53,7 +80,7 @@ class OwnerOnboardingScreenTest {
 
     private fun createModels() {
         basicModel = OwnerBasicInfoViewModel(SavedStateHandle())
-        operatingModel = OwnerOperatingInfoViewModel(SavedStateHandle(mapOf(Constants.BASIC_INFO to StoreBasicInfoModel("청과마을", StoreCategoryModel("fruit", "과채류"), address))))
+        operatingModel = OwnerOperatingInfoViewModel(SavedStateHandle(mapOf(Constants.BASIC_INFO to StoreBasicInfoModel("청과마을", StoreCategoryModel("FRUIT", "과일"), address), Constants.SIGNUP_CONSENTS to SignupConsents(true, true, false, false, false))), repository, authRepository)
         modelStore.put("basic", basicModel)
         modelStore.put("operating", operatingModel)
     }
@@ -80,7 +107,7 @@ class OwnerOnboardingScreenTest {
 
     @Composable
     private fun OperatingRoute(onBack: () -> Unit = {}) {
-        OwnerOperatingInfoRoute({}, onBack, operatingModel)
+        OwnerOperatingInfoRoute({}, onBack, viewModel = operatingModel)
     }
 
     private fun show() {
@@ -103,6 +130,26 @@ class OwnerOnboardingScreenTest {
     }
 
     @Test
+    fun completedFormSignsUpThenRegistersStoreBeforeCompletion() {
+        registrationResult = Result.success(Unit)
+        createModels()
+        var completed = 0
+        compose.setContent { OwnerOperatingInfoRoute({ completed++ }, {}, viewModel = operatingModel) }
+        compose.onNodeWithText("등록 신청").assertIsNotEnabled()
+        compose.runOnIdle { assertTrue(requests.isEmpty()) }
+        operating()
+        compose.onNodeWithText("등록 신청").assertIsEnabled().performClick()
+        compose.onNodeWithText("확인").assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(listOf("signup", "store"), requests)
+            assertEquals(0, completed)
+        }
+        compose.onNodeWithText("확인").performClick()
+        compose.runOnIdle { assertEquals(1, completed) }
+        capture("registration-success", dialog = true)
+    }
+
+    @Test
     fun emptyFieldsDisableNext() {
         showBasic()
         compose.onNodeWithText("다음").assertIsNotEnabled()
@@ -114,7 +161,7 @@ class OwnerOnboardingScreenTest {
         var nextCalls = 0
         showBasic(onNext = { nextCalls++ })
         compose.onAllNodes(hasSetTextAction())[0].performTextInput("청과마을")
-        compose.onNodeWithText("과채류").performScrollTo().performClick()
+        compose.onNodeWithText("가게 종류 선택").performScrollTo().performClick()
         compose.onNodeWithText("육류").performClick()
         compose.onNodeWithText("다음").assertIsNotEnabled()
         compose.runOnIdle { basicModel.handleAction(OwnerBasicInfoAction.AddressSelected(address)) }
@@ -193,7 +240,7 @@ class OwnerOnboardingScreenTest {
         compose.runOnIdle { assertEquals(null, operatingModel.uiState.value.closingMinutes) }
     }
 
-    @Test fun unconnectedRegistrationShowsErrorAndKeepsInput() {
+    @Test fun failedRegistrationShowsErrorAndKeepsInput() {
         show()
         operating()
         compose.onNodeWithText("등록 신청").performClick()
@@ -215,10 +262,12 @@ class OwnerOnboardingScreenTest {
                     "dialog" to "Submitted",
                 ),
             ),
+            repository,
+            authRepository,
         )
         modelStore.put("operating", operatingModel)
         var completed = 0
-        compose.setContent { OwnerOperatingInfoRoute({ completed++ }, {}, operatingModel) }
+        compose.setContent { OwnerOperatingInfoRoute({ completed++ }, {}, viewModel = operatingModel) }
         compose.onNodeWithText("확인").assertIsEnabled().performClick()
         compose.runOnIdle { assertEquals(1, completed) }
         compose.onNodeWithText("확인").assertIsNotEnabled()
@@ -259,11 +308,12 @@ class OwnerOnboardingScreenTest {
         capture("small-large-font")
     }
 
-    private fun capture(name: String) {
+    private fun capture(name: String, dialog: Boolean = false) {
         compose.waitForIdle()
         val directory = File(InstrumentationRegistry.getInstrumentation().targetContext.getExternalFilesDir(null), "onboarding-screenshots").apply { mkdirs() }
         File(directory, "$name.png").outputStream().use {
-            compose.onRoot().captureToImage().asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 100, it)
+            val root = if (dialog) compose.onNode(isDialog()) else compose.onRoot()
+            root.captureToImage().asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 100, it)
         }
     }
 }

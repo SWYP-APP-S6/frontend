@@ -11,6 +11,7 @@
 | `:core:crypto` | Android library 모듈 | Android Keystore 키 관리와 AES-GCM 바이트 암복호화. 저장소와 직렬화는 포함하지 않음 |
 | `:core:local` | Android library 모듈 | 공통 AuthStore의 개별 토큰 암호화·DataStore 저장. Consumer/Owner Flavor 선언, UserInfoStore는 미구현 |
 | `:remote:auth` | Android library 모듈 | 공통 인증 8 API 생성 |
+| `:data:auth` | Android library 모듈 | 역할별 서버 로그인·가입 및 회원 토큰 저장 |
 | `:remote:consumer` | Android library 모듈 | Consumer 21 API 생성 |
 | `:remote:owner` | Android library 모듈 | Owner 12 API 생성 |
 | `:core:designsystem` | Android library 모듈 | Compose 테마와 공통 UI 컴포넌트 |
@@ -49,7 +50,7 @@
   - Owner는 홈·점포 관리·찜·설정 Navigation을 사용한다. 온보딩 모듈의 실제 주소 검색은 연결되어 있으며 등록 API와 최상위 이동은 미연결이다.
   - 동일한 패키지와 함수 시그니처를 사용하며, 빌드 대상 Flavor의 구현만 포함한다.
 - Consumer `MainScreen`과 `AppNavGraph`: `app/src/consumer`. Consumer 전용 Feature를 참조하는 그래프는 Consumer 빌드에만 포함하고, 스플래시 시작 테마는 `app/src/main`에서 공유한다.
-  - Consumer는 스플래시에서 로그인 화면으로 진입하고, Owner Debug와 Release는 홈에서 상품·찜·설정 화면으로 이동한다.
+  - 두 Flavor는 스플래시에서 저장 세션을 확인한다. 기존 회원은 홈으로 이동하며, Owner 신규 회원은 검증 → 약관 → 상점 입력 → signup → 상점 등록 순서로 진행한다. Consumer 신규 회원은 약관 → signup → 홈으로 이동한다.
   - Kotlin 함수는 소스셋 사이에서 덮어쓰지 않으므로 `MainScreen`은 각 빌드에서 하나만 포함한다.
 - Flavor별 로그인 UI: `feature/auth/src/owner`, `feature/auth/src/consumer`의 `LoginScreen`
 - Flavor별 스플래시 UI: `feature/splash/src/owner`, `feature/splash/src/consumer`의 `SplashScreen`
@@ -68,7 +69,7 @@
 - `:app`은 Auth remote를 공통으로, Consumer/Owner remote를 Flavor별로 의존한다. Consumer는 `:feature:splash`, `:feature:auth`에도 의존한다. API 화면 연동은 후속이다.
 - Remote 생성·검증 방법은 [Remote README](../../remote/README.md)를 따른다. OpenAPI Generator 7.24.0 및 Python 3을 사용하며, 생성 코드는 Git에 포함하지 않는다.
 - `:app`은 두 Flavor 모두 `:core:designsystem`, `:core:utils`, `:feature:splash`, `:feature:auth`에 의존한다. 네이버 지도 의존성과 API 키 Manifest 설정은 consumer에만 적용한다.
-- 로그인 여부 확인, 실제 카카오 인증, 홈 및 개인정보처리방침 이동은 아직 TODO 또는 빈 콜백이다.
+- 카카오 SDK 인증은 두 Flavor의 로그인 버튼에 연결되어 있다. 설정과 테스트 절차는 [인증 README](../../feature/auth/README.md)를 따른다. 망그로 서버 인증·회원가입·토큰 저장은 연결되었으며 자동 로그인 및 개인정보처리방침 이동은 미연결이다.
 - `:core:utils`의 `NetworkConnectivityManager`는 기본 네트워크 콜백으로 연결 상태를 관측한다. `MangroApplication`에서 필드 주입받아 앱 시작 시 인스턴스를 생성한다.
 - 앱의 실제 기능 소스는 아직 초기 상태이며 예제 테스트가 남아 있다.
 - Compose convention plugin은 `:app`, `:core:designsystem`, `:feature:owner:home` 등 Compose UI 모듈에 적용되어 있다. Hilt 및 KSP 플러그인은 `:app`, `:core:utils`, `:core:network`, `:remote:auth`, `:remote:consumer`, `:remote:owner`, `:feature:owner:home` 등에 적용되어 있으며, 앱의 Hilt 진입점은 `MangroApplication`이다.
@@ -98,3 +99,15 @@
 - `OwnerNavHost`가 홈·점포 관리·설정 탭을 연결한다. 각 화면이 State·Action·Event·ViewModel을 소유한다.
 - 상점 조회 API는 미연결이며 Debug에서만 예시 정보를 사용하고 Release는 미등록 상태를 표시한다.
 - 약관 URL은 아직 없으므로 WebView는 `about:blank`를 열고 준비 중 안내를 표시한다. 확정 URL은 `OwnerPolicyViewModel`의 상태에 연결한다.
+
+## 인증 Repository
+
+- `:data:auth`: Owner·Consumer Flavor별 카카오 검증 API, 가입 API 및 `:core:local`의 AuthStore 저장을 담당한다. `:remote:auth`의 생성 API를 사용한다.
+- SDK 실행은 `:feature:auth`의 KakaoLoginLauncher에 남기고 LoginViewModel은 서버 검증 결과로 홈·약관 이동을 결정한다. TermsViewModel은 Consumer의 가입을 처리하며, Owner는 동의 값을 상점 온보딩으로 전달한다. Owner 가입 API는 상점 입력 완료 후 호출한다.
+- Native App Key는 앱 Flavor별 BuildConfig로 주입하며 문자열 리소스로 선언하지 않는다. 자동 로그인과 약관 문서·버전 검증은 미연결이다.
+
+### 공통 인증 흐름
+
+Owner·Consumer의 `:data:auth`는 Flow 기반 SDK 토큰 검증·가입·저장 세션 확인과 약관 조회를 제공한다. 검증 응답의 accessToken이 있으면 서버 토큰 쌍을 AuthStore에 저장하고, null이면 signupToken으로 가입한 뒤 가입 응답의 서버 토큰 쌍을 저장한다. `:feature:splash`에서 두 Flavor의 세션을 복원한다.
+
+`:data:owner:store`는 Owner 상점 등록 Flow Repository와 서버 요청 매핑을 소유한다. `:feature:owner:onboarding`은 이를 수집하며, Owner 신규 회원은 기본 정보 → 운영 정보 입력을 마친 뒤 signup → 상점 등록 → 접수 안내로 연결된다. Consumer에는 이 모듈을 연결하지 않는다.

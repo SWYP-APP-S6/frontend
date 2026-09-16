@@ -10,7 +10,7 @@ import org.junit.Test
 class StoreRegistrationTest {
     private val valid = StoreRegistrationModel(
         "청과마을",
-        StoreCategoryModel("fruit", "과채류"),
+        StoreCategoryModel("FRUIT", "과일"),
         StoreAddressModel("03965", "서울 마포구 망원로 12"),
         "",
         "021234567",

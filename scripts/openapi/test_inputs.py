@@ -14,13 +14,13 @@ class InputFilesTest(unittest.TestCase):
                 self.assertIn(name, str(result.exception))
             self.assertIn('remote/README.md', str(result.exception))
 
-    def test_owner_spec_does_not_replace_merged_spec(self):
+    def test_owner_spec_does_not_replace_full_v2_spec(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for name in INPUT_FILES[1:]:
                 (root / name).touch()
             (root / 'mangro-app-openapi-2026-09-17.json').touch()
-            with self.assertRaisesRegex(ValueError, 'merged.json'):
+            with self.assertRaisesRegex(ValueError, 'v2.json'):
                 check_inputs(root)
 
     def test_complete_bundle_passes_presence_check(self):

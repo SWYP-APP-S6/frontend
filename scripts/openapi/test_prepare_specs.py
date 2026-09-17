@@ -1,12 +1,12 @@
 import copy
 import json
 import unittest
-from prepare_specs import ROOT, operations, prepare
+from prepare_specs import ROOT, SOURCE_FILE, operations, prepare
 
 
 class PrepareSpecsTest(unittest.TestCase):
     def setUp(self):
-        self.source = json.loads((ROOT / 'openapi/mangro-app-openapi-2026-09-17-merged.json').read_text())
+        self.source = json.loads((ROOT / 'openapi' / SOURCE_FILE).read_text())
         self.mapping = json.loads((ROOT / 'openapi/endpoint-map.json').read_text())
         self.policies = json.loads((ROOT / 'openapi/model-map.json').read_text())
 
@@ -43,6 +43,26 @@ class PrepareSpecsTest(unittest.TestCase):
             params = result[module]['paths'][path]['get']['parameters']
             self.assertNotIn('sort', [p['name'] for p in params])
             self.assertEqual(100, next(p for p in params if p['name'] == 'size')['schema']['maximum'])
+
+    def test_v2_consumer_pagination_is_explicit_and_bounded(self):
+        result = self.generate()
+        for path in ('/holds', '/recipes'):
+            params = {p['name']: p['schema'] for p in result['consumer']['paths'][path]['get']['parameters']}
+            self.assertNotIn('sort', params)
+            self.assertNotIn('pageable', params)
+            self.assertEqual(0, params['page']['default'])
+            self.assertEqual(0, params['page']['minimum'])
+            self.assertEqual(20, params['size']['default'])
+            self.assertEqual(1, params['size']['minimum'])
+            self.assertEqual(100, params['size']['maximum'])
+        self.assertIn('category', {p['name'] for p in result['consumer']['paths']['/recipes']['get']['parameters']})
+
+    def test_v2_pickup_time_contract_metadata_is_preserved(self):
+        source = self.source['components']['schemas']['ProductRegisterRequest']['properties']['pickupEndAt']
+        generated = self.generate()['owner']['components']['schemas']['RegisterProductRequest']['properties']['pickupEndAt']
+        self.assertEqual('2026-09-17T22:00:00', generated['example'])
+        self.assertEqual(source['description'], generated['description'])
+        self.assertIn('한국 시간', generated['description'])
 
     def test_deterministic_and_does_not_mutate_source(self):
         before = copy.deepcopy(self.source)

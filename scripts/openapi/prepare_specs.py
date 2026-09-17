@@ -7,8 +7,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 METHODS = {'get', 'post', 'put', 'patch', 'delete', 'head', 'options'}
+SOURCE_FILE = 'mangro-app-openapi-2026-09-17-v2.json'
 INPUT_FILES = (
-    'mangro-app-openapi-2026-09-17-merged.json',
+    SOURCE_FILE,
     'endpoint-map.json',
     'model-map.json',
     'spec.sha256',
@@ -22,7 +23,7 @@ def check_inputs(directory):
             'Missing private OpenAPI inputs:\n'
             + '\n'.join(f'  - openapi/{name}' for name in missing)
             + '\nObtain the matching bundle from the team and place it in openapi/. '
-            'The merged specification must include consumer APIs; '
+            'The full specification must include consumer APIs; '
             'renaming the owner-only specification is not sufficient. See remote/README.md.'
         )
 
@@ -210,7 +211,7 @@ def main():
         check_inputs(ROOT / 'openapi')
     except ValueError as error:
         parser.exit(1, f'{error}\n')
-    raw = (ROOT / 'openapi/mangro-app-openapi-2026-09-17-merged.json').read_bytes()
+    raw = (ROOT / 'openapi' / SOURCE_FILE).read_bytes()
     expected = (ROOT / 'openapi/spec.sha256').read_text().split()[0]
     if hashlib.sha256(raw).hexdigest() != expected:
         raise ValueError('Source checksum mismatch; update the snapshot and checksum together')

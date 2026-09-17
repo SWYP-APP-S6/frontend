@@ -1,5 +1,8 @@
 package com.swyp.mangro.data.owner.product.impl
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import com.swyp.mangro.data.owner.product.model.CancellationCandidate
 import com.swyp.mangro.data.owner.product.model.CancellationProduct
 import com.swyp.mangro.data.owner.product.model.HoldCancellations
@@ -9,6 +12,7 @@ import com.swyp.mangro.data.owner.product.model.HoldPage
 import com.swyp.mangro.data.owner.product.model.HoldStatus
 import com.swyp.mangro.data.owner.product.model.ManagedHold
 import com.swyp.mangro.data.owner.product.model.ManagedProduct
+import com.swyp.mangro.data.owner.product.paging.OwnerHoldPagingSource
 import com.swyp.mangro.data.owner.product.repository.OwnerProductRepository
 import com.swyp.mangro.remote.owner.model.CancelHoldsForShortageRequest
 import com.swyp.mangro.remote.owner.model.OwnerHoldCancelCandidatesResponse
@@ -31,6 +35,24 @@ internal class OwnerProductRepositoryImpl @Inject constructor(
     private val products: ProductService,
     private val holds: HoldService,
 ) : OwnerProductRepository {
+    private var holdPagingSource: OwnerHoldPagingSource? = null
+
+    override fun pagedHolds(status: HoldStatus?, onPageLoaded: (HoldPage) -> Unit): Flow<PagingData<ManagedHold>> = Pager(
+        config = PagingConfig(
+            pageSize = OwnerHoldPagingSource.PAGE_SIZE,
+            initialLoadSize = OwnerHoldPagingSource.PAGE_SIZE,
+            prefetchDistance = 5,
+            enablePlaceholders = false,
+        ),
+        pagingSourceFactory = {
+            OwnerHoldPagingSource(this, status, onPageLoaded).also { holdPagingSource = it }
+        },
+    ).flow
+
+    override fun refreshHolds() {
+        holdPagingSource?.invalidate()
+    }
+
     override fun fetchProduct(id: Long): Flow<Result<ManagedProduct>> = request {
         require(id > 0)
         products.fetchMyProduct(id).bodyOrThrow().domain()
@@ -41,7 +63,7 @@ internal class OwnerProductRepositoryImpl @Inject constructor(
     }
     override fun fetchHolds(page: Int, status: HoldStatus?): Flow<Result<HoldPage>> = request {
         require(page >= 0)
-        val body = holds.fetchOwnerHolds(status = status?.let { HoldService.StatusFetchOwnerHolds.valueOf(it.name) }, page = page, size = 100).bodyOrThrow()
+        val body = holds.fetchOwnerHolds(status = status?.let { HoldService.StatusFetchOwnerHolds.valueOf(it.name) }, page = page, size = OwnerHoldPagingSource.PAGE_SIZE).bodyOrThrow()
         HoldPage(
             body.holds.content.map {
                 require(it.id > 0 && it.productId > 0)
@@ -50,6 +72,7 @@ internal class OwnerProductRepositoryImpl @Inject constructor(
             body.counts.all,
             body.holds.last,
             body.serverTime.epoch(),
+            body.holds.totalElements,
         )
     }
     override fun fetchHold(id: Long): Flow<Result<HoldDetail>> = request {
@@ -70,9 +93,9 @@ internal class OwnerProductRepositoryImpl @Inject constructor(
 }
 
 private fun ProductDetailResponse.domain(): ManagedProduct {
-    require(id > 0 && initialQty > 0 && stockQty >= 0 && originalPrice > 0 && salePrice in 1..originalPrice)
+    require(id > 0 && initialQty > 0 && stockQty >= 0 && originalPrice > 0 && salePrice in 1 downTo originalPrice)
     require(activeHoldQty >= 0 && completedQty >= 0 && shortfallQty >= 0 && minAdjustableQty in 0..9999)
-    return ManagedProduct(id, name, photoUrl, originalPrice, salePrice, initialQty, stockQty, availableQty, activeHoldQty, completedQty, shortfallQty, pickupEndAt.epoch(), ingredientTags, stockEditable, minAdjustableQty)
+    return ManagedProduct(id, name, photoUrl, originalPrice, salePrice, initialQty, stockQty, availableQty, activeHoldQty, completedQty, shortfallQty, pickupEndAt.epoch(), ingredientTags.map { it.id }.toSet(), stockEditable, minAdjustableQty)
 }
 private fun OwnerHoldDetailResponse.domain() = HoldDetail(
     groupId, nickname, storeName, HoldStatus.valueOf(status.value), heldAt.epoch(), expiresAt.epoch(), serverTime.epoch(), completedAt?.epoch(), totalPrice,

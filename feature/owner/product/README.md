@@ -5,8 +5,8 @@
 - `:data:owner:product`가 생성된 Owner 서비스를 호출하고 화면용 데이터와 분리된 model 및 `Flow<Result<...>>`를 제공한다. 각 ViewModel은 `StateFlow`와 Action/Event를 사용한다.
 - 상품 상세는 경로의 ID로 조회하고 재고 수정 성공 응답을 반영한다. `stockQty`, `availableQty`, `activeHoldQty`, `shortfallQty`를 서로 대체하지 않으며 `stockEditable`·최소/최대 수량을 검사한다.
 - 취소 후보 조회는 찜 취소 화면에서만 수행한다. 일반 목록·상세는 추천 취소 여부로 완료를 제한하지 않는다. 목록의 취소 필요 건수 안내는 별도 집계 계약이 없어 활성화하지 않는다.
-- 등록 상품 탭 진입 시 찜 API를 호출하지 않으며, 찜 현황 탭에서 조회한다.
-- 찜 현황은 `page`/`size`로 마지막 페이지까지 조회하고 `status` 쿼리로 서버에서 필터링한다. 필터 변경 시 이전 조회를 취소하고 0페이지부터 다시 조회한다. `serverTime`과 만료 시각으로 타이머를 보정한다.
+- 점포 관리 진입 시 첫 찜 페이지를 조회해 건수를 표시한다. 조회 전에는 숫자를 생략하고, 상단 탭 전환 시 Paging 데이터를 유지한다. 필터 변경·명시적 갱신·완료/취소 성공 시에만 새로 조회하며 화면 복귀만으로 갱신하지 않는다.
+- 찜 현황은 Repository가 생성하는 `OwnerHoldPagingSource`·`Pager`와 화면의 `LazyPagingItems`로 스크롤에 따라 페이지를 추가 조회하고 `status` 쿼리로 서버에서 필터링한다. ViewModel은 Repository의 `Flow<PagingData<ManagedHold>>`를 화면 모델로 변환하고 `cachedIn(viewModelScope)`로 유지한다. 최초/추가 요청 모두 `size=100`이며 `last=true`에서 중단한다. 추가 로딩 실패 시 기존 항목을 유지하고 실패한 페이지를 재시도한다. 화면의 필터 건수는 `holds.totalElements`, 전체 찜 건수는 `counts.all`을 사용한다. 필터 변경 시 이전 조회를 취소하고 0페이지부터 다시 조회한다. `serverTime`과 만료 시각으로 타이머를 보정한다.
 - 찜 상세는 여러 상품 항목과 서버 합계 금액을 표시한다. 완료는 중복 요청을 차단하고 성공 응답으로 갱신한다.
 - 취소 화면은 서버 후보·순번·`suggested` 선택과 `noticeMessage`를 사용한다. 최종 확인한 ID만 전송하며 오류 시 후보를 재조회하고 자동 재시도하지 않는다.
 - 화면 복귀 시 서버를 재조회한다. 서버 오류는 빈 목록이나 저장 성공으로 표시하지 않는다.

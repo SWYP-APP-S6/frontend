@@ -28,55 +28,58 @@ import com.swyp.mangro.core.designsystem.theme.MangroTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OwnerProductQuantityConfirmationBottomSheet(
+    show: Boolean,
     quantity: Int,
     description: String,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
 ) {
-    MangroBottomSheet(
-        onDismissRequest = onDismiss,
-        bottomBar = {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 32.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                MangroButton(
-                    onClick = onDismiss,
-                    style = MangroButtonStyle.GHOST,
-                    modifier = Modifier.border(1.dp, MangroTheme.colors.borderDefault, RoundedCornerShape(12.dp)),
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.5.dp),
+    if (show) {
+        MangroBottomSheet(
+            onDismissRequest = onDismiss,
+            bottomBar = {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 32.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(
-                        text = stringResource(R.string.owner_product_sheet_no),
-                        style = MangroTheme.typography.heading.headingXXS,
-                        color = MangroTheme.colors.textTitle,
+                    MangroButton(
+                        onClick = onDismiss,
+                        style = MangroButtonStyle.GHOST,
+                        modifier = Modifier.border(1.dp, MangroTheme.colors.borderDefault, RoundedCornerShape(12.dp)),
+                        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.5.dp),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.owner_product_sheet_no),
+                            style = MangroTheme.typography.heading.headingXXS,
+                            color = MangroTheme.colors.textTitle,
+                        )
+                    }
+                    MangroButton(
+                        text = stringResource(R.string.owner_product_sheet_confirm_yes),
+                        onClick = onConfirm,
+                        style = MangroButtonStyle.ACTIVE,
+                        modifier = Modifier.weight(1f),
+                        textStyle = MangroTheme.typography.heading.headingXXS,
+                        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.5.dp),
                     )
                 }
-                MangroButton(
-                    text = stringResource(R.string.owner_product_sheet_confirm_yes),
-                    onClick = onConfirm,
-                    style = MangroButtonStyle.ACTIVE,
-                    modifier = Modifier.weight(1f),
-                    textStyle = MangroTheme.typography.heading.headingXXS,
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.5.dp),
+            },
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+            ) {
+                OwnerProductQuantityTitle(stringResource(R.string.owner_product_sheet_quantity_title, quantity), quantity)
+                Text(
+                    text = description,
+                    modifier = Modifier.widthIn(max = 280.dp).fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    style = MangroTheme.typography.body.bodyM,
+                    color = MangroTheme.colors.textSubtitle,
                 )
             }
-        },
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(20.dp),
-        ) {
-            OwnerProductQuantityTitle(stringResource(R.string.owner_product_sheet_quantity_title, quantity), quantity)
-            Text(
-                text = description,
-                modifier = Modifier.widthIn(max = 280.dp).fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                style = MangroTheme.typography.body.bodyM,
-                color = MangroTheme.colors.textSubtitle,
-            )
         }
     }
 }

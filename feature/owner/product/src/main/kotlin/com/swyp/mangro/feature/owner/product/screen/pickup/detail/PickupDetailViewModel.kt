@@ -11,11 +11,12 @@ import com.swyp.mangro.feature.owner.product.model.Pickup
 import com.swyp.mangro.feature.owner.product.model.presentation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -23,7 +24,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class PickupDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val repository: OwnerProductRepository,
+    private val ownerProductRepository: OwnerProductRepository,
 ) : ViewModel() {
     private val pickupId = savedStateHandle.toRoute<OwnerPickupDetailDestination>().pickupId.toLongOrNull() ?: 0L
     private val _uiState = MutableStateFlow(PickupDetailState())
@@ -33,33 +34,66 @@ class PickupDetailViewModel @Inject constructor(
     private var offset = 0L
 
     init {
+        loadPickup()
+
         viewModelScope.launch {
             while (true) {
                 _uiState.update { it.copy(now = System.currentTimeMillis() + offset) }
-                delay(1000)
+                delay(1000.milliseconds)
             }
         }
     }
 
-    fun refresh() {
+    private fun refresh() {
         if (uiState.value.isLoading || uiState.value.isSaving) return
-        _uiState.update { it.copy(isLoading = true, hasError = false, canComplete = false) }
+        loadPickup()
+    }
+
+    private fun loadPickup() {
         viewModelScope.launch {
-            repository.fetchHold(pickupId).first().fold(
-                onSuccess = ::show,
-                onFailure = { _uiState.update { it.copy(isLoading = false, hasError = true, canComplete = false) } },
-            )
+            ownerProductRepository
+                .fetchHold(pickupId)
+                .onStart {
+                    _uiState.update { it.copy(isLoading = true, hasError = false, canComplete = false) }
+                }
+                .collect { result ->
+                    result.onSuccess { detail ->
+                        updateDetail(detail)
+                    }.onFailure {
+                        _uiState.update { it.copy(isLoading = false, hasError = true, canComplete = false) }
+                    }
+                }
         }
     }
 
-    private fun show(detail: HoldDetail) {
+    private fun updateDetail(detail: HoldDetail) {
         offset = detail.serverTime - System.currentTimeMillis()
+
         val first = detail.items.firstOrNull()
+
         _uiState.update {
             it.copy(
-                pickup = first?.let { item -> Pickup(pickupId.toString(), item.productId.toString(), item.name, detail.nickname, item.quantity, item.unitPrice.toLong(), detail.heldAt, detail.expiresAt, detail.status.presentation(), detail.completedAt) },
-                items = detail.items, totalPrice = detail.totalPrice.toLong(), storeName = detail.storeName,
-                now = detail.serverTime, isLoading = false, isSaving = false, hasError = false,
+                pickup = first?.let { item ->
+                    Pickup(
+                        id = pickupId.toString(),
+                        productId = item.productId.toString(),
+                        productName = item.name,
+                        customerName = detail.nickname,
+                        quantity = item.quantity,
+                        unitPrice = item.unitPrice.toLong(),
+                        requestedAt = detail.heldAt,
+                        deadline = detail.expiresAt,
+                        status = detail.status.presentation(),
+                        completedAt = detail.completedAt,
+                    )
+                },
+                items = detail.items,
+                totalPrice = detail.totalPrice.toLong(),
+                storeName = detail.storeName,
+                now = detail.serverTime,
+                isLoading = false,
+                isSaving = false,
+                hasError = first == null,
                 canComplete = detail.status == HoldStatus.HOLDING && first != null,
             )
         }
@@ -68,18 +102,29 @@ class PickupDetailViewModel @Inject constructor(
     fun handleAction(action: PickupDetailAction) {
         when (action) {
             PickupDetailAction.Refresh -> refresh()
+
             PickupDetailAction.CompleteClicked -> {
                 val state = uiState.value
                 if (!state.canComplete || state.isSaving || state.isLoading || System.currentTimeMillis() + offset >= (state.pickup?.deadline ?: 0)) return
-                _uiState.update { it.copy(isSaving = true, canComplete = false, hasError = false) }
                 viewModelScope.launch {
-                    repository.markAsPickedUp(pickupId).first().fold(
-                        onSuccess = ::show,
-                        onFailure = { _uiState.update { it.copy(isSaving = false, canComplete = false, hasError = true) } },
-                    )
+                    ownerProductRepository
+                        .markAsPickedUp(pickupId)
+                        .onStart {
+                            _uiState.update { it.copy(isSaving = true, canComplete = false, hasError = false) }
+                        }
+                        .collect { result ->
+                            result.onSuccess { detail ->
+                                updateDetail(detail)
+                                _event.trySend(PickupDetailEvent.HoldsChanged)
+                            }.onFailure {
+                                _uiState.update { it.copy(isSaving = false, hasError = true, canComplete = false) }
+                            }
+                        }
                 }
             }
+
             PickupDetailAction.HomeClicked -> _event.trySend(PickupDetailEvent.NavigateToHome)
+
             PickupDetailAction.NavigationBackClicked -> _event.trySend(PickupDetailEvent.NavigateBack)
         }
     }

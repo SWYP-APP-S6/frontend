@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 METHODS = {'get', 'post', 'put', 'patch', 'delete', 'head', 'options'}
 INPUT_FILES = (
-    'mangro-app-openapi-2026-09-17-v2.json',
+    'mangro-app-openapi-2026-09-17-v3.json',
     'endpoint-map.json',
     'model-map.json',
     'spec.sha256',
@@ -149,6 +149,9 @@ def prepare(source, mapping, policies):
                         data = envelope['properties']['data']
                         if '$ref' in data:
                             data_type = f"com.swyp.mangro.remote.{module}.model." + data['$ref'].split('/')[-1]
+                        elif data.get('type') == 'array' and '$ref' in data['items']:
+                            item_type = f"com.swyp.mangro.remote.{module}.model." + data['items']['$ref'].split('/')[-1]
+                            data_type = f'kotlin.collections.List<{item_type}>'
                         elif data.get('type') == 'array' and data['items'].get('type') == 'string':
                             data_type = 'kotlin.collections.List<kotlin.String>'
                         elif data.get('x-kotlin-type') == 'kotlinx.serialization.json.JsonElement':

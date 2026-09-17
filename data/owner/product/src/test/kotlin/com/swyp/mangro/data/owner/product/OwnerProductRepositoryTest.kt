@@ -1,5 +1,7 @@
 package com.swyp.mangro.data.owner.product
 
+import androidx.paging.cachedIn
+import androidx.paging.testing.asSnapshot
 import com.swyp.mangro.core.network.di.NetworkModule
 import com.swyp.mangro.data.owner.product.impl.OwnerProductRepositoryImpl
 import com.swyp.mangro.data.owner.product.model.HoldStatus
@@ -29,9 +31,42 @@ class OwnerProductRepositoryTest {
     }
     private val product = """{"id":7,"name":"복숭아","initialQty":10,"originalPrice":5000,"salePrice":4000,"stockQty":2,"availableQty":0,"activeHoldQty":3000000000,"shortfallQty":5,"completedQty":4000000000,"pickupEndAt":"2026-09-17T20:00:00+09:00","stockEditable":true}"""
 
+    private fun holdPage(page: Int): String {
+        val rows = (1..100).joinToString(",") { index ->
+            """{"id":${page * 100 + index},"productId":7,"heldAt":"2026-09-17T18:00:00+09:00","expiresAt":"2026-09-17T18:15:00+09:00"}"""
+        }
+        return """{"serverTime":"2026-09-17T18:00:00+09:00","counts":{"all":300},"holds":{"content":[$rows],"last":${page == 1},"totalElements":200}}"""
+    }
+
+    @Test fun repositoryPagerLoadsOnePageThenAppendsOnDemand() = runTest {
+        enqueue(holdPage(0))
+        enqueue(holdPage(1))
+        var filteredTotal = 0L
+        val pages = repository.pagedHolds(HoldStatus.COMPLETED) { filteredTotal = it.filteredTotal }.cachedIn(backgroundScope)
+        assertEquals(100, pages.asSnapshot().size)
+        assertEquals(1, server.requestCount)
+        assertEquals("/owner/holds?status=COMPLETED&page=0&size=100", server.takeRequest().path)
+        assertEquals(200L, filteredTotal)
+        assertEquals(200, pages.asSnapshot { scrollTo(105) }.size)
+        assertEquals("/owner/holds?status=COMPLETED&page=1&size=100", server.takeRequest().path)
+        assertEquals(2, server.requestCount)
+    }
+
+    @Test fun repositoryRefreshInvalidatesActivePagingSource() = runTest {
+        repeat(2) { enqueue(holdPage(0)) }
+        val pages = repository.pagedHolds(null) {}.cachedIn(backgroundScope)
+        pages.asSnapshot()
+        repository.refreshHolds()
+        pages.asSnapshot()
+        assertEquals(2, server.requestCount)
+        repeat(2) { assertEquals("/owner/holds?page=0&size=100", server.takeRequest().path) }
+    }
+
     @Test fun productDetailUsesProductIdEndpoint() = runTest {
-        enqueue(product)
-        assertEquals(7L, repository.fetchProduct(7).single().getOrThrow().id)
+        enqueue(product.dropLast(1) + """, "ingredientTags":[{"id":12,"name":"당근"}]}""")
+        val result = repository.fetchProduct(7).single().getOrThrow()
+        assertEquals(7L, result.id)
+        assertEquals(setOf(12), result.ingredientTags)
         val request = server.takeRequest()
         assertEquals("GET", request.method)
         assertEquals("/owner/products/7", request.path)
@@ -60,10 +95,11 @@ class OwnerProductRepositoryTest {
     }
 
     @Test fun pagedHoldsPreserveServerClockAndCounts() = runTest {
-        enqueue("""{"serverTime":"2026-09-17T18:00:00+09:00","counts":{"all":3000000000},"holds":{"content":[],"last":false,"page":2}}""")
+        enqueue("""{"serverTime":"2026-09-17T18:00:00+09:00","counts":{"all":3000000000},"holds":{"content":[],"last":false,"page":2,"totalElements":120}}""")
         val result = repository.fetchHolds(2).single().getOrThrow()
         assertEquals("/owner/holds?page=2&size=100", server.takeRequest().path)
         assertEquals(3000000000L, result.total)
+        assertEquals(120L, result.filteredTotal)
         assertFalse(result.last)
         assertTrue(result.serverTime > 0)
     }

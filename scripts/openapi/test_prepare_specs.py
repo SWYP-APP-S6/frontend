@@ -24,9 +24,9 @@ class PrepareSpecsTest(unittest.TestCase):
     def test_partition_is_complete_and_disjoint(self):
         result = self.generate()
         counts = {k: len(list(operations(v))) for k, v in result.items()}
-        self.assertEqual(counts, {'owner': 14, 'consumer': 15, 'user': 7, 'auth': 10})
+        self.assertEqual(counts, {'owner': 16, 'consumer': 15, 'user': 7, 'auth': 10})
         endpoints = [f'{m} {p}' for v in result.values() for m, p, _ in operations(v)]
-        self.assertEqual(len(set(endpoints)), 46)
+        self.assertEqual(len(set(endpoints)), 48)
 
     def test_deterministic_and_does_not_mutate_source(self):
         before = copy.deepcopy(self.source)

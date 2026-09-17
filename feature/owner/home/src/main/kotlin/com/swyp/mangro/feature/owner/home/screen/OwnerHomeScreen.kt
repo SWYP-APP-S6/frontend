@@ -76,8 +76,10 @@ import kotlinx.coroutines.delay
 @Composable
 fun OwnerHomeScreenRoute(
     navigateToProducts: () -> Unit,
+    navigateToPickups: (completedOnly: Boolean) -> Unit,
     navigateToSettings: () -> Unit,
     navigateToProduct: (String) -> Unit,
+    navigateToPickup: (String) -> Unit,
     navigateToRegisterProduct: () -> Unit,
     viewModel: OwnerHomeViewModel = hiltViewModel(),
 ) {
@@ -95,6 +97,8 @@ fun OwnerHomeScreenRoute(
                 is OwnerHomeEvent.ShowMessage -> snackbarHostState.showSnackbar(context.getString(event.message))
                 OwnerHomeEvent.NavigateToSettings -> navigateToSettings()
                 OwnerHomeEvent.NavigateToProducts -> navigateToProducts()
+                is OwnerHomeEvent.NavigateToPickups -> navigateToPickups(event.completedOnly)
+                is OwnerHomeEvent.NavigateToPickup -> navigateToPickup(event.pickupId)
                 is OwnerHomeEvent.NavigateToProduct -> navigateToProduct(event.productId)
                 OwnerHomeEvent.NavigateToRegisterProduct -> navigateToRegisterProduct()
             }

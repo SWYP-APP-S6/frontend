@@ -17,7 +17,7 @@
 | `:data:user` | Android library 모듈 | 사용자 프로필 조회 Flow Repository |
 | `:data:owner:product` | Android library 모듈 | 상품 상세·재고 수정·찜 목록/상세/완료·취소 후보 및 취소 Flow Repository |
 | `:data:owner:home` | Android library 모듈 | Owner 홈 조회·픽업 완료 Flow Repository |
-| `:remote:owner` | Android library 모듈 | Owner 14 API 생성 |
+| `:remote:owner` | Android library 모듈 | Owner 16 API 생성 (v3 식자재 검색·추천 포함) |
 | `:core:designsystem` | Android library 모듈 | Compose 테마와 공통 UI 컴포넌트 |
 | `:core:utils` | Android library 모듈 | 네트워크 상태 관측 등 공통 Android 유틸리티용 모듈 골격 |
 | `:feature:owner:setting` | Android library 모듈 | 점주 상점 정보와 약관 목록·WebView |

@@ -32,7 +32,7 @@ data class ManagedHold(
     val status: HoldStatus,
 )
 
-data class HoldPage(val holds: List<ManagedHold>, val total: Long, val last: Boolean, val serverTime: Long)
+data class HoldPage(val holds: List<ManagedHold>, val total: Long, val last: Boolean, val serverTime: Long, val filteredTotal: Long = total)
 data class HoldItem(val id: Long, val productId: Long, val name: String, val quantity: Int, val unitPrice: Int, val lineTotal: Int)
 data class HoldDetail(
     val groupId: Long,

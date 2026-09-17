@@ -24,14 +24,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.swyp.mangro.core.designsystem.R as DesignR
 import com.swyp.mangro.core.designsystem.component.MangroButton
 import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.owner.product.R
-import com.swyp.mangro.feature.owner.product.component.ManagementLoadStatus
+import com.swyp.mangro.feature.owner.product.component.OwnerDetailLoadStatus
 import com.swyp.mangro.feature.owner.product.component.OwnerProductScaffold
 import com.swyp.mangro.feature.owner.product.component.pickup.PickupTimer
 import com.swyp.mangro.feature.owner.product.model.PickupStatus
@@ -47,18 +46,16 @@ data class OwnerPickupDetailDestination(val pickupId: String)
 internal fun PickupDetailRoute(
     navigateBack: () -> Unit,
     navigateToHome: () -> Unit,
+    onHoldsChanged: () -> Unit = {},
     viewModel: PickupDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LifecycleResumeEffect(viewModel) {
-        viewModel.refresh()
-        onPauseOrDispose {}
-    }
     BackHandler { viewModel.handleAction(PickupDetailAction.NavigationBackClicked) }
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
             when (event) {
+                PickupDetailEvent.HoldsChanged -> onHoldsChanged()
                 PickupDetailEvent.NavigateBack -> navigateBack()
                 PickupDetailEvent.NavigateToHome -> navigateToHome()
             }
@@ -87,12 +84,6 @@ internal fun PickupDetailScreen(
         contentSpacing = 0.dp,
         bottomBarContent = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (uiState.hasError) {
-                    Text(
-                        text = stringResource(R.string.pickup_error),
-                        color = MangroTheme.colors.dangerNormal,
-                    )
-                }
                 if (pickup != null) {
                     MangroButton(
                         text = stringResource(
@@ -107,7 +98,7 @@ internal fun PickupDetailScreen(
                         onClick = { onAction(PickupDetailAction.CompleteClicked) },
                         style = MangroButtonStyle.OUTLINED,
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = uiState.canComplete && uiState.status == PickupStatus.WAITING && !uiState.isSaving,
+                        enabled = uiState.canComplete && uiState.status == PickupStatus.WAITING && !uiState.isSaving && !uiState.isLoading && !uiState.hasError,
                         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
                         disabledContainerColor = MangroTheme.colors.surfaceAlter,
                     )
@@ -126,14 +117,13 @@ internal fun PickupDetailScreen(
             }
         },
     ) {
-        ManagementLoadStatus(uiState.isLoading || uiState.isSaving, uiState.hasError) { onAction(PickupDetailAction.Refresh) }
-        if (pickup == null && !uiState.isLoading && !uiState.hasError) {
-            Text(
-                text = stringResource(R.string.pickup_empty),
-                modifier = Modifier.padding(vertical = 32.dp),
-                color = MangroTheme.colors.textSubtitle,
+        if (uiState.isLoading || uiState.isSaving || uiState.hasError || pickup == null) {
+            OwnerDetailLoadStatus(
+                isLoading = uiState.isLoading || uiState.isSaving || (!uiState.hasError),
+                modifier = Modifier.padding(top = 12.dp, bottom = 20.dp),
+                onRetry = { onAction(PickupDetailAction.Refresh) },
             )
-        } else if (pickup != null) {
+        } else {
             Text(
                 text = when (uiState.status) {
                     PickupStatus.WAITING -> stringResource(R.string.pickup_detail_deadline, pickupDate(pickup.deadline, "M월 d일 H시 mm분"))

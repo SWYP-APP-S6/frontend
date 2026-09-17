@@ -9,6 +9,7 @@ android {
 }
 
 dependencies {
+    api(libs.androidx.paging.common)
     implementation(project(":remote:owner"))
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
@@ -17,6 +18,7 @@ dependencies {
     testImplementation(project(":core:network"))
     testImplementation(libs.retrofit.kotlinx.serialization)
     testImplementation(libs.kotlinx.serialization.json)
+    testImplementation(libs.androidx.paging.testing)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     implementation(platform(libs.okhttp.bom))

@@ -6,7 +6,7 @@ Auth·User·Consumer·Owner Android library에서 OpenAPI Generator 7.24.0으로
 
 명세·매핑·체크섬·서버 전달사항은 비공개 자료로 Git에서 제외한다. 새로 클론한 개발자와 CI는 빌드 전에 팀의 비공개 전달 경로로 다음 파일을 받아 저장소 루트에 배치해야 한다.
 
-- `openapi/mangro-app-openapi-2026-09-17-v2.json`
+- `openapi/mangro-app-openapi-2026-09-17-v3.json`
 - `openapi/endpoint-map.json`
 - `openapi/model-map.json`
 - `openapi/spec.sha256`
@@ -50,7 +50,7 @@ python3 scripts/openapi/check_generated.py
 
 ## 2026-09-17 점주 명세 반영
 
-현재 입력은 09-17 v2 전체 명세다. 이전에는 09-15 전체 명세에 09-17 점주 부분 명세를 병합했으나 v2 전달본으로 대체했다. 점주 부분 명세만으로 전체 입력을 대체하지 않는다. 소비자 전용 경로는 유지한다. 비공개 입력·매핑·체크섬은 같은 묶음으로 전달한다.
+현재 입력은 09-17 v3 전체 명세다. 이전에는 09-15 전체 명세에 09-17 점주 부분 명세를 병합했으나 v2 전달본으로 대체했다. 점주 부분 명세만으로 전체 입력을 대체하지 않는다. 소비자 전용 경로는 유지한다. 비공개 입력·매핑·체크섬은 같은 묶음으로 전달한다.
 
 알림 조회·읽음 처리·FCM 등록/삭제는 양쪽 역할의 공통 API이므로 `:remote:user`에서 생성하고 Hilt로 제공한다. 기존 `ConsumerServices.notification` 접근은 공통 생성 타입을 참조하도록 유지한다. `DELETE /users/me`도 공통 UserService에 포함한다.
 
@@ -63,3 +63,11 @@ Owner HoldService에 재고 부족 취소 후보 조회·취소를 추가하고,
 - 이전 09-17 병합본 대비 경로·operation 추가/삭제는 없고, 전체 46개 operation이다.
 - v2 SHA-256: `4ccb4c42aea08f1d13f1ca666edfa853a7633c1b658120fd356feb37beb0f9b7`.
 - `endpoint-map.json`, `model-map.json`, `spec.sha256`도 같은 비공개 묶음으로 제공해야 한다. `GET /v3/api-docs`는 확인 시 401이므로 배포 서버와의 실시간 동일성은 검증하지 못했다.
+
+## 2026-09-17 v3 변경
+
+- 전체 48개 operation: Auth 10, Consumer 15, Owner 16, User 7.
+- Owner IngredientService에 식자재 검색(`query`, `size`)과 추천(`name`) GET API를 추가하고 Hilt로 제공한다. BaseResponse의 객체 배열을 `List<IngredientTagResponse>`로 해제한다.
+- 상품 상세·미리보기의 `ingredientTags`는 ID 배열에서 `id`, `name`, nullable `category` 객체 목록으로 변경되었다. 등록·미리보기 요청의 태그 ID 목록 계약은 유지된다.
+- 기존 상품 관리 도메인은 태그 ID 집합을 유지한다. 태그 이름 표시와 검색·추천 UI, 등록 시 태그 선택 연결은 후속 범위다.
+- v3 SHA-256: `881bcb323add6059d6e75e50ad706193eddd6c55c5e80a6097d16e6bdc73febf`. 명세·endpoint-map·model-map·spec.sha256을 같은 비공개 묶음으로 전달한다. 실서버 동일성은 이번 갱신에서 검증하지 않았다.

@@ -27,6 +27,10 @@ class PickupCancellationViewModel @Inject constructor(
     private val _event = Channel<PickupCancellationEvent>(Channel.BUFFERED)
     val event = _event.receiveAsFlow()
 
+    init {
+        refresh()
+    }
+
     fun refresh() {
         if (uiState.value.isLoading || uiState.value.isSaving) return
         _uiState.update { it.copy(isLoading = true, showConfirmation = false, hasError = false) }
@@ -73,10 +77,13 @@ class PickupCancellationViewModel @Inject constructor(
             PickupCancellationAction.ConfirmationClicked -> {
                 val state = uiState.value
                 if (!state.showConfirmation || state.isSaving || state.confirmationIds.size !in 1..100) return
-                _uiState.update { it.copy(isSaving = true, hasError = false) }
+                _uiState.update { it.copy(isSaving = true, showConfirmation = false, hasError = false) }
                 viewModelScope.launch {
                     repository.cancelHolds(state.confirmationIds.map { it.toLong() }.toSet()).first().fold(
-                        onSuccess = ::show,
+                        onSuccess = { result ->
+                            show(result)
+                            _event.trySend(PickupCancellationEvent.HoldsChanged)
+                        },
                         onFailure = {
                             // 409 또는 응답 유실 시에도 이전 선택을 자동 재전송하지 않는다.
                             val latest = repository.fetchCancellations().first().getOrNull()

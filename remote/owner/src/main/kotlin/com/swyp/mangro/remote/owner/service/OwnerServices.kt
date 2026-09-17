@@ -4,6 +4,7 @@ import retrofit2.Retrofit
 
 /** Service instances share the caller-supplied network configuration. */
 class OwnerServices(retrofit: Retrofit) {
+    val ingredient: IngredientService = retrofit.create(IngredientService::class.java)
     val hold: HoldService = retrofit.create(HoldService::class.java)
     val home: HomeService = retrofit.create(HomeService::class.java)
     val product: ProductService = retrofit.create(ProductService::class.java)

@@ -165,6 +165,25 @@ class OwnerHomeScreenTest {
     }
 
     @Test
+    fun visitorCardBodyAndCompletionButtonSendSeparateActions() {
+        val visitor = OwnerHomeSamples.operating(0).visitors.first()
+        val actions = mutableListOf<OwnerHomeAction>()
+        composeRule.setContent {
+            MangroTheme(typography = OwnerMangroTypography) {
+                Column(Modifier.verticalScroll(rememberScrollState()).padding(16.dp)) {
+                    VisitorCard(0, visitor, onAction = actions::add)
+                }
+            }
+        }
+        composeRule.onNodeWithText(visitor.productName).performClick()
+        composeRule.runOnIdle { assertEquals(listOf(OwnerHomeAction.ViewPickup(visitor.id)), actions) }
+        composeRule.onNodeWithText("픽업 완료").performClick()
+        composeRule.runOnIdle {
+            assertEquals(listOf(OwnerHomeAction.ViewPickup(visitor.id), OwnerHomeAction.MarkAsPickedUp(visitor.id)), actions)
+        }
+    }
+
+    @Test
     fun visitorCardsKeepSizeAndCountdownAlignmentAndDisableExpiredPickup() {
         val visitors = OwnerHomeSamples.operating(0).visitors.take(2)
         var nowMillis by mutableLongStateOf(0)

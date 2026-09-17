@@ -45,6 +45,7 @@ class SignupFlowTest {
         var completed = false
         var calls = 0
         val repository = object : AuthRepository {
+            override fun logout(): kotlinx.coroutines.flow.Flow<com.swyp.mangro.data.auth.model.AuthResult<Unit>> = error("unused")
             override fun hasSession() = flowOf(false)
             override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = error("unused")
             override fun signup(consents: SignupConsents): Flow<AuthResult<Unit>> = flow {
@@ -75,6 +76,7 @@ class SignupFlowTest {
         var login = false
         var completed = false
         val repository = object : AuthRepository {
+            override fun logout(): kotlinx.coroutines.flow.Flow<com.swyp.mangro.data.auth.model.AuthResult<Unit>> = error("unused")
             override fun hasSession() = flowOf(false)
             override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = error("unused")
             override fun signup(consents: SignupConsents): Flow<AuthResult<Unit>> = flowOf(AuthResult.Failure(AuthFailure.SIGNUP_REQUIRED))
@@ -93,6 +95,7 @@ class SignupFlowTest {
         var completed = false
         var received: SignupConsents? = null
         val repository = object : AuthRepository {
+            override fun logout(): kotlinx.coroutines.flow.Flow<com.swyp.mangro.data.auth.model.AuthResult<Unit>> = error("unused")
             override fun hasSession() = flowOf(false)
             override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = error("unused")
             override fun signup(consents: SignupConsents): Flow<AuthResult<Unit>> = error("Owner must enter store information first")

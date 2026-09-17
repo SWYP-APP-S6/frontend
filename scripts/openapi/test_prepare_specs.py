@@ -1,12 +1,12 @@
 import copy
 import json
 import unittest
-from prepare_specs import ROOT, operations, prepare
+from prepare_specs import INPUT_FILES, ROOT, operations, prepare
 
 
 class PrepareSpecsTest(unittest.TestCase):
     def setUp(self):
-        self.source = json.loads((ROOT / 'openapi/mangro-app-openapi-2026-09-15.json').read_text())
+        self.source = json.loads((ROOT / 'openapi' / INPUT_FILES[0]).read_text())
         self.mapping = json.loads((ROOT / 'openapi/endpoint-map.json').read_text())
         self.policies = json.loads((ROOT / 'openapi/model-map.json').read_text())
 
@@ -21,19 +21,65 @@ class PrepareSpecsTest(unittest.TestCase):
         self.assertIn('/users/me/location', result['consumer']['paths'])
         self.assertEqual('consumer', self.mapping['GET /users/me']['module'])
 
-    def test_notifications_are_shared_by_owner_and_consumer(self):
-        result = self.generate()
-        for path in self.source['paths']:
-            if path.startswith('/notifications'):
-                self.assertIn(path, result['user']['paths'])
-                self.assertNotIn(path, result['consumer']['paths'])
-
     def test_partition_is_complete_and_disjoint(self):
         result = self.generate()
         counts = {k: len(list(operations(v))) for k, v in result.items()}
-        self.assertEqual(counts, {'consumer': 15, 'owner': 12, 'auth': 10, 'user': 6})
+        self.assertEqual(counts, {'consumer': 15, 'owner': 16, 'auth': 10, 'user': 7})
         endpoints = [f'{m} {p}' for v in result.values() for m, p, _ in operations(v)]
-        self.assertEqual(len(set(endpoints)), 43)
+        self.assertEqual(len(set(endpoints)), 48)
+
+    def test_v3_owner_ingredient_contracts(self):
+        owner = self.generate()['owner']
+        self.assertIn('/owner/ingredients', owner['paths'])
+        self.assertIn('/owner/ingredients/recommendations', owner['paths'])
+        for path in ('/owner/ingredients', '/owner/ingredients/recommendations'):
+            self.assertEqual(
+                'kotlin.collections.List<com.swyp.mangro.remote.owner.model.IngredientTagResponse>',
+                owner['paths'][path]['get']['x-response-data-type'],
+            )
+        schemas = owner['components']['schemas']
+        for name in ('ProductDetailResponse', 'ProductPreviewResponse'):
+            ingredient_tags = schemas[name]['properties']['ingredientTags']
+            self.assertEqual(
+                '#/components/schemas/IngredientTagResponse',
+                ingredient_tags['items']['$ref'],
+            )
+
+    def test_owner_update_contracts(self):
+        result = self.generate()
+        self.assertIn('/notifications/device-tokens', result['user']['paths'])
+        self.assertNotIn('/notifications', result['consumer']['paths'])
+        self.assertIn('delete', result['user']['paths']['/users/me'])
+        self.assertIn('/owner/holds/cancel-candidates', result['owner']['paths'])
+        self.assertIn('/owner/holds/cancel', result['owner']['paths'])
+        schemas = result['owner']['components']['schemas']
+        self.assertNotIn('cancelOverflow', schemas['UpdateStockRequest']['properties'])
+        for name in ('OwnerHomeResponse', 'OwnerHoldListResponse'):
+            self.assertIn('serverTime', schemas[name]['required'])
+        for module, path in [('owner', '/owner/holds'), ('user', '/notifications')]:
+            params = result[module]['paths'][path]['get']['parameters']
+            self.assertNotIn('sort', [p['name'] for p in params])
+            self.assertEqual(100, next(p for p in params if p['name'] == 'size')['schema']['maximum'])
+
+    def test_v2_consumer_pagination_is_explicit_and_bounded(self):
+        result = self.generate()
+        for path in ('/holds', '/recipes'):
+            params = {p['name']: p['schema'] for p in result['consumer']['paths'][path]['get']['parameters']}
+            self.assertNotIn('sort', params)
+            self.assertNotIn('pageable', params)
+            self.assertEqual(0, params['page']['default'])
+            self.assertEqual(0, params['page']['minimum'])
+            self.assertEqual(20, params['size']['default'])
+            self.assertEqual(1, params['size']['minimum'])
+            self.assertEqual(100, params['size']['maximum'])
+        self.assertIn('category', {p['name'] for p in result['consumer']['paths']['/recipes']['get']['parameters']})
+
+    def test_v2_pickup_time_contract_metadata_is_preserved(self):
+        source = self.source['components']['schemas']['ProductRegisterRequest']['properties']['pickupEndAt']
+        generated = self.generate()['owner']['components']['schemas']['RegisterProductRequest']['properties']['pickupEndAt']
+        self.assertEqual('2026-09-17T22:00:00', generated['example'])
+        self.assertEqual(source['description'], generated['description'])
+        self.assertIn('한국 시간', generated['description'])
 
     def test_deterministic_and_does_not_mutate_source(self):
         before = copy.deepcopy(self.source)

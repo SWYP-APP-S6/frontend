@@ -2,6 +2,7 @@ package com.swyp.mangro.remote.owner.di
 
 import com.swyp.mangro.remote.owner.service.HoldService
 import com.swyp.mangro.remote.owner.service.HomeService
+import com.swyp.mangro.remote.owner.service.IngredientService
 import com.swyp.mangro.remote.owner.service.ProductService
 import com.swyp.mangro.remote.owner.service.StoreService
 import dagger.Module
@@ -14,6 +15,10 @@ import retrofit2.Retrofit
 @Module
 @InstallIn(SingletonComponent::class)
 object OwnerServiceModule {
+    @Provides
+    @Singleton
+    fun provideIngredientService(retrofit: Retrofit): IngredientService = retrofit.create(IngredientService::class.java)
+
     @Provides
     @Singleton
     fun provideHoldService(retrofit: Retrofit): HoldService = retrofit.create(HoldService::class.java)

@@ -34,6 +34,7 @@ import com.swyp.mangro.core.designsystem.theme.White
 enum class MangroButtonStyle {
     DEFAULT,
     ACTIVE,
+    DESTRUCTIVE,
     GHOST,
     SUBTLE,
     TEXT,
@@ -44,7 +45,7 @@ private val MangroButtonStyle.textColor: Color
     @Composable
     get() = when (this) {
         MangroButtonStyle.DEFAULT -> MangroTheme.colors.textBody
-        MangroButtonStyle.ACTIVE -> MangroTheme.colors.textOnBrandWhite
+        MangroButtonStyle.ACTIVE, MangroButtonStyle.DESTRUCTIVE -> MangroTheme.colors.textOnBrandWhite
         MangroButtonStyle.GHOST -> MangroTheme.colors.textCanceled
         MangroButtonStyle.OUTLINED -> MangroTheme.colors.textTitle
         else -> MangroTheme.colors.primaryNormal
@@ -55,6 +56,7 @@ private val MangroButtonStyle.backgroundColor: Color
     get() = when (this) {
         MangroButtonStyle.DEFAULT -> MangroTheme.colors.surfaceDisabled
         MangroButtonStyle.ACTIVE -> MangroTheme.colors.primaryNormal
+        MangroButtonStyle.DESTRUCTIVE -> MangroTheme.colors.dangerNormal
         MangroButtonStyle.GHOST -> MangroTheme.colors.textOnBrandWhite
         MangroButtonStyle.SUBTLE -> MangroTheme.colors.primaryLight
         MangroButtonStyle.TEXT -> Color.Transparent

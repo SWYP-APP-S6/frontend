@@ -10,15 +10,19 @@ data object OwnerHomeDestination
 
 fun NavGraphBuilder.ownerHomeNavGraph(
     navigateToProducts: () -> Unit,
+    navigateToPickups: (completedOnly: Boolean) -> Unit,
     navigateToSettings: () -> Unit,
     navigateToProduct: (String) -> Unit,
+    navigateToPickup: (String) -> Unit,
     navigateToRegisterProduct: () -> Unit,
 ) {
     composable<OwnerHomeDestination> {
         OwnerHomeScreenRoute(
             navigateToProducts = navigateToProducts,
+            navigateToPickups = navigateToPickups,
             navigateToSettings = navigateToSettings,
             navigateToProduct = navigateToProduct,
+            navigateToPickup = navigateToPickup,
             navigateToRegisterProduct = navigateToRegisterProduct,
         )
     }

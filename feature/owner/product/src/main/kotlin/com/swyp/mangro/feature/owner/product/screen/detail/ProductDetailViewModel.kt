@@ -2,103 +2,156 @@ package com.swyp.mangro.feature.owner.product.screen.detail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.swyp.mangro.feature.owner.product.data.OwnerPickupStore
-import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
+import com.swyp.mangro.data.owner.product.repository.OwnerProductRepository
+import com.swyp.mangro.feature.owner.product.model.presentation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class ProductDetailViewModel @Inject constructor(
-    private val savedStateHandle: SavedStateHandle,
-    private val pickupStore: OwnerPickupStore,
+    savedStateHandle: SavedStateHandle,
+    private val repository: OwnerProductRepository,
 ) : ViewModel() {
     private val productId = savedStateHandle.toRoute<OwnerProductDetailDestination>().productId
 
-    val uiState = savedStateHandle.getStateFlow(STATE, ProductDetailState())
+    private val _uiState = MutableStateFlow(ProductDetailState(isLoading = true))
+    val uiState = _uiState.asStateFlow()
 
     private val _event = Channel<ProductDetailEvent>(Channel.BUFFERED)
     val event = _event.receiveAsFlow()
 
-    fun updateProducts(products: List<OwnerProductModel>) {
-        val product = products.find { it.id == productId }
-        if (product == null) {
-            updateState { ProductDetailState() }
-            return
-        }
-        val current = uiState.value
-        val previous = current.product
-        updateState {
-            if (previous == null || previous.id != product.id) {
-                ProductDetailState(product = product, quantity = product.remainingQuantity)
-            } else {
-                current.copy(
-                    product = product,
-                    quantity = if (previous.remainingQuantity != product.remainingQuantity) product.remainingQuantity else current.quantity,
-                )
-            }
+    init {
+        loadProduct()
+    }
+
+    private fun retry() {
+        if (uiState.value.isLoading || uiState.value.isSaving || uiState.value.showSaved || uiState.value.showSaveConfirmation) return
+        loadProduct()
+    }
+
+    private fun loadProduct() {
+        viewModelScope.launch {
+            repository
+                .fetchProduct((productId.toLongOrNull() ?: 0L))
+                .onStart {
+                    updateState { it.copy(isLoading = true, hasError = false) }
+                }.collect { result ->
+                    result
+                        .onSuccess { value ->
+                            val product = value.presentation()
+
+                            updateState {
+                                it.copy(
+                                    product = product,
+                                    quantity = product.remainingQuantity,
+                                    isLoading = false,
+                                )
+                            }
+                        }.onFailure {
+                            updateState { it.copy(isLoading = false, hasError = true) }
+                        }
+                }
         }
     }
 
     fun handleAction(action: ProductDetailAction) {
         when (action) {
+            ProductDetailAction.RetryClicked -> {
+                if (uiState.value.hasError) retry()
+            }
+
             is ProductDetailAction.QuantityChanged -> {
-                if (action.quantity >= 0 && !uiState.value.showSaveConfirmation && !uiState.value.showSaved) {
+                if (action.quantity in (uiState.value.product?.minAdjustableQuantity ?: 0)..9999 && !uiState.value.isSaving && !uiState.value.showSaveConfirmation && !uiState.value.showSaved) {
                     updateState { it.copy(quantity = action.quantity) }
                 }
             }
 
             ProductDetailAction.SaveClicked -> {
-                val state = uiState.value
-                val product = state.product ?: return
-                if (!state.canSave || state.showSaveConfirmation) return
-                if (state.quantity == 0 || state.quantity < product.reservedQuantity) {
+                val product = uiState.value.product ?: return
+                if (!uiState.value.canSave || uiState.value.showSaveConfirmation) return
+
+                if (uiState.value.quantity == 0 || uiState.value.quantity < product.reservedQuantity) {
                     updateState { it.copy(showSaveConfirmation = true) }
                 } else {
                     save()
                 }
             }
 
-            ProductDetailAction.SaveConfirmClicked -> if (uiState.value.showSaveConfirmation) save()
+            ProductDetailAction.SaveConfirmClicked -> {
+                if (uiState.value.showSaveConfirmation) save()
+            }
 
-            ProductDetailAction.SaveConfirmationDismissed -> updateState { it.copy(showSaveConfirmation = false) }
+            ProductDetailAction.SaveConfirmationDismissed -> {
+                updateState { it.copy(showSaveConfirmation = false) }
+            }
 
-            ProductDetailAction.SaveResultDismissed -> updateState { it.copy(showSaved = false) }
+            ProductDetailAction.SaveResultDismissed -> {
+                updateState { it.copy(showSaved = false) }
+            }
 
             ProductDetailAction.SaveResultConfirmClicked -> {
                 if (!uiState.value.showSaved || uiState.value.savedShortage > 0) return
+
                 updateState { it.copy(showSaved = false) }
-                _event.trySend(ProductDetailEvent.NavigateBack)
+
+                viewModelScope.launch {
+                    _event.send(ProductDetailEvent.NavigateBack)
+                }
             }
 
-            ProductDetailAction.NavigationBackClicked -> _event.trySend(ProductDetailEvent.NavigateBack)
+            ProductDetailAction.NavigationBackClicked -> {
+                viewModelScope.launch {
+                    _event.send(ProductDetailEvent.NavigateBack)
+                }
+            }
 
             ProductDetailAction.ReservationsCancelClicked -> {
                 updateState { it.copy(showSaved = false) }
-                _event.trySend(ProductDetailEvent.NavigateToCancellations(productId))
+
+                viewModelScope.launch {
+                    _event.send(ProductDetailEvent.NavigateToCancellations(productId))
+                }
             }
         }
     }
 
     private fun save() {
-        val state = uiState.value
-        val product = state.product ?: return
-        if (!state.canSave) return
-        val updated = product.copy(remainingQuantity = state.quantity)
-        pickupStore.updateProducts(listOf(updated))
-        updateState {
-            it.copy(product = updated, showSaveConfirmation = false, showSaved = true, savedShortage = updated.shortageQuantity)
+        if (!uiState.value.canSave) return
+
+        updateState { it.copy(isSaving = true, hasError = false) }
+        viewModelScope.launch {
+            repository
+                .updateStock((productId.toLongOrNull() ?: 0L), uiState.value.quantity)
+                .collect { result ->
+                    result
+                        .onSuccess { value ->
+                            val updated = value.presentation()
+                            updateState {
+                                it.copy(
+                                    product = updated,
+                                    quantity = updated.remainingQuantity,
+                                    isSaving = false,
+                                    showSaveConfirmation = false,
+                                    showSaved = true,
+                                    savedShortage = value.shortfallQuantity,
+                                )
+                            }
+                        }.onFailure {
+                            updateState { it.copy(isSaving = false, showSaveConfirmation = false, hasError = true) }
+                        }
+                }
         }
-        _event.trySend(ProductDetailEvent.SaveProduct(updated))
     }
 
     private fun updateState(transform: (ProductDetailState) -> ProductDetailState) {
-        savedStateHandle[STATE] = transform(uiState.value)
-    }
-
-    private companion object {
-        const val STATE = "productDetailState"
+        _uiState.value = transform(uiState.value)
     }
 }

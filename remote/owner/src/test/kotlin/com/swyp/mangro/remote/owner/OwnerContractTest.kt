@@ -5,6 +5,7 @@ import com.swyp.mangro.core.network.di.NetworkModule
 import com.swyp.mangro.remote.owner.model.AnswerStockReconfirmRequest
 import com.swyp.mangro.remote.owner.model.PreviewProductRequest
 import com.swyp.mangro.remote.owner.model.ProductDetailResponse
+import com.swyp.mangro.remote.owner.model.ProductPreviewResponse
 import com.swyp.mangro.remote.owner.model.RegisterProductRequest
 import com.swyp.mangro.remote.owner.model.UpdateStockRequest
 import com.swyp.mangro.remote.owner.service.OwnerServices
@@ -27,21 +28,59 @@ import retrofit2.Retrofit
 class OwnerContractTest {
     private val json = NetworkModule.provideNetworkJson()
 
+    @Test
+    fun ingredientSearchAndRecommendationsUnwrapObjectLists() = runTest {
+        MockWebServer().use { server ->
+            val ingredient = OwnerServices(createRetrofit(server.url("/").toString())).ingredient
+            repeat(2) {
+                server.enqueue(
+                    MockResponse().setBody(
+                        """{"status":200,"code":"OK","data":[{"id":12,"name":"당근","category":"VEGETABLE"}]}""",
+                    ),
+                )
+            }
+
+            val tags = ingredient.searchIngredients(query = "carrot", size = 7).body()!!
+            assertEquals(12, tags.single().id)
+            assertEquals("당근", tags.single().name)
+            assertEquals("VEGETABLE", tags.single().category)
+            var request = checkNotNull(server.takeRequest(5, TimeUnit.SECONDS))
+            assertEquals("GET", request.method)
+            assertEquals("/owner/ingredients?query=carrot&size=7", request.path)
+
+            assertEquals(tags, ingredient.recommendIngredientTags(name = "soup").body())
+            request = checkNotNull(server.takeRequest(5, TimeUnit.SECONDS))
+            assertEquals("GET", request.method)
+            assertEquals("/owner/ingredients/recommendations?name=soup", request.path)
+        }
+    }
+
+    @Test
+    fun detailAndPreviewDecodeIngredientObjects() {
+        val body = """{"ingredientTags":[{"id":12,"name":"당근"}]}"""
+        val detail = json.decodeFromString<ProductDetailResponse>(body)
+        val preview = json.decodeFromString<ProductPreviewResponse>(body)
+        assertEquals(12, detail.ingredientTags.single().id)
+        assertEquals("당근", detail.ingredientTags.single().name)
+        assertEquals(null, detail.ingredientTags.single().category)
+        assertEquals(detail.ingredientTags, preview.ingredientTags)
+    }
+
     private fun createRetrofit(
         baseUrl: String = Constants.BASE_URL,
         client: OkHttpClient = OkHttpClient(),
     ): Retrofit = NetworkModule.provideRetrofit(client, json).newBuilder().baseUrl(baseUrl).build()
 
     @Test
-    fun stockUpdateUsesTotalStockAndCancelOverflow() = runTest {
+    fun stockUpdateUsesOnlyTotalStock() = runTest {
         MockWebServer().use { server ->
             server.enqueue(MockResponse().setBody("""{"status":200,"code":"OK","message":"ok","data":{}}"""))
             OwnerServices(createRetrofit(server.url("/").toString())).product
-                .updateStock(9L, UpdateStockRequest(stockQty = 12, cancelOverflow = true))
+                .updateStock(9L, UpdateStockRequest(stockQty = 12))
             val request = checkNotNull(server.takeRequest(5, TimeUnit.SECONDS))
             assertEquals("PATCH", request.method)
             assertEquals("/owner/products/9/stock", request.path)
-            assertEquals(json.parseToJsonElement("""{"stockQty":12,"cancelOverflow":true}"""), json.parseToJsonElement(request.body.readUtf8()))
+            assertEquals(json.parseToJsonElement("""{"stockQty":12}"""), json.parseToJsonElement(request.body.readUtf8()))
         }
     }
 

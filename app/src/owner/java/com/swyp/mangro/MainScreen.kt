@@ -74,10 +74,19 @@ internal fun MainScreen(notificationIntent: Intent? = null) {
             )
         }
         composable<OwnerMain> {
-            OwnerMainContent(notificationKey = pendingOpen, onNotificationOpened = {
-                opened?.notificationId?.let { OwnerNotificationReadWorker.enqueue(context, it) }
-                consumedKey = openKey
-            })
+            OwnerMainContent(
+                notificationKey = pendingOpen,
+                onNotificationOpened = {
+                    opened?.notificationId?.let { OwnerNotificationReadWorker.enqueue(context, it) }
+                    consumedKey = openKey
+                },
+                onLogout = {
+                    navController.navigate(Login) {
+                        popUpTo<OwnerMain> { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+            )
         }
     }
 }
@@ -89,13 +98,14 @@ private data object OwnerMain
 private data class OwnerOnboarding(val service: Boolean, val privacy: Boolean, val location: Boolean, val thirdParty: Boolean, val marketing: Boolean)
 
 @Composable
-internal fun OwnerMainContent(notificationKey: String? = null, onNotificationOpened: () -> Unit = {}) {
+internal fun OwnerMainContent(notificationKey: String? = null, onNotificationOpened: () -> Unit = {}, onLogout: () -> Unit = {}) {
     OwnerNotificationPermission()
     var products by rememberSaveable { mutableStateOf(emptyList<OwnerProductModel>()) }
     MangroTheme {
         OwnerNavHost(
             notificationKey = notificationKey,
             onNotificationOpened = onNotificationOpened,
+            onLogout = onLogout,
             products = products,
             onSaveProducts = { changed ->
                 val ids = changed.map { it.id }.toSet()

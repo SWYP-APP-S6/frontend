@@ -20,6 +20,10 @@ data class ProductListState(
     val tab: ProductListTab = ProductListTab.PRODUCTS,
     val filter: ProductListFilter = ProductListFilter.ALL,
     val hasPickupError: Boolean = false,
+    val mutationInProgress: Boolean = false,
+    val filteredTotal: Long = 0,
+    val totalHolds: Long? = null,
+    val cancellationCount: Int = 0,
 ) {
     val filteredPickups: List<OwnerPickupModel>
         get() = pickups.filter { filter.status == null || it.request.status == filter.status }

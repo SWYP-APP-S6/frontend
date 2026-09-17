@@ -14,7 +14,7 @@ import retrofit2.HttpException
 class OwnerNotificationRepository @Inject constructor(private val service: NotificationService) {
     fun markAsRead(notificationId: Long): Flow<Result<Unit>> = request {
         require(notificationId > 0)
-        val response = service.updateNotificationReadStatus(notificationId)
+        val response = service.readNotification(notificationId)
         if (!response.isSuccessful) throw HttpException(response)
     }
     fun registerToken(token: String): Flow<Result<Unit>> = request {

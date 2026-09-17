@@ -44,6 +44,7 @@ import org.junit.Test
 @SuppressLint("RestrictedApi") // Test the actual SavedStateHandle persistence format across a Parcel boundary.
 class OnboardingSavedStateTest {
     private val authRepository = object : AuthRepository {
+        override fun logout(): kotlinx.coroutines.flow.Flow<com.swyp.mangro.data.auth.model.AuthResult<Unit>> = error("unused")
         override fun hasSession() = flowOf(false)
         override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = error("unused")
         override fun signup(consents: SignupConsents) = flowOf(AuthResult.Success(Unit))

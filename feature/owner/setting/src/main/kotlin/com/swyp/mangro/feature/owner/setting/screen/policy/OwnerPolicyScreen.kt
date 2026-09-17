@@ -1,7 +1,5 @@
 package com.swyp.mangro.feature.owner.setting.screen.policy
 
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,7 +8,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -23,12 +25,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mikepenz.markdown.m3.Markdown
+import com.mikepenz.markdown.m3.markdownColor
+import com.mikepenz.markdown.m3.markdownTypography
 import com.swyp.mangro.core.designsystem.R as DesignR
+import com.swyp.mangro.core.designsystem.component.MangroButton
+import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.owner.setting.R
@@ -64,7 +69,7 @@ fun OwnerPolicyScreen(
                 title = {
                     Text(
                         text = stringResource(uiState.policy.titleRes),
-                        style = MangroTheme.typography.title.titleM,
+                        style = MangroTheme.typography.label.labelL,
                         color = MangroTheme.colors.textTitle,
                     )
                 },
@@ -82,42 +87,46 @@ fun OwnerPolicyScreen(
             )
         },
     ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-            AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory = { context ->
-                    WebView(context).apply { webViewClient = WebViewClient() }
-                },
-                update = { webView ->
-                    val url = uiState.url?.takeIf { it.isNotBlank() } ?: "about:blank"
-                    if (webView.tag != url) {
-                        webView.tag = url
-                        webView.loadUrl(url)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState()),
+        ) {
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator(color = MangroTheme.colors.primaryStrong)
                     }
-                },
-                onRelease = { webView ->
-                    webView.stopLoading()
-                    webView.destroy()
-                },
-            )
-            if (uiState.url.isNullOrBlank()) {
-                Column(
-                    modifier = Modifier.padding(32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Text(
-                        text = stringResource(R.string.owner_setting_policy_pending_title),
-                        style = MangroTheme.typography.title.titleM,
-                        color = MangroTheme.colors.textTitle,
-                        textAlign = TextAlign.Center,
-                    )
-                    Text(
-                        text = stringResource(R.string.owner_setting_policy_pending_body),
-                        style = MangroTheme.typography.body.bodyM,
-                        color = MangroTheme.colors.textSubtitle,
-                        textAlign = TextAlign.Center,
-                    )
+                }
+
+                uiState.hasError -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        Text(stringResource(R.string.owner_setting_policy_error))
+                        MangroButton(
+                            onClick = { onAction(OwnerPolicyAction.RetryClicked) },
+                            text = stringResource(R.string.owner_setting_retry),
+                            style = MangroButtonStyle.ACTIVE,
+                        )
+                    }
+                }
+
+                else -> {
+                    SelectionContainer {
+                        Markdown(
+                            content = uiState.content,
+                            colors = markdownColor(text = MangroTheme.colors.textBody),
+                            typography = markdownTypography(paragraph = MangroTheme.typography.body.bodyM),
+                        )
+                    }
                 }
             }
         }

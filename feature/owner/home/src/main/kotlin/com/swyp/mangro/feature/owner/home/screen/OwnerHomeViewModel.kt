@@ -103,10 +103,13 @@ class OwnerHomeViewModel @Inject constructor(
 
             OwnerHomeAction.ViewProducts -> _event.trySend(OwnerHomeEvent.NavigateToProducts)
 
-            is OwnerHomeAction.ViewProduct,
-            is OwnerHomeAction.ViewPickup,
-            OwnerHomeAction.ViewPickups,
-            OwnerHomeAction.ViewCompletedPickups,
+            is OwnerHomeAction.ViewProduct -> _event.trySend(OwnerHomeEvent.NavigateToProduct(action.productId))
+
+            OwnerHomeAction.ViewPickups -> _event.trySend(OwnerHomeEvent.NavigateToPickups(completedOnly = false))
+            OwnerHomeAction.ViewCompletedPickups -> _event.trySend(OwnerHomeEvent.NavigateToPickups(completedOnly = true))
+
+            is OwnerHomeAction.ViewPickup -> _event.trySend(OwnerHomeEvent.NavigateToPickup(action.pickupId))
+
             OwnerHomeAction.ViewNewPickups,
             OwnerHomeAction.ViewNotifications,
             OwnerHomeAction.ConfirmPickups,

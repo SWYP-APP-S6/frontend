@@ -33,9 +33,7 @@ class ProductEditorViewModelTest {
         val vm = ProductPickupInfoViewModel(handle, clock)
         vm.initialize(input, "20:00", "16:00")
         assertEquals("16:00", vm.uiState.value.pickupTimeOptions.first())
-        vm.handleAction(ProductPickupInfoAction.PickupTimeChanged("15:00"))
-        assertNull(vm.uiState.value.pickupTime)
-        vm.handleAction(ProductPickupInfoAction.PickupTimeChanged("19:00"))
+        assertEquals("20:00", vm.uiState.value.draft?.pickupEndTime)
         vm.handleAction(ProductPickupInfoAction.RegisterClicked)
         assertTrue(vm.uiState.value.showPreview)
         val late = ProductPickupInfoViewModel(handle, Clock.offset(clock, java.time.Duration.ofHours(11)))
@@ -53,9 +51,10 @@ class ProductEditorViewModelTest {
         val original = ProductBasicInfoViewModel(handle)
         original.initialize()
         original.handleAction(ProductBasicInfoAction.NameChanged("복숭아"))
-        original.handleAction(ProductBasicInfoAction.PhotosSelected(listOf("file://peach")))
+        original.handleAction(ProductBasicInfoAction.PhotosSelected(listOf("file://peach", "file://extra")))
         val restored = ProductBasicInfoViewModel(handle)
         restored.initialize()
+        assertEquals(listOf("file://peach"), restored.uiState.value.photos)
         assertEquals("복숭아", restored.uiState.value.name)
         assertTrue(restored.uiState.value.canContinue)
         restored.handleAction(ProductBasicInfoAction.PhotoRemoveClicked("file://peach"))
@@ -77,14 +76,12 @@ class ProductEditorViewModelTest {
     }
 
     @Test
-    fun pickupPreviewIncludesPendingTagAndSaveIsEmittedOnce() = runTest {
+    fun pickupPreviewWithoutCustomTagsAndSaveIsEmittedOnce() = runTest {
         val vm = ProductPickupInfoViewModel(SavedStateHandle(), clock)
         vm.initialize(ProductDraftModel(id = "peach", name = "복숭아", photos = listOf("file://peach"), originalPrice = 10000, salePrice = 4000, quantity = 3), "20:00", "09:00")
-        vm.handleAction(ProductPickupInfoAction.TagChanged("청과"))
         vm.handleAction(ProductPickupInfoAction.RegisterClicked)
         assertTrue(vm.uiState.value.showPreview)
-        assertEquals(listOf("청과"), vm.uiState.value.draft!!.tags)
-        assertEquals("", vm.uiState.value.tagInput)
+        assertTrue(vm.uiState.value.draft!!.tags.isEmpty())
         vm.handleAction(ProductPickupInfoAction.SaveClicked)
         val saved = (vm.event.first() as ProductPickupInfoEvent.Save).product
         assertEquals(3, saved.initialQuantity)
@@ -119,12 +116,10 @@ class ProductEditorViewModelTest {
         val draft = ProductDraftModel(id = "peach", name = "복숭아", originalPrice = 10000, salePrice = 4000)
         val vm = ProductPickupInfoViewModel(handle, clock)
         vm.initialize(draft, "20:00", "09:00")
-        vm.handleAction(ProductPickupInfoAction.TagChanged("작성 중"))
         vm.handleAction(ProductPickupInfoAction.PickupTimeChanged("19:00"))
         val restored = ProductPickupInfoViewModel(handle, clock)
-        restored.initialize(draft.copy(name = "수정된 복숭아", salePrice = 3000), "20:00", "09:00")
-        assertEquals("작성 중", restored.uiState.value.tagInput)
-        assertEquals("19:00", restored.uiState.value.pickupTime)
+        restored.initialize(draft.copy(name = "수정된 복숭아", salePrice = 3000), "21:00", "09:00")
+        assertEquals("19:00", restored.uiState.value.draft?.pickupEndTime)
         assertEquals("수정된 복숭아", restored.uiState.value.product?.name)
         assertEquals(3000, restored.uiState.value.product?.salePrice)
     }
@@ -150,8 +145,6 @@ class ProductEditorViewModelTest {
         price.handleAction(ProductPriceAction.NextClicked)
         val pickup = ProductPickupInfoViewModel(SavedStateHandle(), clock)
         pickup.initialize((price.event.first() as ProductPriceEvent.Next).draft, "20:00", "09:00")
-        pickup.handleAction(ProductPickupInfoAction.PickupTimeChanged("19:00"))
-        pickup.handleAction(ProductPickupInfoAction.TagChanged("과일"))
         pickup.handleAction(ProductPickupInfoAction.RegisterClicked)
         pickup.handleAction(ProductPickupInfoAction.SaveClicked)
         val saved = (pickup.event.first() as ProductPickupInfoEvent.Save).product
@@ -162,7 +155,7 @@ class ProductEditorViewModelTest {
         assertEquals(3, saved.initialQuantity)
         assertEquals(3, saved.remainingQuantity)
         assertEquals(0, saved.reservedQuantity)
-        assertEquals("19:00", saved.pickupEndTime)
-        assertEquals(listOf("과일"), saved.tags)
+        assertEquals("20:00", saved.pickupEndTime)
+        assertTrue(saved.tags.isEmpty())
     }
 }

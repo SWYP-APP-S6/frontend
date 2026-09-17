@@ -52,7 +52,7 @@ class LiveApiSmokeTest {
             val client = publicClient.newBuilder().addInterceptor(AuthorizationInterceptor { token }).build()
             val consumer = ConsumerServices(createRetrofit(client = client))
             success("GET /recipes/categories", consumer.recipe.fetchCategories())
-            val recipes = success("GET /recipes?page=0&size=2&sort=id,asc", consumer.recipe.fetchRecipes(page = 0, size = 2, sort = listOf("id,asc")))
+            val recipes = success("GET /recipes?page=0&size=2", consumer.recipe.fetchRecipes(page = 0, size = 2))
             assertEquals(0, recipes.page)
             assertEquals(2, recipes.propertySize)
             assertTrue("Live recipe dataset must be nonempty", recipes.content.isNotEmpty())

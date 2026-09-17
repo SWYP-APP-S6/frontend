@@ -1,8 +1,7 @@
 package com.swyp.mangro.feature.owner.product.util
 
 object OwnerProductLimits {
-    const val PHOTO_COUNT = 5
-    const val TAG_COUNT = 5
+    const val PHOTO_COUNT = 1
     const val NAME_LENGTH = 25
 }
 
@@ -20,11 +19,6 @@ internal fun isValidPrice(original: String, sale: String): Boolean {
     val originalValue = original.toIntOrNull() ?: return false
     val saleValue = sale.toIntOrNull() ?: return false
     return originalValue > 0 && saleValue in 1..originalValue
-}
-
-internal fun addProductTag(tags: List<String>, input: String): List<String> {
-    val tag = input.trim()
-    return if (tag.isNotEmpty() && tag !in tags && tags.size < OwnerProductLimits.TAG_COUNT) tags + tag else tags
 }
 
 internal fun mergedProductPhotos(current: List<String>, added: List<String>): List<String> = (current + added).distinct().take(OwnerProductLimits.PHOTO_COUNT)

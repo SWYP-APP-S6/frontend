@@ -3,7 +3,7 @@ package com.swyp.mangro.feature.owner.product.screen.editor.basic
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.swyp.mangro.feature.owner.product.model.ProductDraftModel
-import com.swyp.mangro.feature.owner.product.util.isValidProductName
+import com.swyp.mangro.feature.owner.product.util.OwnerProductLimits
 import com.swyp.mangro.feature.owner.product.util.mergedProductPhotos
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Collections
@@ -31,7 +31,7 @@ class ProductBasicInfoViewModel @Inject constructor(private val savedStateHandle
             is ProductBasicInfoAction.NameChanged -> update(
                 state.copy(
                     name = action.name,
-                    error = if (action.name.isNotEmpty() && !isValidProductName(action.name)) {
+                    error = if (action.name.trim().let { it.codePointCount(0, it.length) > OwnerProductLimits.NAME_LENGTH }) {
                         ProductBasicInfoError.INVALID_NAME
                     } else {
                         state.error.takeUnless { it == ProductBasicInfoError.INVALID_NAME }

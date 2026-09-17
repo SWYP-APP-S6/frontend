@@ -1,5 +1,6 @@
 package com.swyp.mangro.remote.user.di
 
+import com.swyp.mangro.remote.user.service.NotificationService
 import com.swyp.mangro.remote.user.service.UserService
 import dagger.Module
 import dagger.Provides
@@ -11,6 +12,10 @@ import retrofit2.Retrofit
 @Module
 @InstallIn(SingletonComponent::class)
 object UserServiceModule {
+    @Provides
+    @Singleton
+    fun provideNotificationService(retrofit: Retrofit): NotificationService = retrofit.create(NotificationService::class.java)
+
     @Provides
     @Singleton
     fun provideUserService(retrofit: Retrofit): UserService = retrofit.create(UserService::class.java)

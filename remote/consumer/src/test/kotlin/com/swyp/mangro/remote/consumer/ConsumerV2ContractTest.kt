@@ -2,13 +2,13 @@ package com.swyp.mangro.remote.consumer
 
 import com.swyp.mangro.core.network.Constants
 import com.swyp.mangro.core.network.di.NetworkModule
-import com.swyp.mangro.remote.consumer.model.DeleteDeviceTokenRequest
 import com.swyp.mangro.remote.consumer.model.HoldDetailResponse
 import com.swyp.mangro.remote.consumer.model.HoldSummaryResponse
 import com.swyp.mangro.remote.consumer.model.RecipeSummaryResponse
-import com.swyp.mangro.remote.consumer.model.RegisterDeviceTokenRequest
 import com.swyp.mangro.remote.consumer.model.RegisterHoldRequest
 import com.swyp.mangro.remote.consumer.serivce.ConsumerServices
+import com.swyp.mangro.remote.user.model.DeleteDeviceTokenRequest
+import com.swyp.mangro.remote.user.model.RegisterDeviceTokenRequest
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.jsonObject

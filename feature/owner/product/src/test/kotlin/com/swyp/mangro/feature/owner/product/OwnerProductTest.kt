@@ -1,7 +1,6 @@
 package com.swyp.mangro.feature.owner.product
 
 import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
-import com.swyp.mangro.feature.owner.product.util.addProductTag
 import com.swyp.mangro.feature.owner.product.util.discountPercent
 import com.swyp.mangro.feature.owner.product.util.isValidPrice
 import com.swyp.mangro.feature.owner.product.util.isValidProductName
@@ -36,18 +35,11 @@ class OwnerProductTest {
     }
 
     @Test
-    fun `tags trim deduplicate and enforce five while allowing removal`() {
-        assertEquals(listOf("청과"), addProductTag(emptyList(), " 청과 "))
-        assertEquals(listOf("청과"), addProductTag(listOf("청과"), "청과"))
-        assertTrue(addProductTag(emptyList(), " ").isEmpty())
-        val full = listOf("a", "b", "c", "d", "e")
-        assertEquals(full, addProductTag(full, "f"))
-        assertEquals(listOf("b", "c", "d", "e", "f"), addProductTag(full - "a", "f"))
-    }
-
-    @Test
-    fun `photo additions cannot duplicate or exceed five`() {
-        assertEquals((1..5).map(Int::toString), mergedProductPhotos(listOf("1", "2"), (2..12).map(Int::toString)))
+    fun `photo selection keeps only one and allows selection after removal`() {
+        assertEquals(listOf("1"), mergedProductPhotos(emptyList(), listOf("1", "2")))
+        assertEquals(listOf("1"), mergedProductPhotos(listOf("1"), listOf("1", "2")))
+        assertEquals(listOf("2"), mergedProductPhotos(listOf("1") - "1", listOf("2")))
+        assertTrue(mergedProductPhotos(emptyList(), emptyList()).isEmpty())
     }
 
     @Test

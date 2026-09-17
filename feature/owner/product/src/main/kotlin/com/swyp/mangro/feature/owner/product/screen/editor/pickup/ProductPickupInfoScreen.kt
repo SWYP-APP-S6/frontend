@@ -1,30 +1,20 @@
 package com.swyp.mangro.feature.owner.product.screen.editor.pickup
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,10 +23,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
-import com.swyp.mangro.core.designsystem.R as DesignR
 import com.swyp.mangro.core.designsystem.component.MangroButton
 import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
-import com.swyp.mangro.core.designsystem.component.MangroInputBox
 import com.swyp.mangro.core.designsystem.component.card.product.ProductListCard
 import com.swyp.mangro.core.designsystem.component.dropdown.MangroDropdownField
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
@@ -47,10 +35,8 @@ import com.swyp.mangro.feature.owner.product.R
 import com.swyp.mangro.feature.owner.product.component.OwnerProductLabel
 import com.swyp.mangro.feature.owner.product.component.OwnerProductScaffold
 import com.swyp.mangro.feature.owner.product.component.OwnerProductSheetBottomSheet
-import com.swyp.mangro.feature.owner.product.component.rememberProductTextFieldState
 import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import com.swyp.mangro.feature.owner.product.model.ProductDraftModel
-import com.swyp.mangro.feature.owner.product.util.OwnerProductLimits
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -113,11 +99,7 @@ internal fun ProductPickupInfoScreen(
     uiState: ProductPickupInfoState,
     onAction: (ProductPickupInfoAction) -> Unit,
 ) {
-    val tag = rememberProductTextFieldState(value = uiState.tagInput) {
-        onAction(ProductPickupInfoAction.TagChanged(it))
-    }
     val storeClosingTime = uiState.storeClosingTime
-    val tags = uiState.tags
     val valid = uiState.canPreview
     val onBack = { onAction(ProductPickupInfoAction.NavigationBackClicked) }
     BackHandler(
@@ -172,65 +154,6 @@ internal fun ProductPickupInfoScreen(
                 borderWidth = 1.2.dp,
                 placeholderColor = MangroTheme.colors.textSubtitle,
             )
-        }
-        Column(
-            modifier = Modifier.padding(top = 48.dp, bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            MangroInputBox(
-                label = stringResource(R.string.owner_product_tags_label),
-                hint = stringResource(R.string.owner_product_tags_hint, OwnerProductLimits.TAG_COUNT),
-                state = tag,
-                placeholder = stringResource(R.string.owner_product_tag_placeholder),
-                isRequired = false,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                onKeyboardAction = { onAction(ProductPickupInfoAction.TagSubmitted) },
-            )
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                tags.forEach { item ->
-                    Row(
-                        modifier = Modifier
-                            .background(
-                                color = MangroTheme.colors.surfaceAlter,
-                                shape = RoundedCornerShape(80.dp),
-                            )
-                            .border(
-                                width = 1.dp,
-                                color = MangroTheme.colors.borderDefault,
-                                shape = RoundedCornerShape(80.dp),
-                            )
-                            .clickable(
-                                role = Role.Button,
-                                onClick = { onAction(ProductPickupInfoAction.TagRemoveClicked(item)) },
-                            )
-                            .padding(horizontal = 12.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(2.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = item,
-                            style = MangroTheme.typography.label.labelM,
-                            color = MangroTheme.colors.textSubtitle,
-                        )
-                        Icon(
-                            painter = painterResource(DesignR.drawable.ic_x_20px),
-                            contentDescription = stringResource(R.string.owner_product_tag_delete, item),
-                            modifier = Modifier.size(20.dp),
-                            tint = MangroTheme.colors.borderDefault,
-                        )
-                    }
-                }
-            }
-            if (uiState.tagInput.isNotBlank() && !uiState.canAddTag) {
-                Text(
-                    text = stringResource(R.string.owner_product_tags_error),
-                    style = MangroTheme.typography.caption.captionS,
-                    color = MangroTheme.colors.textSubtitle,
-                )
-            }
         }
     }
     val draft = uiState.draft

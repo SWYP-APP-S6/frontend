@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import com.swyp.mangro.feature.owner.product.model.ProductDraftModel
-import com.swyp.mangro.feature.owner.product.util.addProductTag
 import com.swyp.mangro.feature.owner.product.util.pickupTimeOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
@@ -36,7 +35,7 @@ class ProductPickupInfoViewModel internal constructor(private val savedStateHand
         if (uiState.value.product != null) {
             update(uiState.value.copy(product = draft, storeClosingTime = storeClosingTime, storeOpeningTime = storeOpeningTime, storeCategory = storeCategory))
         } else {
-            update(ProductPickupInfoState(isLoading = false, product = draft, storeClosingTime = storeClosingTime, storeOpeningTime = storeOpeningTime, storeCategory = storeCategory, tags = draft.tags))
+            update(ProductPickupInfoState(isLoading = false, product = draft, storeClosingTime = storeClosingTime, storeOpeningTime = storeOpeningTime, storeCategory = storeCategory))
         }
         refreshTimeOptions()
     }
@@ -52,10 +51,7 @@ class ProductPickupInfoViewModel internal constructor(private val savedStateHand
         val state = uiState.value
         when (action) {
             is ProductPickupInfoAction.PickupTimeChanged -> if (action.value in state.pickupTimeOptions) update(state.copy(pickupTime = action.value))
-            is ProductPickupInfoAction.TagChanged -> update(state.copy(tagInput = action.value))
-            is ProductPickupInfoAction.TagRemoveClicked -> update(state.copy(tags = state.tags - action.value))
-            ProductPickupInfoAction.TagSubmitted -> if (state.canAddTag) update(state.copy(tags = addProductTag(state.tags, state.tagInput), tagInput = ""))
-            ProductPickupInfoAction.RegisterClicked -> if (state.canPreview) update(state.copy(tags = addProductTag(state.tags, state.tagInput), tagInput = "", showPreview = true))
+            ProductPickupInfoAction.RegisterClicked -> if (state.canPreview) update(state.copy(showPreview = true))
             ProductPickupInfoAction.PreviewDismissed -> update(state.copy(showPreview = false))
             ProductPickupInfoAction.EditBasicInfoClicked -> {
                 val next = state.copy(showPreview = false)
@@ -71,7 +67,7 @@ class ProductPickupInfoViewModel internal constructor(private val savedStateHand
     }
 
     private fun update(state: ProductPickupInfoState) {
-        savedStateHandle[STATE] = state.copy(tags = Collections.unmodifiableList(state.tags.toList()), pickupTimeOptions = Collections.unmodifiableList(state.pickupTimeOptions.toList()))
+        savedStateHandle[STATE] = state.copy(pickupTimeOptions = Collections.unmodifiableList(state.pickupTimeOptions.toList()))
     }
     private companion object {
         const val STATE = "pickupState"

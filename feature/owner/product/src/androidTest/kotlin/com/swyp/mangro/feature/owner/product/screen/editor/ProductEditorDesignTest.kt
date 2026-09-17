@@ -38,15 +38,31 @@ class ProductEditorDesignTest {
         compose.setContent { MangroTheme(typography = OwnerMangroTypography, content = content) }
     }
 
-    @Test fun basicMatchesFigma1155_11416() {
+    @Test fun basicAllowsOnlyOnePhoto() {
         show { ProductBasicInfoScreen(ProductBasicInfoState(), {}) }
         compose.onNodeWithText("오늘은 어떤 상품을").assertIsDisplayed()
         compose.onNodeWithText("판매하실 건가요?").assertIsDisplayed()
-        compose.onNodeWithText("최대 5장까지 올릴 수 있어요.").assertIsDisplayed()
+        compose.onNodeWithText("최대 1장까지 올릴 수 있어요.").assertIsDisplayed()
         compose.onNodeWithText("사진 올리기").assertIsDisplayed().assertIsEnabled()
         compose.onNodeWithText("예시) 복숭아 4입").assertIsDisplayed()
         compose.onNodeWithText("다음").assertIsNotEnabled()
         capture("editor-basic")
+    }
+
+    @Test fun photoUploadIsDisabledUntilExistingPhotoIsRemoved() {
+        show {
+            var state by remember { mutableStateOf(ProductBasicInfoState(name = "복숭아", photos = listOf("fixture"))) }
+            ProductBasicInfoScreen(state) { action ->
+                if (action is com.swyp.mangro.feature.owner.product.screen.editor.basic.ProductBasicInfoAction.PhotoRemoveClicked) {
+                    state = state.copy(photos = state.photos - action.photo)
+                }
+            }
+        }
+        compose.onNodeWithText("사진 올리기").assertIsNotEnabled()
+        compose.onNodeWithText("다음").assertIsEnabled()
+        compose.onNodeWithContentDescription("사진 삭제").performClick()
+        compose.onNodeWithText("사진 올리기").assertIsEnabled()
+        compose.onNodeWithText("다음").assertIsNotEnabled()
     }
 
     @Test fun priceMatchesFigma1155_13956() {
@@ -63,25 +79,20 @@ class ProductEditorDesignTest {
     @Test fun pickupDefaultsToStoreClosingTimeAndAllowsSelection() {
         val product = OwnerProductModel("peach", "복숭아", listOf("fixture"), 10000, 4000, 1, 1, pickupEndTime = "20:00")
         show {
-            var state by remember { mutableStateOf(ProductPickupInfoState(product = product, storeClosingTime = "20:00", pickupTimeOptions = listOf("19:00", "20:00"), tags = listOf("복숭아", "청과"))) }
+            var state by remember { mutableStateOf(ProductPickupInfoState(product = product, storeClosingTime = "20:00", pickupTimeOptions = listOf("19:00", "20:00"))) }
             ProductPickupInfoScreen(state) { action ->
                 if (action is ProductPickupInfoAction.PickupTimeChanged) state = state.copy(pickupTime = action.value)
-                if (action is ProductPickupInfoAction.TagRemoveClicked) state = state.copy(tags = state.tags - action.value)
             }
         }
         compose.onNodeWithText("판매에 필요한 정보를").assertIsDisplayed()
         compose.onNodeWithText("20:00").assertIsDisplayed()
-        compose.onNodeWithText("태그 추가").assertDoesNotExist()
-        compose.onNodeWithText("복숭아").assertIsDisplayed()
-        compose.onNodeWithText("청과").assertIsDisplayed()
+        compose.onNodeWithText("식자재 태그").assertDoesNotExist()
+        compose.onNodeWithText("태그 입력").assertDoesNotExist()
         compose.onNodeWithText("등록하기").assertIsEnabled()
         capture("editor-pickup")
         compose.onNodeWithText("20:00").performClick()
         compose.onNodeWithText("19:00").performClick()
         compose.onNodeWithText("19:00").assertIsDisplayed()
-        compose.onNodeWithContentDescription("복숭아 태그 삭제").performClick()
-        compose.onNodeWithText("복숭아").assertDoesNotExist()
-        compose.onNodeWithText("청과").assertIsDisplayed()
     }
 
     private fun capture(name: String) {

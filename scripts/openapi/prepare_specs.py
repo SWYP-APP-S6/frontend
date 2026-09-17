@@ -7,6 +7,24 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 METHODS = {'get', 'post', 'put', 'patch', 'delete', 'head', 'options'}
+INPUT_FILES = (
+    'mangro-app-openapi-2026-09-17-merged.json',
+    'endpoint-map.json',
+    'model-map.json',
+    'spec.sha256',
+)
+
+
+def check_inputs(directory):
+    missing = [name for name in INPUT_FILES if not (directory / name).is_file()]
+    if missing:
+        raise ValueError(
+            'Missing private OpenAPI inputs:\n'
+            + '\n'.join(f'  - openapi/{name}' for name in missing)
+            + '\nObtain the matching bundle from the team and place it in openapi/. '
+            'The merged specification must include consumer APIs; '
+            'renaming the owner-only specification is not sufficient. See remote/README.md.'
+        )
 
 
 def operations(spec):
@@ -188,6 +206,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=Path, default=ROOT / 'build/openapi')
     args = parser.parse_args()
+    try:
+        check_inputs(ROOT / 'openapi')
+    except ValueError as error:
+        parser.exit(1, f'{error}\n')
     raw = (ROOT / 'openapi/mangro-app-openapi-2026-09-17-merged.json').read_bytes()
     expected = (ROOT / 'openapi/spec.sha256').read_text().split()[0]
     if hashlib.sha256(raw).hexdigest() != expected:

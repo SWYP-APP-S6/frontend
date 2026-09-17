@@ -39,11 +39,6 @@
     <string name="owner_product_pm">오후</string>
     <string name="owner_product_apply_store_hours">운영시간 적용</string>
     <string name="owner_product_tags_label">식자재 태그</string>
-    <string name="owner_product_tags_hint">최대 %1$d개까지 입력할 수 있어요.</string>
-    <string name="owner_product_tag_placeholder">태그 입력</string>
-    <string name="owner_product_tag_add">태그 추가</string>
-    <string name="owner_product_tag_delete">%1$s 태그 삭제</string>
-    <string name="owner_product_tags_error">중복 태그를 지우거나, 태그를 최대 5개로 맞춰주세요.</string>
     <string name="owner_product_preview_title">상품 미리보기</string>
     <string name="owner_product_preview_hint">손님께는 이렇게 보여요.</string>
     <string name="owner_product_edit">수정하기</string>

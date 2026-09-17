@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,8 +28,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -38,16 +41,25 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import com.swyp.mangro.core.designsystem.R as DesignR
+import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
 import com.swyp.mangro.core.designsystem.component.appbar.OwnerBottomAppBar
 import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerPickupRequestCard
+import com.swyp.mangro.core.designsystem.component.card.owner.OwnerPickupRequestStatus
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProduct
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProductCard
 import com.swyp.mangro.core.designsystem.component.chip.MangroChip
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.owner.product.R
+import com.swyp.mangro.feature.owner.product.component.ManagementLoadStatus
+import com.swyp.mangro.feature.owner.product.model.OwnerPickupModel
 import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
+import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -64,10 +76,8 @@ internal fun ProductListRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
+    val pickups = viewModel.pickups.collectAsLazyPagingItems()
 
-    LaunchedEffect(products) {
-        viewModel.updateContent(products = products)
-    }
     LaunchedEffect(
         viewModel,
         lifecycleOwner,
@@ -91,6 +101,7 @@ internal fun ProductListRoute(
     ProductListScreen(
         uiState = state,
         onAction = viewModel::handleAction,
+        pickups = pickups,
     )
 }
 
@@ -98,11 +109,35 @@ internal fun ProductListRoute(
 fun ProductListScreen(
     uiState: ProductListState,
     onAction: (ProductListAction) -> Unit,
+    pickups: LazyPagingItems<OwnerPickupModel>,
     modifier: Modifier = Modifier,
 ) {
+    val now by produceState(System.currentTimeMillis()) {
+        while (true) {
+            value = System.currentTimeMillis()
+            delay(1000)
+        }
+    }
+    val refresh = pickups.loadState.refresh
+    val listState = rememberLazyListState()
+    LaunchedEffect(uiState.filter, uiState.tab) { listState.scrollToItem(0) }
     Scaffold(
         modifier = modifier,
         containerColor = MangroTheme.colors.surfaceNormal,
+        topBar = {
+            Column {
+                MangroDefaultStartAlignedTopAppBar(
+                    title = {
+                        Text(
+                            text = stringResource(R.string.owner_product_list_title),
+                            style = MangroTheme.typography.heading.headingXXS,
+                            color = MangroTheme.colors.textTitle,
+                        )
+                    },
+                )
+                StoreTabs(state = uiState, onAction = onAction)
+            }
+        },
         bottomBar = {
             OwnerBottomAppBar(
                 currentMenu = OwnerMenu.STORE,
@@ -116,27 +151,6 @@ fun ProductListScreen(
                 .padding(padding)
                 .background(MangroTheme.colors.surfaceAlter),
         ) {
-            Text(
-                text = stringResource(R.string.owner_product_list_title),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MangroTheme.colors.surfaceNormal)
-                    .padding(20.dp),
-                style = MangroTheme.typography.heading.headingXXS,
-                color = MangroTheme.colors.textTitle,
-            )
-            if (uiState.hasPickupError) {
-                Text(
-                    text = stringResource(R.string.pickup_error),
-                    color = MangroTheme.colors.dangerNormal,
-                    modifier = Modifier.padding(horizontal = 20.dp),
-                )
-            }
-
-            StoreTabs(
-                state = uiState,
-                onAction = onAction,
-            )
             LazyRow(
                 modifier = Modifier
                     .padding(top = 20.dp)
@@ -154,27 +168,31 @@ fun ProductListScreen(
                     )
                 }
             }
-            Text(
-                text = stringResource(
-                    R.string.owner_product_filtered_count,
-                    if (uiState.tab == ProductListTab.PRODUCTS) {
-                        uiState.filteredProducts.size
-                    } else {
-                        uiState.filteredPickups.size
-                    },
-                ),
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp),
-                style = MangroTheme.typography.body.bodyM,
-                color = MangroTheme.colors.textSubtitle,
-            )
+
+            if (uiState.tab == ProductListTab.PICKUPS && refresh is LoadState.NotLoading && !uiState.hasPickupError) {
+                Text(
+                    text = stringResource(R.string.owner_product_filtered_count, uiState.filteredTotal),
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp),
+                    style = MangroTheme.typography.body.bodyM,
+                    color = MangroTheme.colors.textSubtitle,
+                )
+            }
+
+            if (uiState.tab == ProductListTab.PICKUPS) {
+                ManagementLoadStatus(refresh is LoadState.Loading && pickups.itemCount == 0, refresh is LoadState.Error) { pickups.retry() }
+                ManagementLoadStatus(false, uiState.hasPickupError) { onAction(ProductListAction.Refresh) }
+            }
+
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 val empty = if (uiState.tab == ProductListTab.PRODUCTS) {
                     uiState.filteredProducts.isEmpty()
                 } else {
-                    uiState.filteredPickups.isEmpty()
+                    pickups.itemCount == 0
                 }
 
-                if (empty) {
+                if (uiState.tab == ProductListTab.PICKUPS && empty && (refresh is LoadState.Loading || refresh is LoadState.Error || uiState.hasPickupError)) {
+                    // 오류를 빈 목록으로 표시하지 않는다.
+                } else if (empty) {
                     Column(
                         modifier = Modifier.align(Alignment.Center).padding(bottom = 144.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -187,15 +205,16 @@ fun ProductListScreen(
                             tint = MangroTheme.colors.textCanceled,
                         )
                         Text(
-                            text = stringResource(R.string.owner_product_empty_filter_title),
+                            text = stringResource(if (uiState.tab == ProductListTab.PRODUCTS) R.string.owner_product_catalog_unavailable else R.string.owner_product_empty_filter_title),
                             color = MangroTheme.colors.textSubtitle,
                             style = MangroTheme.typography.body.bodyL,
                         )
                     }
                 } else {
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = if (uiState.cancellationNeeded.isEmpty()) 0.dp else 112.dp),
+                        state = listState,
+                        modifier = Modifier.fillMaxSize().testTag("owner-holds-list"),
+                        contentPadding = PaddingValues(bottom = if (uiState.cancellationCount == 0) 0.dp else 112.dp),
                     ) {
                         if (uiState.tab == ProductListTab.PRODUCTS) {
                             items(
@@ -227,22 +246,46 @@ fun ProductListScreen(
                                 }
                             }
                         } else {
+                            if (pickups.loadState.prepend is LoadState.Loading || pickups.loadState.prepend is LoadState.Error) {
+                                item {
+                                    ManagementLoadStatus(
+                                        pickups.loadState.prepend is LoadState.Loading,
+                                        pickups.loadState.prepend is LoadState.Error,
+                                        pickups::retry,
+                                    )
+                                }
+                            }
                             items(
-                                items = uiState.filteredPickups,
-                                key = { it.request.id },
-                            ) { pickup ->
+                                count = pickups.itemCount,
+                                key = pickups.itemKey { it.request.id },
+                            ) { index ->
+                                val loaded = pickups[index] ?: return@items
+                                val expired = loaded.request.status == OwnerPickupRequestStatus.IN_PROGRESS &&
+                                    loaded.request.endTimeMillis?.let { it <= now } == true
+                                val pickup = if (expired) {
+                                    loaded.copy(request = loaded.request.copy(status = OwnerPickupRequestStatus.EXPIRED, requestTimeMillis = null, endTimeMillis = null), canComplete = false)
+                                } else {
+                                    loaded
+                                }
                                 OwnerPickupRequestCard(
                                     item = pickup.request,
-                                    completeEnabled = pickup.canComplete,
+                                    completeEnabled = pickup.canComplete && !uiState.mutationInProgress && !uiState.hasPickupError && refresh is LoadState.NotLoading,
                                     onConsumerClick = { onAction(ProductListAction.PickupClicked(pickup.request.id)) },
-                                    onButtonClick = { onAction(ProductListAction.PickupCompleteClicked(pickup.request.id)) },
+                                    onButtonClick = { onAction(ProductListAction.PickupCompleteClicked(pickup)) },
                                     modifier = Modifier.padding(bottom = 16.dp),
+                                )
+                            }
+                            item {
+                                ManagementLoadStatus(
+                                    pickups.loadState.append is LoadState.Loading,
+                                    pickups.loadState.append is LoadState.Error,
+                                    pickups::retry,
                                 )
                             }
                         }
                     }
                 }
-                if (uiState.cancellationNeeded.isNotEmpty()) {
+                if (uiState.cancellationCount > 0) {
                     Surface(
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
@@ -272,7 +315,7 @@ fun ProductListScreen(
                             Text(
                                 text = stringResource(
                                     R.string.owner_product_cancellation_needed_count,
-                                    uiState.cancellationNeeded.size,
+                                    uiState.cancellationCount,
                                 ),
                                 modifier = Modifier.weight(1f),
                                 color = MangroTheme.colors.textOnBrandWhite,
@@ -341,18 +384,11 @@ private fun StoreTabs(
                             )
                         }
                         Text(
-                            text = stringResource(
-                                if (tab == ProductListTab.PRODUCTS) {
-                                    R.string.owner_product_registered_count
-                                } else {
-                                    R.string.owner_product_pickup_count
-                                },
-                                if (tab == ProductListTab.PRODUCTS) {
-                                    state.products.size
-                                } else {
-                                    state.pickups.size
-                                },
-                            ),
+                            text = when {
+                                tab == ProductListTab.PRODUCTS -> stringResource(R.string.owner_product_registered_title)
+                                state.totalHolds == null -> stringResource(R.string.owner_product_pickup_title)
+                                else -> stringResource(R.string.owner_product_pickup_count, state.totalHolds)
+                            },
                             color = if (selected) MangroTheme.colors.primaryNormal else MangroTheme.colors.textCanceled,
                             style = MangroTheme.typography.label.labelM,
                         )

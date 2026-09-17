@@ -12,10 +12,15 @@ data class OwnerProductModel(
     val salePrice: Int,
     val initialQuantity: Int,
     val remainingQuantity: Int,
-    val reservedQuantity: Int = 0,
-    val pickedUpQuantity: Int = 0,
+    val reservedQuantity: Long = 0,
+    val pickedUpQuantity: Long = 0,
     val pickupEndTime: String,
     val tags: List<String> = emptyList(),
+    val tagsResolved: Boolean = true,
+    val serverShortfall: Int? = null,
+    val serverAvailable: Int? = null,
+    val stockEditable: Boolean = true,
+    val minAdjustableQuantity: Int = 0,
 ) : Serializable {
     init {
         require(originalPrice > 0 && salePrice in 1..originalPrice)
@@ -24,7 +29,7 @@ data class OwnerProductModel(
     }
 
     val discountPercent: Int get() = discountPercent(originalPrice, salePrice)
-    val shortageQuantity: Int get() = (reservedQuantity - remainingQuantity).coerceAtLeast(0)
-    val availableQuantity: Int get() = (remainingQuantity - reservedQuantity).coerceAtLeast(0)
+    val shortageQuantity: Int get() = serverShortfall ?: (reservedQuantity - remainingQuantity).coerceIn(0, Int.MAX_VALUE.toLong()).toInt()
+    val availableQuantity: Int get() = serverAvailable ?: (remainingQuantity - reservedQuantity).coerceIn(0, Int.MAX_VALUE.toLong()).toInt()
     val isVisibleToCustomers: Boolean get() = availableQuantity > 0
 }

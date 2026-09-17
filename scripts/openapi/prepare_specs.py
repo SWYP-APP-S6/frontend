@@ -7,9 +7,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 METHODS = {'get', 'post', 'put', 'patch', 'delete', 'head', 'options'}
-SOURCE_FILE = 'mangro-app-openapi-2026-09-17-v2.json'
 INPUT_FILES = (
-    SOURCE_FILE,
+    'mangro-app-openapi-2026-09-17-v3.json',
     'endpoint-map.json',
     'model-map.json',
     'spec.sha256',
@@ -19,13 +18,7 @@ INPUT_FILES = (
 def check_inputs(directory):
     missing = [name for name in INPUT_FILES if not (directory / name).is_file()]
     if missing:
-        raise ValueError(
-            'Missing private OpenAPI inputs:\n'
-            + '\n'.join(f'  - openapi/{name}' for name in missing)
-            + '\nObtain the matching bundle from the team and place it in openapi/. '
-            'The full specification must include consumer APIs; '
-            'renaming the owner-only specification is not sufficient. See remote/README.md.'
-        )
+        raise ValueError('Missing OpenAPI inputs: ' + ', '.join(missing) + '; see remote/README.md')
 
 
 def operations(spec):
@@ -156,6 +149,9 @@ def prepare(source, mapping, policies):
                         data = envelope['properties']['data']
                         if '$ref' in data:
                             data_type = f"com.swyp.mangro.remote.{module}.model." + data['$ref'].split('/')[-1]
+                        elif data.get('type') == 'array' and '$ref' in data['items']:
+                            item_type = f"com.swyp.mangro.remote.{module}.model." + data['items']['$ref'].split('/')[-1]
+                            data_type = f'kotlin.collections.List<{item_type}>'
                         elif data.get('type') == 'array' and data['items'].get('type') == 'string':
                             data_type = 'kotlin.collections.List<kotlin.String>'
                         elif data.get('x-kotlin-type') == 'kotlinx.serialization.json.JsonElement':
@@ -207,11 +203,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=Path, default=ROOT / 'build/openapi')
     args = parser.parse_args()
-    try:
-        check_inputs(ROOT / 'openapi')
-    except ValueError as error:
-        parser.exit(1, f'{error}\n')
-    raw = (ROOT / 'openapi' / SOURCE_FILE).read_bytes()
+    check_inputs(ROOT / 'openapi')
+    raw = (ROOT / 'openapi' / INPUT_FILES[0]).read_bytes()
     expected = (ROOT / 'openapi/spec.sha256').read_text().split()[0]
     if hashlib.sha256(raw).hexdigest() != expected:
         raise ValueError('Source checksum mismatch; update the snapshot and checksum together')

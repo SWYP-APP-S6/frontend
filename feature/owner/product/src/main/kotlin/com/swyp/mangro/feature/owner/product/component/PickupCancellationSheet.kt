@@ -48,6 +48,7 @@ internal fun PickupCancellationSheet(
                 )
                 MangroButton(
                     text = stringResource(R.string.pickup_cancel_send),
+                    enabled = !uiState.isSaving,
                     onClick = { onAction(PickupCancellationAction.ConfirmationClicked) },
                     style = MangroButtonStyle.ACTIVE,
                     modifier = Modifier.weight(1f),
@@ -105,7 +106,7 @@ internal fun PickupCancellationSheet(
                 color = MangroTheme.colors.textTitle,
             )
             Text(
-                text = stringResource(R.string.pickup_cancel_message, uiState.storeName, uiState.storePhone),
+                text = uiState.noticeMessage,
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(

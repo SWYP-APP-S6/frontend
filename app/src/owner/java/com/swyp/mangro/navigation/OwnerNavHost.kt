@@ -8,10 +8,12 @@ import com.swyp.mangro.feature.owner.home.navigation.OwnerHomeDestination
 import com.swyp.mangro.feature.owner.home.navigation.ownerHomeNavGraph
 import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import com.swyp.mangro.feature.owner.product.navigation.OwnerProductEditorDestination
+import com.swyp.mangro.feature.owner.product.navigation.navigateToOwnerPickups
 import com.swyp.mangro.feature.owner.product.navigation.ownerPickupNavGraph
 import com.swyp.mangro.feature.owner.product.navigation.ownerProductNavGraph
 import com.swyp.mangro.feature.owner.product.screen.detail.OwnerProductDetailDestination
 import com.swyp.mangro.feature.owner.product.screen.list.OwnerProductListDestination
+import com.swyp.mangro.feature.owner.product.screen.list.ProductListFilter
 import com.swyp.mangro.feature.owner.product.screen.pickup.cancellation.OwnerPickupCancellationDestination
 import com.swyp.mangro.feature.owner.product.screen.pickup.detail.OwnerPickupDetailDestination
 import com.swyp.mangro.feature.owner.setting.navigation.OwnerPolicyDestination
@@ -34,6 +36,15 @@ internal fun OwnerNavHost(
                     restoreState = true
                 }
             },
+            navigateToPickups = { completedOnly ->
+                navController.navigateToOwnerPickups(
+                    filter = if (completedOnly) ProductListFilter.COMPLETED else ProductListFilter.ALL,
+                ) {
+                    popUpTo<OwnerHomeDestination> { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            },
             navigateToSettings = {
                 navController.navigate(OwnerSettingDestination) {
                     popUpTo<OwnerHomeDestination> { saveState = true }
@@ -42,6 +53,7 @@ internal fun OwnerNavHost(
                 }
             },
             navigateToProduct = { navController.navigate(OwnerProductDetailDestination(it)) },
+            navigateToPickup = { navController.navigate(OwnerPickupDetailDestination(it)) },
             navigateToRegisterProduct = { navController.navigate(OwnerProductEditorDestination) },
         )
 
@@ -79,6 +91,7 @@ internal fun OwnerNavHost(
         )
 
         ownerPickupNavGraph(
+            navController = navController,
             navigateBack = { navController.popBackStack() },
             navigateToHome = { navController.popBackStack<OwnerHomeDestination>(inclusive = false) },
         )

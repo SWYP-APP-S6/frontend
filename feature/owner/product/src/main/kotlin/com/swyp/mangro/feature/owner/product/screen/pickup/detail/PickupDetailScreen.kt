@@ -30,6 +30,7 @@ import com.swyp.mangro.core.designsystem.component.MangroButton
 import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.owner.product.R
+import com.swyp.mangro.feature.owner.product.component.OwnerDetailLoadStatus
 import com.swyp.mangro.feature.owner.product.component.OwnerProductScaffold
 import com.swyp.mangro.feature.owner.product.component.pickup.PickupTimer
 import com.swyp.mangro.feature.owner.product.model.PickupStatus
@@ -45,6 +46,7 @@ data class OwnerPickupDetailDestination(val pickupId: String)
 internal fun PickupDetailRoute(
     navigateBack: () -> Unit,
     navigateToHome: () -> Unit,
+    onHoldsChanged: () -> Unit = {},
     viewModel: PickupDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -53,6 +55,7 @@ internal fun PickupDetailRoute(
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
             when (event) {
+                PickupDetailEvent.HoldsChanged -> onHoldsChanged()
                 PickupDetailEvent.NavigateBack -> navigateBack()
                 PickupDetailEvent.NavigateToHome -> navigateToHome()
             }
@@ -81,12 +84,6 @@ internal fun PickupDetailScreen(
         contentSpacing = 0.dp,
         bottomBarContent = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (uiState.hasError) {
-                    Text(
-                        text = stringResource(R.string.pickup_error),
-                        color = MangroTheme.colors.dangerNormal,
-                    )
-                }
                 if (pickup != null) {
                     MangroButton(
                         text = stringResource(
@@ -101,7 +98,7 @@ internal fun PickupDetailScreen(
                         onClick = { onAction(PickupDetailAction.CompleteClicked) },
                         style = MangroButtonStyle.OUTLINED,
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = uiState.canComplete,
+                        enabled = uiState.canComplete && uiState.status == PickupStatus.WAITING && !uiState.isSaving && !uiState.isLoading && !uiState.hasError,
                         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
                         disabledContainerColor = MangroTheme.colors.surfaceAlter,
                     )
@@ -120,17 +117,17 @@ internal fun PickupDetailScreen(
             }
         },
     ) {
-        if (pickup == null) {
-            Text(
-                text = stringResource(R.string.pickup_empty),
-                modifier = Modifier.padding(vertical = 32.dp),
-                color = MangroTheme.colors.textSubtitle,
+        if (uiState.isLoading || uiState.isSaving || uiState.hasError || pickup == null) {
+            OwnerDetailLoadStatus(
+                isLoading = uiState.isLoading || uiState.isSaving || (!uiState.hasError),
+                modifier = Modifier.padding(top = 12.dp, bottom = 20.dp),
+                onRetry = { onAction(PickupDetailAction.Refresh) },
             )
         } else {
             Text(
                 text = when (uiState.status) {
                     PickupStatus.WAITING -> stringResource(R.string.pickup_detail_deadline, pickupDate(pickup.deadline, "M월 d일 H시 mm분"))
-                    PickupStatus.COMPLETED -> stringResource(R.string.pickup_complete_heading, pickupDate(pickup.completedAt ?: pickup.deadline, "M월 d일 H시 mm분"))
+                    PickupStatus.COMPLETED -> pickup.completedAt?.let { stringResource(R.string.pickup_complete_heading, pickupDate(it, "M월 d일 H시 mm분")) } ?: stringResource(R.string.pickup_complete_done)
                     PickupStatus.CANCELED -> stringResource(R.string.pickup_canceled)
                     PickupStatus.UNAVAILABLE -> stringResource(R.string.pickup_unavailable)
                     else -> stringResource(R.string.pickup_expired_heading)
@@ -189,7 +186,7 @@ internal fun PickupDetailScreen(
                     color = MangroTheme.colors.textTitle,
                 )
                 Text(
-                    text = stringResource(R.string.pickup_quantity, pickup.productName, pickup.quantity),
+                    text = uiState.items.joinToString("\n") { "${it.name} * ${it.quantity}개" }.ifEmpty { stringResource(R.string.pickup_quantity, pickup.productName, pickup.quantity) },
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.End,
                     style = MangroTheme.typography.body.bodyM,
@@ -205,7 +202,7 @@ internal fun PickupDetailScreen(
                     color = MangroTheme.colors.textTitle,
                 )
                 Text(
-                    text = stringResource(R.string.pickup_price, NumberFormat.getIntegerInstance(Locale.KOREA).format(pickup.totalPrice)),
+                    text = stringResource(R.string.pickup_price, NumberFormat.getIntegerInstance(Locale.KOREA).format(uiState.totalPrice)),
                     style = MangroTheme.typography.heading.headingM,
                     color = MangroTheme.colors.primaryNormal,
                 )

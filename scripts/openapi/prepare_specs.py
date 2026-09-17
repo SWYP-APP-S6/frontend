@@ -7,6 +7,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 METHODS = {'get', 'post', 'put', 'patch', 'delete', 'head', 'options'}
+INPUT_FILES = (
+    'mangro-app-openapi-2026-09-17-v2.json',
+    'endpoint-map.json',
+    'model-map.json',
+    'spec.sha256',
+)
+
+
+def check_inputs(directory):
+    missing = [name for name in INPUT_FILES if not (directory / name).is_file()]
+    if missing:
+        raise ValueError('Missing OpenAPI inputs: ' + ', '.join(missing) + '; see remote/README.md')
 
 
 def operations(spec):
@@ -188,7 +200,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=Path, default=ROOT / 'build/openapi')
     args = parser.parse_args()
-    raw = (ROOT / 'openapi/mangro-app-openapi-2026-09-17-merged.json').read_bytes()
+    check_inputs(ROOT / 'openapi')
+    raw = (ROOT / 'openapi' / INPUT_FILES[0]).read_bytes()
     expected = (ROOT / 'openapi/spec.sha256').read_text().split()[0]
     if hashlib.sha256(raw).hexdigest() != expected:
         raise ValueError('Source checksum mismatch; update the snapshot and checksum together')

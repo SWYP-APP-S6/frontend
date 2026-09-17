@@ -1,12 +1,12 @@
 import copy
 import json
 import unittest
-from prepare_specs import ROOT, operations, prepare
+from prepare_specs import INPUT_FILES, ROOT, operations, prepare
 
 
 class PrepareSpecsTest(unittest.TestCase):
     def setUp(self):
-        self.source = json.loads((ROOT / 'openapi/mangro-app-openapi-2026-09-17-merged.json').read_text())
+        self.source = json.loads((ROOT / 'openapi' / INPUT_FILES[0]).read_text())
         self.mapping = json.loads((ROOT / 'openapi/endpoint-map.json').read_text())
         self.policies = json.loads((ROOT / 'openapi/model-map.json').read_text())
 

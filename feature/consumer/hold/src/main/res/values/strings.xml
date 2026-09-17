@@ -26,4 +26,13 @@
     <string name="hold_detail_store_label">상점</string>
     <string name="hold_detail_requested_at_label">찜한 시각</string>
     <string name="hold_detail_expired_at_label">만료 시각</string>
+
+    <string name="pickup_complete_title">수령 완료</string>
+    <string name="pickup_complete_message">식자재 수령이 완료되었어요!</string>
+    <string name="pickup_complete_product_name_label">품목명</string>
+    <string name="pickup_complete_date_label">수령 일시</string>
+    <string name="pickup_complete_store_label">점포명</string>
+    <string name="pickup_complete_quantity_label">구매 수량</string>
+    <string name="pickup_complete_total_price_label">총 금액</string>
+    <string name="pickup_complete_recipe_section_title">이 재료로 만드는 추천 레시피</string>
 </resources>

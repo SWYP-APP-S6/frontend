@@ -4,7 +4,9 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-android { namespace = "com.swyp.mangro.data.owner.product" }
+android {
+    namespace = "com.swyp.mangro.data.owner.product"
+}
 
 dependencies {
     implementation(project(":remote:owner"))
@@ -17,7 +19,7 @@ dependencies {
     testImplementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(platform(libs.okhttp.bom))
-    testImplementation(libs.okhttp.core)
+    implementation(platform(libs.okhttp.bom))
+    implementation(libs.okhttp.core)
     testImplementation(libs.okhttp.mockwebserver)
 }

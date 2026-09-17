@@ -60,11 +60,11 @@
     <string name="wish_status_picked_up">수령완료</string>
     <string name="wish_status_expired">시간만료</string>
 
-    <string name="pickup_receipt_date">날짜</string>
-    <string name="pickup_receipt_store">상점</string>
-    <string name="pickup_receipt_product">품목</string>
+    <string name="pickup_receipt_product">품목명</string>
+    <string name="pickup_receipt_date">수령 일시</string>
+    <string name="pickup_receipt_store">점포명</string>
     <string name="pickup_receipt_quantity">구매 수량</string>
-    <string name="pickup_receipt_price">가격</string>
+    <string name="pickup_receipt_price">총 금액</string>
 
     <string name="pickup_consumer_name">%1$s님</string>
     <string name="pickup_request_remaining_time">남은 시간</string>
@@ -90,4 +90,8 @@
     <string name="owner_product_sheet_cancel_reservations">찜 취소하기</string>
     <string name="owner_product_sheet_later">나중에 하기</string>
     <string name="owner_product_sheet_shortage_hint">선착순을 기준으로 부족한 수량만큼 찜을 취소해야 해요.</string>
+    <string name="product_category_fruit">과일</string>
+    <string name="product_category_dairy_egg">유제품/달걀</string>
+    <string name="product_category_bakery">베이커리</string>
+    <string name="product_category_prepared_food">조리식품</string>
 </resources>

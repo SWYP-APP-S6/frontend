@@ -33,7 +33,7 @@ class OwnerContractTest {
     ): Retrofit = NetworkModule.provideRetrofit(client, json).newBuilder().baseUrl(baseUrl).build()
 
     @Test
-    fun stockUpdateUsesTotalStockAndCancelOverflow() = runTest {
+    fun stockUpdateUsesOnlyTotalStock() = runTest {
         MockWebServer().use { server ->
             server.enqueue(MockResponse().setBody("""{"status":200,"code":"OK","message":"ok","data":{}}"""))
             OwnerServices(createRetrofit(server.url("/").toString())).product

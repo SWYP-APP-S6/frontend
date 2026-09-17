@@ -13,7 +13,8 @@ android {
 dependencies {
     implementation(project(":data:owner:product"))
     implementation(project(":data:owner:store"))
-    testImplementation(libs.kotlinx.coroutines.test)
+    implementation(project(":data:owner:product"))
+    implementation(project(":data:owner:store"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:model"))
     implementation(libs.androidx.activity.compose)

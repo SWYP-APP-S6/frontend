@@ -18,8 +18,12 @@ import com.swyp.mangro.feature.consumer.hold.navigation.holdDetailScreen
 import com.swyp.mangro.feature.consumer.hold.navigation.holdHistoryScreen
 import com.swyp.mangro.feature.consumer.hold.navigation.holdScreen
 import com.swyp.mangro.feature.consumer.hold.navigation.navigateToHold
+import com.swyp.mangro.feature.consumer.hold.navigation.pickupCompleteScreen
 import com.swyp.mangro.feature.consumer.home.navigation.Home
 import com.swyp.mangro.feature.consumer.home.navigation.homeNavGraph
+import com.swyp.mangro.feature.consumer.recipe.navigation.navigateToRecipeDetail
+import com.swyp.mangro.feature.consumer.recipe.navigation.recipeDetailScreen
+import com.swyp.mangro.feature.consumer.store.navigation.navigateToProductDetail
 import com.swyp.mangro.feature.consumer.store.navigation.productDetailScreen
 import com.swyp.mangro.feature.splash.navigation.Splash
 import com.swyp.mangro.feature.splash.navigation.splashNavGraph
@@ -95,6 +99,19 @@ fun AppNavGraph(
         )
         holdDetailScreen(
             navController = navController,
+        )
+        pickupCompleteScreen(
+            navController = navController,
+            onNavigateToRecipeDetail = { recipeId ->
+                navController.navigateToRecipeDetail(recipeId)
+            },
+            onNavigateToMenu = onNavigateToMenu,
+        )
+        recipeDetailScreen(
+            navController = navController,
+            onNavigateToProductDetail = { productId ->
+                navController.navigateToProductDetail(productId)
+            },
         )
     }
 }

@@ -1,0 +1,8 @@
+<resources>
+    <string name="recipe_detail_title">레시피 상세</string>
+    <string name="recipe_detail_wish_button">이 상품 찜하러 가기</string>
+    <string name="recipe_detail_ingredients_title">준비 재료</string>
+    <string name="recipe_detail_nutrition_title">영양 정보</string>
+    <string name="recipe_detail_nutrition_basis">1인 기준</string>
+    <string name="recipe_detail_steps_title">조리순서</string>
+</resources>

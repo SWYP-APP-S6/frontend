@@ -62,6 +62,7 @@ extensions.configure<LibraryAndroidComponentsExtension> {
 
 dependencies {
     api(project(":remote:user"))
+    testImplementation(project(":remote:user"))
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 

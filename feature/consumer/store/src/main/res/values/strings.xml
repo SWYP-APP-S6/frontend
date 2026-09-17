@@ -12,7 +12,7 @@
     <string name="wish_sheet_description">아래 버튼을 누르면 15분 동안 상품을 찜할 수 있어요.</string>
     <string name="wish_sheet_quantity_label">찜할 수량</string>
     <string name="wish_sheet_total_price_label">총 금액</string>
-    <string name="product_price">%1$d원</string>
+    <string name="product_price">%,d원</string>
     <string name="wish_sheet_unit_price_quantity">%1$s원 * %2$d개</string>
     <string name="wish_sheet_cancel_notice">15분 안에 매장에서 픽업하지 않으시면\n찜이 자동으로 취소돼요.</string>
     <string name="wish_sheet_edit_button">수정하기</string>

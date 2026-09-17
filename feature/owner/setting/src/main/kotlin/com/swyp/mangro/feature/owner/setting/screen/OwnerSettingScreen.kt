@@ -14,11 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,12 +28,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.swyp.mangro.core.designsystem.R as DesignR
+import com.swyp.mangro.core.designsystem.component.MangroButton
+import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
 import com.swyp.mangro.core.designsystem.component.appbar.OwnerBottomAppBar
 import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
+import com.swyp.mangro.core.designsystem.component.dialog.MangroDialogContainer
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.owner.setting.R
 import com.swyp.mangro.feature.owner.setting.component.PolicyList
@@ -51,10 +51,7 @@ internal fun OwnerSettingRoute(
     viewModel: OwnerSettingViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    LifecycleResumeEffect(Unit) {
-        viewModel.refresh()
-        onPauseOrDispose {}
-    }
+
     BackHandler { viewModel.handleAction(OwnerSettingAction.NavigationBackClicked) }
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
@@ -66,7 +63,10 @@ internal fun OwnerSettingRoute(
             }
         }
     }
-    OwnerSettingScreen(uiState = uiState, onAction = viewModel::handleAction)
+    OwnerSettingScreen(
+        uiState = uiState,
+        onAction = viewModel::handleAction,
+    )
 }
 
 @Composable
@@ -98,21 +98,19 @@ fun OwnerSettingScreen(
         },
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 28.dp),
             verticalArrangement = Arrangement.spacedBy(32.dp),
         ) {
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     SettingSectionTitle(stringResource(R.string.owner_setting_store_info))
-                    when {
-                        uiState.isLoading -> CircularProgressIndicator()
-                        uiState.hasStoreError -> {
-                            Text(stringResource(R.string.owner_setting_store_error))
-                            TextButton(onClick = { onAction(OwnerSettingAction.Refresh) }) { Text(stringResource(R.string.owner_setting_retry)) }
-                        }
-                        else -> StoreInformationCard(storeName = uiState.storeName, storePhone = uiState.storePhone)
-                    }
+                    StoreInformationCard(
+                        storeName = uiState.storeName,
+                        storePhone = uiState.storePhone,
+                    )
                 }
             }
             item {
@@ -147,11 +145,45 @@ fun OwnerSettingScreen(
                             modifier = Modifier.size(20.dp),
                         )
                     }
-                    if (uiState.hasLogoutError) Text(stringResource(R.string.owner_setting_logout_error))
                 }
             }
         }
     }
+
+    MangroDialogContainer(
+        show = uiState.showLogoutConfirmation,
+        onDismissRequest = { onAction(OwnerSettingAction.LogoutDismissed) },
+        title = { Text(stringResource(R.string.owner_setting_logout_confirmation)) },
+        actions = {
+            MangroButton(
+                text = stringResource(R.string.owner_setting_logout),
+                onClick = { onAction(OwnerSettingAction.LogoutConfirmed) },
+                style = MangroButtonStyle.DESTRUCTIVE,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isLoggingOut,
+            )
+            MangroButton(
+                text = stringResource(R.string.owner_setting_cancel),
+                onClick = { onAction(OwnerSettingAction.LogoutDismissed) },
+                style = MangroButtonStyle.DEFAULT,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+    )
+
+    MangroDialogContainer(
+        show = uiState.hasLogoutError,
+        onDismissRequest = { onAction(OwnerSettingAction.LogoutErrorDismissed) },
+        title = { Text(stringResource(R.string.owner_setting_logout_error)) },
+        actions = {
+            MangroButton(
+                text = stringResource(R.string.owner_setting_confirm),
+                onClick = { onAction(OwnerSettingAction.LogoutErrorDismissed) },
+                style = MangroButtonStyle.ACTIVE,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+    )
 }
 
 @Composable

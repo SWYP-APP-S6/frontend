@@ -5,6 +5,7 @@ data class OwnerSettingUiState(
     val storePhone: String = "",
     val isLoading: Boolean = false,
     val hasStoreError: Boolean = false,
+    val showLogoutConfirmation: Boolean = false,
     val isLoggingOut: Boolean = false,
     val hasLogoutError: Boolean = false,
 )

@@ -3,6 +3,9 @@ package com.swyp.mangro.feature.owner.setting
 import android.graphics.Bitmap
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
@@ -72,6 +75,12 @@ class OwnerSettingTest {
             InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot().compress(Bitmap.CompressFormat.PNG, 100, it)
         }
         compose.onNodeWithText("로그아웃").performClick()
+        waitFor("로그아웃 하시겠습니까?")
+        compose.runOnIdle { assertEquals(0, logoutCalls) }
+        compose.onNodeWithText("취소").performClick()
+        compose.runOnIdle { assertEquals(0, logoutCalls) }
+        compose.onNodeWithText("로그아웃").performClick()
+        compose.onNode(hasText("로그아웃") and hasAnyAncestor(isDialog())).performClick()
         compose.waitUntil { loggedOut }
         compose.runOnIdle { assertEquals(1, logoutCalls) }
     }

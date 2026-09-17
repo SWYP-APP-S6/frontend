@@ -16,7 +16,7 @@ class InputFilesTest(unittest.TestCase):
                 self.assertIn(name, str(result.exception))
             self.assertIn('remote/README.md', str(result.exception))
 
-    def test_owner_spec_does_not_replace_full_v3_spec(self):
+    def test_older_specs_do_not_replace_full_v3_spec(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for name in INPUT_FILES[1:]:
@@ -33,7 +33,7 @@ class InputFilesTest(unittest.TestCase):
                 (root / name).touch()
             check_inputs(root)
 
-    def test_documented_bundle_generates_all_modules_without_merged_snapshot(self):
+    def test_documented_bundle_generates_all_modules(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             inputs = root / 'openapi'

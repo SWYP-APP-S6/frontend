@@ -16,4 +16,7 @@
     <string name="owner_setting_logging_out">로그아웃 중…</string>
     <string name="owner_setting_logout_error">로그아웃하지 못했어요. 다시 시도해 주세요.</string>
     <string name="owner_setting_policy_error">약관을 불러오지 못했습니다. 다시 시도해 주세요.</string>
+    <string name="owner_setting_logout_confirmation">로그아웃 하시겠습니까?</string>
+    <string name="owner_setting_cancel">취소</string>
+    <string name="owner_setting_confirm">확인</string>
 </resources>

@@ -32,7 +32,14 @@ class OwnerContractTest {
     fun ingredientSearchAndRecommendationsUnwrapObjectLists() = runTest {
         MockWebServer().use { server ->
             val ingredient = OwnerServices(createRetrofit(server.url("/").toString())).ingredient
-            repeat(2) { server.enqueue(MockResponse().setBody("""{"status":200,"code":"OK","data":[{"id":12,"name":"당근","category":"VEGETABLE"}]}""")) }
+            repeat(2) {
+                server.enqueue(
+                    MockResponse().setBody(
+                        """{"status":200,"code":"OK","data":[{"id":12,"name":"당근","category":"VEGETABLE"}]}""",
+                    ),
+                )
+            }
+
             val tags = ingredient.searchIngredients(query = "carrot", size = 7).body()!!
             assertEquals(12, tags.single().id)
             assertEquals("당근", tags.single().name)
@@ -40,6 +47,7 @@ class OwnerContractTest {
             var request = checkNotNull(server.takeRequest(5, TimeUnit.SECONDS))
             assertEquals("GET", request.method)
             assertEquals("/owner/ingredients?query=carrot&size=7", request.path)
+
             assertEquals(tags, ingredient.recommendIngredientTags(name = "soup").body())
             request = checkNotNull(server.takeRequest(5, TimeUnit.SECONDS))
             assertEquals("GET", request.method)

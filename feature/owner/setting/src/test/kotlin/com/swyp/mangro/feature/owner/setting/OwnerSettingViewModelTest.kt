@@ -70,11 +70,27 @@ class OwnerSettingViewModelTest {
         assertEquals("0212345678", vm.uiState.value.storePhone)
     }
 
+    @Test fun logoutRequiresConfirmationAndDismissDoesNotLogout() = runTest(dispatcher) {
+        val vm = OwnerSettingViewModel(stores, auth)
+        vm.handleAction(OwnerSettingAction.LogoutConfirmed)
+        vm.handleAction(OwnerSettingAction.LogoutClicked)
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.showLogoutConfirmation)
+        assertEquals(0, calls)
+        vm.handleAction(OwnerSettingAction.LogoutDismissed)
+        vm.handleAction(OwnerSettingAction.LogoutConfirmed)
+        advanceUntilIdle()
+        assertFalse(vm.uiState.value.showLogoutConfirmation)
+        assertEquals(0, calls)
+    }
+
     @Test fun logoutDeduplicatesAndNavigatesOnlyAfterSuccess() = runTest(dispatcher) {
         val vm = OwnerSettingViewModel(stores, auth)
         val event = backgroundScope.async { vm.event.first() }
         vm.handleAction(OwnerSettingAction.LogoutClicked)
+        vm.handleAction(OwnerSettingAction.LogoutConfirmed)
         vm.handleAction(OwnerSettingAction.LogoutClicked)
+        vm.handleAction(OwnerSettingAction.LogoutConfirmed)
         advanceUntilIdle()
         assertEquals(1, calls)
         assertFalse(event.isCompleted)
@@ -87,11 +103,15 @@ class OwnerSettingViewModelTest {
         val vm = OwnerSettingViewModel(stores, auth)
         logout.complete(AuthResult.Failure(AuthFailure.NETWORK))
         vm.handleAction(OwnerSettingAction.LogoutClicked)
+        vm.handleAction(OwnerSettingAction.LogoutConfirmed)
         advanceUntilIdle()
         assertTrue(vm.uiState.value.hasLogoutError)
         assertFalse(vm.uiState.value.isLoggingOut)
+        vm.handleAction(OwnerSettingAction.LogoutErrorDismissed)
+        assertFalse(vm.uiState.value.hasLogoutError)
         logout = CompletableDeferred(AuthResult.Success(Unit))
         vm.handleAction(OwnerSettingAction.LogoutClicked)
+        vm.handleAction(OwnerSettingAction.LogoutConfirmed)
         advanceUntilIdle()
         assertEquals(2, calls)
         assertEquals(OwnerSettingEvent.NavigateToLogin, vm.event.first())

@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -40,6 +41,7 @@ fun MangroDialogContainer(
     title: @Composable BoxScope.() -> Unit,
     actions: @Composable ColumnScope.() -> Unit,
     content: @Composable (BoxScope.() -> Unit)? = null,
+    contentSpacing: Dp = 16.dp,
 ) {
     if (show) {
         Dialog(
@@ -50,6 +52,7 @@ fun MangroDialogContainer(
                 title = title,
                 content = content,
                 actions = actions,
+                contentSpacing = contentSpacing,
             )
         }
     }
@@ -60,6 +63,7 @@ private fun MangroDialogContent(
     title: @Composable BoxScope.() -> Unit,
     actions: @Composable ColumnScope.() -> Unit,
     content: @Composable (BoxScope.() -> Unit)? = null,
+    contentSpacing: Dp = 16.dp,
 ) {
     Column(
         modifier = Modifier
@@ -86,7 +90,7 @@ private fun MangroDialogContent(
             }
 
             item {
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(contentSpacing))
             }
 
             item {

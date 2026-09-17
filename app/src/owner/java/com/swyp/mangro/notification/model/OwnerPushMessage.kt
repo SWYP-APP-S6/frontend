@@ -4,6 +4,7 @@ enum class OwnerNotificationType {
     NEW_HOLD_RECEIVED,
     STOCK_RECONFIRM_REQUEST,
     HOLD_UNCONFIRMED,
+    HOLD_EXPIRED,
 }
 
 /** Only the Owner types in the server notification table are accepted. */

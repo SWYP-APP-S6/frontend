@@ -3,6 +3,7 @@ package com.swyp.mangro.notification
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.swyp.core.local.store.AuthStore
+import com.swyp.mangro.notification.model.OwnerNotificationType
 import com.swyp.mangro.notification.model.OwnerPushMessage
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.UUID
@@ -28,6 +29,10 @@ class OwnerMessagingService : FirebaseMessagingService() {
         ) ?: return
         val signedIn = runBlocking(Dispatchers.IO) { runCatching { authStore.authKey.first() != null }.getOrDefault(false) }
         if (!signedIn) return
-        OwnerNotificationDisplay.show(this, push, push.notificationId?.toString() ?: message.messageId ?: UUID.randomUUID().toString())
+        val messageId = push.notificationId?.toString() ?: message.messageId ?: UUID.randomUUID().toString()
+        if (push.type == OwnerNotificationType.STOCK_RECONFIRM_REQUEST) {
+            OwnerStockReconfirmationRequests.offer("${push.type}:$messageId")
+        }
+        OwnerNotificationDisplay.show(this, push, messageId)
     }
 }

@@ -20,7 +20,7 @@ class OwnerPushMessageTest {
         listOf("-1", "0", "bad", "9223372036854775808", null).forEach {
             assertNull(OwnerNotificationOpen.from("HOLD_UNCONFIRMED", it)!!.notificationId)
         }
-        assertNull(OwnerNotificationOpen.from("HOLD_EXPIRED", "1024"))
+        assertNull(OwnerNotificationOpen.from("NEARBY_PRODUCT_REGISTERED", "1024"))
     }
 
     @Test fun acceptsEveryOwnerTypeAndPreservesServerText() {
@@ -33,7 +33,7 @@ class OwnerPushMessageTest {
     }
 
     @Test fun consumerUnknownAndIncompleteMessagesAreIgnored() {
-        listOf("HOLD_EXPIRED", "HOLD_EXPIRING_SOON", "PICKUP_COMPLETED", "HOLD_CANCELED_BY_OWNER", "UNKNOWN", null).forEach {
+        listOf("HOLD_EXPIRING_SOON", "PICKUP_COMPLETED", "HOLD_CANCELED_BY_OWNER", "UNKNOWN", null).forEach {
             assertNull(OwnerPushMessage.from(it, "제목", "본문"))
         }
         assertNull(OwnerPushMessage.from("NEW_HOLD_RECEIVED", "", "본문"))

@@ -23,6 +23,7 @@ import com.swyp.mangro.feature.splash.navigation.splashNavGraph
 import com.swyp.mangro.navigation.OwnerNavHost
 import com.swyp.mangro.notification.OwnerNotificationPermission
 import com.swyp.mangro.notification.OwnerNotificationReadWorker
+import com.swyp.mangro.notification.OwnerStockReconfirmationRequests
 import com.swyp.mangro.notification.model.OwnerNotificationOpen
 import com.swyp.mangro.theme.MangroTheme
 import kotlinx.serialization.Serializable
@@ -81,6 +82,7 @@ internal fun MainScreen(notificationIntent: Intent? = null) {
                     consumedKey = openKey
                 },
                 onLogout = {
+                    OwnerStockReconfirmationRequests.clear()
                     navController.navigate(Login) {
                         popUpTo<OwnerMain> { inclusive = true }
                         launchSingleTop = true

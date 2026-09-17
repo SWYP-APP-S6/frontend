@@ -11,14 +11,16 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.paging.compose)
-    testImplementation(libs.androidx.paging.testing)
+    implementation(project(":data:owner:home"))
     implementation(project(":data:owner:product"))
     implementation(project(":data:owner:store"))
     implementation(project(":data:owner:product"))
     implementation(project(":data:owner:store"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:model"))
+
+    implementation(libs.androidx.paging.compose)
+    testImplementation(libs.androidx.paging.testing)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
@@ -33,5 +35,4 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.test.runner)
     testImplementation(libs.junit)
-    testImplementation(libs.kotlinx.coroutines.test)
 }

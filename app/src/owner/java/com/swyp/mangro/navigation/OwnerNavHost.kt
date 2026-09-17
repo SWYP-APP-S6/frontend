@@ -2,6 +2,13 @@ package com.swyp.mangro.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
@@ -17,9 +24,13 @@ import com.swyp.mangro.feature.owner.product.screen.list.OwnerProductListDestina
 import com.swyp.mangro.feature.owner.product.screen.list.ProductListFilter
 import com.swyp.mangro.feature.owner.product.screen.pickup.cancellation.OwnerPickupCancellationDestination
 import com.swyp.mangro.feature.owner.product.screen.pickup.detail.OwnerPickupDetailDestination
+import com.swyp.mangro.feature.owner.product.screen.reconfirmation.StockReconfirmationHost
 import com.swyp.mangro.feature.owner.setting.navigation.OwnerPolicyDestination
 import com.swyp.mangro.feature.owner.setting.navigation.OwnerSettingDestination
 import com.swyp.mangro.feature.owner.setting.navigation.ownerSettingNavGraph
+import com.swyp.mangro.notification.OwnerStockReconfirmationRequests
+import com.swyp.mangro.notification.model.OwnerNotificationType
+import kotlinx.coroutines.flow.filterNotNull
 
 @Composable
 internal fun OwnerNavHost(
@@ -30,6 +41,16 @@ internal fun OwnerNavHost(
     onLogout: () -> Unit,
 ) {
     val navController = rememberNavController()
+    var stockRequestKey by rememberSaveable { mutableStateOf<String?>(null) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            OwnerStockReconfirmationRequests.pending.filterNotNull().collect { key ->
+                stockRequestKey = key
+                OwnerStockReconfirmationRequests.consume(key)
+            }
+        }
+    }
     NavHost(navController, startDestination = OwnerHomeDestination) {
         ownerHomeNavGraph(
             navigateToProducts = {
@@ -101,11 +122,18 @@ internal fun OwnerNavHost(
     }
     LaunchedEffect(notificationKey) {
         if (notificationKey != null) {
-            navController.navigate(OwnerHomeDestination) {
-                popUpTo<OwnerHomeDestination> { inclusive = true }
-                launchSingleTop = true
+            when (notificationKey.substringBefore(':')) {
+                OwnerNotificationType.STOCK_RECONFIRM_REQUEST.name -> stockRequestKey = notificationKey
+                else -> navController.navigateToOwnerPickups(
+                    if (notificationKey.substringBefore(':') == OwnerNotificationType.HOLD_EXPIRED.name) ProductListFilter.EXPIRED else ProductListFilter.ALL,
+                ) {
+                    popUpTo<OwnerHomeDestination> { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
             }
             onNotificationOpened()
         }
     }
+    StockReconfirmationHost(stockRequestKey, onEditProduct = { navController.navigate(OwnerProductDetailDestination(it)) })
 }

@@ -1,0 +1,1464 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mangro API Reference</title>
+  <style>
+    :root {
+      --ink: #18212f;
+      --muted: #64748b;
+      --subtle: #94a3b8;
+      --line: #e2e8f0;
+      --soft: #f8fafc;
+      --panel: #ffffff;
+      --brand: #0f766e;
+      --brand-soft: #ccfbf1;
+      --purple: #6d28d9;
+      --purple-soft: #ede9fe;
+      --danger: #b91c1c;
+      --danger-soft: #fee2e2;
+      --warning: #a16207;
+      --warning-soft: #fef3c7;
+      --shadow: 0 16px 40px rgba(15, 23, 42, 0.07);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: #f1f5f9;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; min-width: 320px; background: #f1f5f9; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    code, pre, .method, .path, .operation-id, .metric-value {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    .app-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+
+    .brand {
+      padding: 26px 22px 20px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    .brand-kicker {
+      margin: 0 0 9px;
+      color: #5eead4;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .brand h1 {
+      margin: 0;
+      color: #f8fafc;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .brand p {
+      margin: 11px 0 0;
+      color: #94a3b8;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .controls {
+      padding: 16px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    .search {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #334155;
+      border-radius: 9px;
+      outline: none;
+      color: #f8fafc;
+      background: #1e293b;
+      font-size: 13px;
+    }
+
+    .search::placeholder { color: #94a3b8; }
+    .search:focus { border-color: #5eead4; box-shadow: 0 0 0 3px rgba(45, 212, 191, .16); }
+
+    .select-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 9px;
+    }
+
+    .filter {
+      min-width: 0;
+      padding: 9px 8px;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #cbd5e1;
+      background: #1e293b;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .filter:focus { border-color: #5eead4; }
+
+    .counts {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 12px;
+      color: #94a3b8;
+      font-size: 11px;
+    }
+
+    .endpoint-list {
+      flex: 1;
+      overflow: auto;
+      padding: 10px 8px 24px;
+    }
+
+    .endpoint-item {
+      display: block;
+      width: 100%;
+      margin: 3px 0;
+      padding: 10px 10px 9px;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      color: #cbd5e1;
+      background: transparent;
+      text-align: left;
+    }
+
+    .endpoint-item:hover { background: #1e293b; }
+    .endpoint-item.active { border-color: rgba(94, 234, 212, .45); background: #163b3a; }
+
+    .endpoint-topline {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .endpoint-item .mini-path {
+      overflow: hidden;
+      color: #e2e8f0;
+      font: 12px/1.3 "SFMono-Regular", Consolas, monospace;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .endpoint-meta {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+      color: #64748b;
+      font-size: 10px;
+    }
+
+    .method {
+      display: inline-flex;
+      flex: none;
+      align-items: center;
+      justify-content: center;
+      min-width: 47px;
+      padding: 3px 5px;
+      border-radius: 5px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .03em;
+    }
+
+    .method-get { color: #0369a1; background: #bae6fd; }
+    .method-post { color: #166534; background: #bbf7d0; }
+    .method-put { color: #92400e; background: #fde68a; }
+    .method-patch { color: #6b21a8; background: #e9d5ff; }
+    .method-delete { color: #991b1b; background: #fecaca; }
+
+    .content {
+      min-width: 0;
+      padding: 30px clamp(18px, 4vw, 64px) 80px;
+    }
+
+    .content-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      max-width: 1100px;
+      margin: 0 auto 18px;
+    }
+
+    .eyebrow {
+      margin: 0 0 9px;
+      color: var(--brand);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .content-header h2 {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 36px);
+      letter-spacing: -.04em;
+      line-height: 1.12;
+    }
+
+    .content-header p {
+      max-width: 660px;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .server-card {
+      flex: none;
+      min-width: 235px;
+      padding: 13px 15px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .server-card span {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--subtle);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .server-card code {
+      color: var(--ink);
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    .notice {
+      display: flex;
+      gap: 11px;
+      max-width: 1100px;
+      margin: 0 auto 18px;
+      padding: 13px 15px;
+      border: 1px solid #99f6e4;
+      border-radius: 12px;
+      color: #115e59;
+      background: #f0fdfa;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .notice strong { white-space: nowrap; }
+
+    .detail {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .empty {
+      padding: 48px 20px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 14px;
+      color: var(--muted);
+      background: var(--panel);
+      text-align: center;
+    }
+
+    .operation-card, .section-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .operation-card {
+      overflow: hidden;
+    }
+
+    .operation-head {
+      padding: 24px 26px 21px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    }
+
+    .operation-breadcrumb {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 15px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .crumb {
+      padding: 4px 8px;
+      border-radius: 5px;
+      background: var(--soft);
+    }
+
+    .operation-title {
+      display: flex;
+      align-items: flex-start;
+      gap: 13px;
+    }
+
+    .operation-title .method {
+      margin-top: 4px;
+      padding: 7px 9px;
+      font-size: 12px;
+    }
+
+    .path {
+      margin: 0;
+      color: var(--ink);
+      font-size: clamp(19px, 2.4vw, 28px);
+      font-weight: 700;
+      letter-spacing: -.04em;
+      line-height: 1.25;
+      word-break: break-word;
+    }
+
+    .summary {
+      margin: 13px 0 0;
+      color: #334155;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .description {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 16px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 8px;
+      border-radius: 6px;
+      color: #475569;
+      background: #e2e8f0;
+      font-size: 11px;
+    }
+
+    .chip.brand { color: #115e59; background: var(--brand-soft); }
+    .chip.purple { color: #5b21b6; background: var(--purple-soft); }
+    .chip.auth { color: #92400e; background: var(--warning-soft); }
+
+    .operation-id {
+      overflow-wrap: anywhere;
+      font-size: 11px;
+    }
+
+    .guide-box {
+      margin-top: 18px;
+      padding: 13px 14px;
+      border: 1px solid #bae6fd;
+      border-radius: 10px;
+      background: #f0f9ff;
+    }
+
+    .guide-kicker {
+      margin: 0 0 5px;
+      color: #0369a1;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .guide-main {
+      margin: 0;
+      color: #0c4a6e;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .guide-when {
+      margin: 7px 0 0;
+      color: #475569;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .guide-when strong {
+      color: #334155;
+    }
+
+    .body-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .section-card {
+      min-width: 0;
+      padding: 20px;
+    }
+
+    .section-card.wide {
+      grid-column: 1 / -1;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 13px;
+    }
+
+    .section-heading h3 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: -.02em;
+    }
+
+    .section-heading span {
+      color: var(--subtle);
+      font-size: 11px;
+    }
+
+    .subheading {
+      margin: 18px 0 8px;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    th, td {
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+    th { color: var(--muted); background: var(--soft); font-size: 10px; font-weight: 800; text-transform: uppercase; }
+    td code { color: #334155; font-size: 11px; }
+    td .required { color: var(--danger); font-size: 10px; font-weight: 800; }
+    td .where { color: var(--purple); font-size: 10px; font-weight: 700; }
+    .muted { color: var(--muted); }
+
+    .media-pill {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 4px 7px;
+      border-radius: 5px;
+      color: #475569;
+      background: #f1f5f9;
+      font: 10px "SFMono-Regular", Consolas, monospace;
+    }
+
+    .json-box {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      background: #0f172a;
+    }
+
+    .json-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      border-bottom: 1px solid #334155;
+      color: #cbd5e1;
+      font-size: 11px;
+    }
+
+    .copy-button {
+      padding: 4px 7px;
+      border: 1px solid #475569;
+      border-radius: 5px;
+      color: #cbd5e1;
+      background: #1e293b;
+      font-size: 10px;
+    }
+
+    .copy-button:hover { color: #ffffff; border-color: #94a3b8; }
+
+    pre.json {
+      overflow: auto;
+      max-height: 430px;
+      margin: 0;
+      padding: 13px;
+      color: #dbeafe;
+      font: 12px/1.65 "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .response {
+      margin-top: 13px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .response:first-of-type { margin-top: 0; }
+
+    .response-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--soft);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: #166534;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .status-code {
+      padding: 3px 6px;
+      border-radius: 5px;
+      color: #166534;
+      background: #dcfce7;
+      font: 11px "SFMono-Regular", Consolas, monospace;
+    }
+
+    .status.error, .status.error .status-code { color: var(--danger); }
+    .status.error .status-code { background: var(--danger-soft); }
+    .response-description { color: var(--muted); font-size: 11px; }
+    .response-body { padding: 12px; }
+    .response-body .json-box { margin-top: 0; }
+
+    details.schema {
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+    }
+
+    details.schema summary {
+      padding: 9px 10px;
+      color: #475569;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    details.schema pre {
+      overflow: auto;
+      margin: 0;
+      padding: 10px;
+      border-top: 1px solid var(--line);
+      color: #475569;
+      font: 11px/1.55 "SFMono-Regular", Consolas, monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .no-content {
+      padding: 13px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      color: var(--muted);
+      background: var(--soft);
+      font-size: 12px;
+    }
+
+    .footer-note {
+      max-width: 1100px;
+      margin: 20px auto 0;
+      color: var(--subtle);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 900px) {
+      .app-shell { display: block; }
+      .sidebar {
+        position: static;
+        height: auto;
+        max-height: none;
+      }
+      .endpoint-list { max-height: 340px; }
+      .content { padding-top: 24px; }
+      .content-header { display: block; }
+      .server-card { margin-top: 16px; }
+    }
+
+    @media (max-width: 680px) {
+      .body-grid { display: block; }
+      .section-card { margin-top: 18px; }
+      .section-card:first-child { margin-top: 0; }
+      .operation-head { padding: 20px 18px; }
+      .section-card { padding: 16px; }
+      .notice { display: block; }
+      .notice strong { display: block; margin-bottom: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <p class="brand-kicker">OpenAPI 3.1 · v1</p>
+        <h1>Mangro API<br>Reference</h1>
+        <p>현재 OpenAPI 명세를 읽기 쉬운 Swagger UI 스타일로 정리한 문서입니다.<br>각 endpoint의 요청과 응답 예시를 JSON으로 확인할 수 있습니다.</p>
+      </div>
+      <div class="controls">
+        <input id="search" class="search" type="search" placeholder="endpoint, 설명, method 검색">
+        <div class="select-row">
+          <select id="module-filter" class="filter" aria-label="모듈 필터"></select>
+          <select id="tag-filter" class="filter" aria-label="태그 필터"></select>
+        </div>
+        <div id="counts" class="counts"></div>
+      </div>
+      <nav id="endpoint-list" class="endpoint-list" aria-label="API endpoint 목록"></nav>
+    </aside>
+
+    <main class="content">
+      <header class="content-header">
+        <div>
+          <p class="eyebrow">읽기용 API 가이드</p>
+          <h2>API를 읽고 호출하는 방법</h2>
+          <p>왼쪽 목록에서 endpoint를 선택하면 파라미터, request JSON, response JSON, 관련 스키마를 한 번에 확인할 수 있습니다. 이 파일은 외부 라이브러리 없이 브라우저에서 바로 열립니다.</p>
+        </div>
+        <div class="server-card">
+          <span>Base URL</span>
+          <code id="server-url">-</code>
+        </div>
+      </header>
+
+      <div class="notice">
+        <strong>명세 기준일 2026-09-18</strong>
+        <span>상품 목록 API를 포함한 전체 병합 명세입니다. 실제 호출 시에는 인증 방식과 환경별 Base URL을 프로젝트 설정에 맞춰 적용하세요.</span>
+      </div>
+
+      <article id="detail" class="detail"></article>
+      <p class="footer-note">이 문서는 OpenAPI 원본과 endpoint 매핑 정보를 HTML 안에 포함한 정적 참고 문서입니다. API 명세가 변경되면 문서를 다시 생성해야 최신 내용이 반영됩니다.</p>
+    </main>
+  </div>
+
+  <script id="spec-data" type="application/json">{"openapi":"3.1.0","info":{"title":"SWYP Backend API","version":"v1"},"servers":[{"url":"http://localhost:8080","description":"Generated server url"}],"security":[{"bearerAuth":[]}],"tags":[{"name":"StoreBrowse","description":"가게 탐색"},{"name":"Hold","description":"찜"},{"name":"OwnerIngredient","description":"점주 식자재 태그"},{"name":"Notification","description":"알림"},{"name":"User","description":"회원"},{"name":"Auth","description":"앱 인증"},{"name":"OwnerHold","description":"점주 찜 현황"},{"name":"Terms","description":"약관"},{"name":"Health","description":"헬스체크"},{"name":"ProductBrowse","description":"상품 탐색"},{"name":"Recipe","description":"레시피"},{"name":"OwnerProduct","description":"점주 상품"},{"name":"OwnerStore","description":"점주 가게"},{"name":"OwnerHome","description":"점주 홈"}],"paths":{"/users/me/location":{"get":{"tags":["User"],"operationId":"getMyLocation","responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseMyLocationResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}},"put":{"tags":["User"],"operationId":"setMyLocation","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/MyLocationUpdateRequest"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseMyLocationResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/owner/stores":{"post":{"tags":["OwnerStore"],"operationId":"registerStore","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/StoreRegisterRequest"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseStoreDetailResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/owner/products":{"post":{"tags":["OwnerProduct"],"operationId":"registerProduct","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ProductRegisterRequest"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseProductDetailResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}},"get":{"tags":["OwnerProduct"],"operationId":"getMyProducts","parameters":[{"name":"filter","in":"query","required":false,"schema":{"type":"string","enum":["RUNNING_LOW","SOLD_OUT"]}},{"name":"page","in":"query","description":"0부터 시작하는 페이지 번호","schema":{"type":"integer","format":"int32","default":0,"minimum":0}},{"name":"size","in":"query","description":"한 페이지에 담을 개수","schema":{"type":"integer","format":"int32","default":20,"maximum":100,"minimum":1}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseOwnerProductListResponse"}}}},"404":{"description":"code=STORE_NOT_REGISTERED — 등록된 가게가 없습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/owner/products/{id}/stock-reconfirm":{"post":{"tags":["OwnerProduct"],"operationId":"answerStockReconfirm","parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"integer","format":"int64"}}],"requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/StockReconfirmRequest"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseProductDetailResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/owner/products/preview":{"post":{"tags":["OwnerProduct"],"operationId":"previewProduct","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ProductRegisterRequest"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseProductPreviewResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/owner/products/photos":{"post":{"tags":["OwnerProduct"],"operationId":"uploadProductPhoto","requestBody":{"content":{"multipart/form-data":{"schema":{"type":"object","properties":{"file":{"type":"string","format":"binary"}},"required":["file"]}}}},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseProductPhotoResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/owner/holds/{id}/complete":{"post":{"tags":["OwnerHold"],"operationId":"completePickup","parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"integer","format":"int64"}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseOwnerHoldDetailResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/owner/holds/cancel":{"post":{"tags":["OwnerHold"],"operationId":"cancelHoldsForShortage","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/OwnerHoldCancelRequest"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseOwnerHoldCancelCandidatesResponse"}}}},"404":{"description":"code=HOLD_NOT_FOUND — 찜을 찾을 수 없습니다.\ncode=STORE_NOT_REGISTERED — 등록된 가게가 없습니다.\ncode=PRODUCT_NOT_FOUND — 상품을 찾을 수 없습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"409":{"description":"code=HOLD_ALREADY_RESOLVED — 이미 처리된 찜입니다.\ncode=HOLD_ALREADY_EXPIRED — 찜 시간이 지나 취소할 수 없습니다.\ncode=PRODUCT_NOT_SHORT_OF_STOCK — 재고가 부족하지 않은 상품의 찜은 취소할 수 없습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/notifications/read-all":{"post":{"tags":["Notification"],"operationId":"readAllNotifications","responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseNotificationsReadResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/notifications/device-tokens":{"post":{"tags":["Notification"],"operationId":"registerDeviceToken","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/DeviceTokenRegisterRequest"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseVoid"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}},"delete":{"tags":["Notification"],"operationId":"unregisterDeviceToken","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/DeviceTokenDeleteRequest"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseVoid"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/holds":{"get":{"tags":["Hold"],"operationId":"getHolds","parameters":[{"name":"page","in":"query","description":"0부터 시작하는 페이지 번호","schema":{"type":"integer","format":"int32","default":0,"minimum":0}},{"name":"size","in":"query","description":"한 페이지에 담을 개수","schema":{"type":"integer","format":"int32","default":20,"maximum":100,"minimum":1}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseHoldHistoryResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}},"post":{"tags":["Hold"],"operationId":"createHold","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HoldCreateRequest"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseHoldDetailResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/holds/{holdId}/cancel":{"post":{"tags":["Hold"],"operationId":"cancelHold","parameters":[{"name":"holdId","in":"path","required":true,"schema":{"type":"integer","format":"int64"}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseHoldDetailResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/auth/signup":{"post":{"tags":["Auth"],"operationId":"signup","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/SignupRequest"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseTokenResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/auth/refresh":{"post":{"tags":["Auth"],"operationId":"refresh","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/RefreshRequest"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseTokenResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/auth/owner/kakao":{"post":{"tags":["Auth"],"operationId":"loginAsOwner","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/KakaoLoginRequest"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseKakaoLoginResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/auth/owner/kakao/exchange":{"post":{"tags":["Auth"],"operationId":"exchangeOwnerCode","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/KakaoTokenExchangeRequest"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseKakaoTokenExchangeResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/auth/logout":{"post":{"tags":["Auth"],"operationId":"logout","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/RefreshRequest"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseVoid"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/auth/guest":{"post":{"tags":["Auth"],"operationId":"issueGuestToken","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/GuestTokenRequest"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseGuestTokenResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/auth/consumer/kakao":{"post":{"tags":["Auth"],"operationId":"loginAsConsumer","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/KakaoLoginRequest"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseKakaoLoginResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/auth/consumer/kakao/exchange":{"post":{"tags":["Auth"],"operationId":"exchangeConsumerCode","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/KakaoTokenExchangeRequest"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseKakaoTokenExchangeResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/owner/products/{id}/stock":{"patch":{"tags":["OwnerProduct"],"operationId":"updateStock","parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"integer","format":"int64"}}],"requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/StockUpdateRequest"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseProductDetailResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/notifications/{notificationId}/read":{"patch":{"tags":["Notification"],"operationId":"readNotification","parameters":[{"name":"notificationId","in":"path","required":true,"schema":{"type":"integer","format":"int64"}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseNotificationResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/users/me":{"get":{"tags":["User"],"operationId":"getMe","responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseMeResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}},"delete":{"tags":["User"],"operationId":"deleteMe","responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseVoid"}}}},"409":{"description":"code=HOLDING_HOLDS_REMAIN — 진행 중인 찜이 있어 탈퇴할 수 없습니다. 찜을 모두 처리한 뒤 다시 시도해 주세요.\ncode=STORE_HOLDING_HOLDS_REMAIN — 가게에 처리되지 않은 찜이 있어 탈퇴할 수 없습니다. 찜을 모두 처리한 뒤 다시 시도해 주세요.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/terms":{"get":{"tags":["Terms"],"operationId":"getTermsDocuments","parameters":[{"name":"role","in":"query","required":true,"schema":{"type":"string","enum":["CONSUMER","OWNER"]}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseTermsDocumentsResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/terms/{termsDocumentId}":{"get":{"tags":["Terms"],"operationId":"getTermsDocument","parameters":[{"name":"termsDocumentId","in":"path","required":true,"schema":{"type":"integer","format":"int64"}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseTermsDocumentResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/stores/{storeId}/products":{"get":{"tags":["StoreBrowse"],"operationId":"getStoreProducts","parameters":[{"name":"storeId","in":"path","required":true,"schema":{"type":"integer","format":"int64"}},{"name":"lat","in":"query","required":false,"schema":{"type":"number","maximum":90.0,"minimum":-90.0}},{"name":"lng","in":"query","required":false,"schema":{"type":"number","maximum":180.0,"minimum":-180.0}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseStoreProductsResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/stores/nearby":{"get":{"tags":["StoreBrowse"],"operationId":"getNearbyStores","parameters":[{"name":"minLat","in":"query","required":true,"schema":{"type":"number","maximum":90.0,"minimum":-90.0}},{"name":"maxLat","in":"query","required":true,"schema":{"type":"number","maximum":90.0,"minimum":-90.0}},{"name":"minLng","in":"query","required":true,"schema":{"type":"number","maximum":180.0,"minimum":-180.0}},{"name":"maxLng","in":"query","required":true,"schema":{"type":"number","maximum":180.0,"minimum":-180.0}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseNearbyStoresResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/recipes":{"get":{"tags":["Recipe"],"operationId":"getRecipes","parameters":[{"name":"category","in":"query","required":false,"schema":{"type":"string"}},{"name":"page","in":"query","description":"0부터 시작하는 페이지 번호","schema":{"type":"integer","format":"int32","default":0,"minimum":0}},{"name":"size","in":"query","description":"한 페이지에 담을 개수","schema":{"type":"integer","format":"int32","default":20,"maximum":100,"minimum":1}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponsePageResponseRecipeSummaryResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/recipes/{id}":{"get":{"tags":["Recipe"],"operationId":"getRecipe","parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"integer","format":"int64"}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseRecipeDetailResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/recipes/categories":{"get":{"tags":["Recipe"],"operationId":"getCategories","responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseListString"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/products/{productId}":{"get":{"tags":["ProductBrowse"],"operationId":"getProduct","parameters":[{"name":"productId","in":"path","required":true,"schema":{"type":"integer","format":"int64"}},{"name":"lat","in":"query","required":false,"schema":{"type":"number","maximum":90.0,"minimum":-90.0}},{"name":"lng","in":"query","required":false,"schema":{"type":"number","maximum":180.0,"minimum":-180.0}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseProductBrowseDetailResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/products/nearby":{"get":{"tags":["ProductBrowse"],"operationId":"getNearbyProducts","parameters":[{"name":"lat","in":"query","required":true,"schema":{"type":"number","maximum":90.0,"minimum":-90.0}},{"name":"lng","in":"query","required":true,"schema":{"type":"number","maximum":180.0,"minimum":-180.0}},{"name":"category","in":"query","required":false,"schema":{"type":"string","enum":["VEGETABLE","FRUIT","MEAT","SEAFOOD","DAIRY_EGG","BAKERY","SIDE_DISH","ETC"]}},{"name":"sort","in":"query","required":false,"schema":{"type":"string","enum":["DISTANCE","PICKUP_DEADLINE","DISCOUNT_RATE"]}},{"name":"radiusMeters","in":"query","required":false,"schema":{"type":"integer","format":"int32","maximum":5000,"minimum":100}},{"name":"page","in":"query","required":false,"schema":{"type":"integer","format":"int32","minimum":0}},{"name":"size","in":"query","required":false,"schema":{"type":"integer","format":"int32","maximum":100,"minimum":1}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseNearbyProductsResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/ping":{"get":{"tags":["Health"],"operationId":"ping","responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponsePingResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/owner/stores/me":{"get":{"tags":["OwnerStore"],"operationId":"getMyStore","responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseStoreDetailResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/owner/products/{id}":{"get":{"tags":["OwnerProduct"],"operationId":"getMyProduct","parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"integer","format":"int64"}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseProductDetailResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/owner/ingredients":{"get":{"tags":["OwnerIngredient"],"operationId":"searchIngredients","parameters":[{"name":"query","in":"query","required":true,"schema":{"type":"string"}},{"name":"size","in":"query","required":false,"schema":{"type":"integer","format":"int32","default":20}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseListIngredientTagResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/owner/ingredients/recommendations":{"get":{"tags":["OwnerIngredient"],"operationId":"recommendIngredientTags","parameters":[{"name":"name","in":"query","required":true,"schema":{"type":"string"}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseListIngredientTagResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/owner/home":{"get":{"tags":["OwnerHome"],"operationId":"getOwnerHome","responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseOwnerHomeResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/owner/holds":{"get":{"tags":["OwnerHold"],"operationId":"getOwnerHolds","parameters":[{"name":"status","in":"query","required":false,"schema":{"type":"string","enum":["HOLDING","COMPLETED","EXPIRED","CANCELED_BY_OWNER","CANCELED_BY_USER"]}},{"name":"page","in":"query","description":"0부터 시작하는 페이지 번호","schema":{"type":"integer","format":"int32","default":0,"minimum":0}},{"name":"size","in":"query","description":"한 페이지에 담을 개수","schema":{"type":"integer","format":"int32","default":20,"maximum":100,"minimum":1}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseOwnerHoldListResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/owner/holds/{id}":{"get":{"tags":["OwnerHold"],"operationId":"getOwnerHold","parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"integer","format":"int64"}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseOwnerHoldDetailResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/owner/holds/cancel-candidates":{"get":{"tags":["OwnerHold"],"operationId":"getHoldCancelCandidates","responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseOwnerHoldCancelCandidatesResponse"}}}},"404":{"description":"code=STORE_NOT_REGISTERED — 등록된 가게가 없습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/notifications":{"get":{"tags":["Notification"],"operationId":"getNotifications","parameters":[{"name":"page","in":"query","description":"0부터 시작하는 페이지 번호","schema":{"type":"integer","format":"int32","default":0,"minimum":0}},{"name":"size","in":"query","description":"한 페이지에 담을 개수","schema":{"type":"integer","format":"int32","default":20,"maximum":100,"minimum":1}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseNotificationsResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/holds/{holdId}":{"get":{"tags":["Hold"],"operationId":"getHold","parameters":[{"name":"holdId","in":"path","required":true,"schema":{"type":"integer","format":"int64"}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseHoldDetailResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}},"/holds/active":{"get":{"tags":["Hold"],"operationId":"getActiveHold","responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiResponseActiveHoldResponse"}}}},"400":{"description":"요청이 올바르지 않습니다. code=VALIDATION_FAILED 이면 fieldErrors 에 필드별 사유가 담깁니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"인증이 필요하거나 토큰이 유효하지 않습니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"429":{"description":"요청이 너무 많습니다. Retry-After 헤더의 초만큼 기다린 뒤 재시도합니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"403":{"description":"권한이 없습니다. guest 토큰으로 회원 전용 기능을 호출하면 code=LOGIN_REQUIRED 입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"500":{"description":"서버 내부 오류입니다.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}}}},"components":{"schemas":{"MyLocationUpdateRequest":{"type":"object","properties":{"regionName":{"type":"string","maxLength":100,"minLength":0},"latitude":{"type":"number","maximum":90.0,"minimum":-90.0},"longitude":{"type":"number","maximum":180.0,"minimum":-180.0}},"required":["latitude","longitude","regionName"]},"ApiResponseMyLocationResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/MyLocationResponse"}},"required":["code","data","message","status"]},"MyLocationResponse":{"type":"object","properties":{"location":{"$ref":"#/components/schemas/Region"}}},"Region":{"type":"object","properties":{"regionName":{"type":"string"},"latitude":{"type":"number"},"longitude":{"type":"number"},"updatedAt":{"type":"string","format":"date-time"}},"required":["latitude","longitude","regionName","updatedAt"]},"StoreRegisterRequest":{"type":"object","properties":{"name":{"type":"string","maxLength":100,"minLength":0},"categories":{"type":"array","items":{"type":"string","enum":["VEGETABLE","FRUIT","MEAT","SEAFOOD","DAIRY_EGG","BAKERY","PREPARED_FOOD","ETC"]},"maxItems":3,"minItems":0,"uniqueItems":true},"postalCode":{"type":"string","pattern":"^[0-9]{5}$"},"address":{"type":"string","maxLength":255,"minLength":0},"addressDetail":{"type":"string","maxLength":255,"minLength":0},"phone":{"type":"string","maxLength":20,"minLength":0,"pattern":"^[0-9-]+$"},"businessOpenTime":{"type":"string"},"businessCloseTime":{"type":"string"},"businessDays":{"type":"array","items":{"type":"string","enum":["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]},"minItems":1,"uniqueItems":true},"businessRegistrationNumber":{"type":"string","maxLength":20,"minLength":0},"applicationNote":{"type":"string"}},"required":["address","addressDetail","applicationNote","businessCloseTime","businessDays","businessOpenTime","businessRegistrationNumber","categories","name","phone","postalCode"]},"ApiResponseStoreDetailResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/StoreDetailResponse"}},"required":["code","data","message","status"]},"Owner":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"nickname":{"type":"string"},"phone":{"type":"string"}},"required":["id","nickname"]},"StoreDetailResponse":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"name":{"type":"string"},"status":{"type":"string"},"categories":{"type":"array","items":{"type":"string","enum":["VEGETABLE","FRUIT","MEAT","SEAFOOD","DAIRY_EGG","BAKERY","PREPARED_FOOD","ETC"]}},"postalCode":{"type":"string"},"address":{"type":"string"},"addressDetail":{"type":"string"},"phone":{"type":"string"},"businessOpenTime":{"type":"string"},"businessCloseTime":{"type":"string"},"businessDays":{"type":"array","items":{"type":"string","enum":["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]}},"businessRegistrationNumber":{"type":"string"},"applicationNote":{"type":"string"},"owner":{"$ref":"#/components/schemas/Owner"},"createdAt":{"type":"string","format":"date-time"}},"required":["address","businessCloseTime","businessDays","businessOpenTime","categories","createdAt","id","name","owner","phone","status"]},"ProductRegisterRequest":{"type":"object","properties":{"name":{"type":"string","maxLength":30,"minLength":0},"category":{"type":"string","enum":["VEGETABLE","FRUIT","MEAT","SEAFOOD","DAIRY_EGG","BAKERY","SIDE_DISH","ETC"]},"initialQty":{"type":"integer","format":"int32","minimum":1},"originalPrice":{"type":"integer","format":"int32","minimum":0},"salePrice":{"type":"integer","format":"int32","minimum":0},"photoUrl":{"type":"string","maxLength":512,"minLength":0},"ingredientTags":{"type":"array","items":{"type":"integer","format":"int32"},"maxItems":5,"minItems":0},"pickupEndAt":{"type":"string","format":"date-time","description":"픽업 종료 시각. 한국 시간의 벽시계 값이다. 오프셋을 붙여 보내면(+09:00, Z) 서버가 한국 시간으로 바꿔 받는다. 비우면 가게 영업 종료 시각으로 채운다.","example":"2026-09-17T22:00:00"}},"required":["category","ingredientTags","initialQty","name","originalPrice","photoUrl","pickupEndAt","salePrice"]},"ApiResponseProductDetailResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/ProductDetailResponse"}},"required":["code","data","message","status"]},"IngredientTagResponse":{"type":"object","properties":{"id":{"type":"integer","format":"int32"},"name":{"type":"string"},"category":{"type":"string"}},"required":["id","name"]},"ProductDetailResponse":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"name":{"type":"string"},"category":{"type":"string"},"initialQty":{"type":"integer","format":"int32"},"availableQty":{"type":"integer","format":"int32"},"heldQty":{"type":"integer","format":"int32"},"completedQty":{"type":"integer","format":"int64"},"originalPrice":{"type":"integer","format":"int32"},"salePrice":{"type":"integer","format":"int32"},"discountRate":{"type":"integer","format":"int32"},"pickupStartAt":{"type":"string","format":"date-time"},"pickupEndAt":{"type":"string","format":"date-time"},"photoUrl":{"type":"string"},"ingredientTags":{"type":"array","items":{"$ref":"#/components/schemas/IngredientTagResponse"}},"status":{"type":"string"},"reconfirmSentAt":{"type":"string","format":"date-time"},"reconfirmAnsweredAt":{"type":"string","format":"date-time"},"reconfirmPending":{"type":"boolean"},"minAdjustableQty":{"type":"integer","format":"int32"},"stockEditable":{"type":"boolean"},"activeHoldQty":{"type":"integer","format":"int64"},"shortfallQty":{"type":"integer","format":"int32"},"stockQty":{"type":"integer","format":"int32"},"createdAt":{"type":"string","format":"date-time"}},"required":["activeHoldQty","availableQty","category","completedQty","createdAt","discountRate","heldQty","id","ingredientTags","initialQty","minAdjustableQty","name","originalPrice","photoUrl","pickupEndAt","pickupStartAt","reconfirmPending","salePrice","shortfallQty","status","stockEditable","stockQty"]},"StockReconfirmRequest":{"type":"object","properties":{"confirmed":{"type":"boolean"}},"required":["confirmed"]},"ApiResponseProductPreviewResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/ProductPreviewResponse"}},"required":["code","data","message","status"]},"ProductPreviewResponse":{"type":"object","properties":{"name":{"type":"string"},"category":{"type":"string"},"photoUrl":{"type":"string"},"initialQty":{"type":"integer","format":"int32"},"originalPrice":{"type":"integer","format":"int32"},"salePrice":{"type":"integer","format":"int32"},"discountRate":{"type":"integer","format":"int32"},"pickupStartAt":{"type":"string","format":"date-time"},"pickupEndAt":{"type":"string","format":"date-time"},"ingredientTags":{"type":"array","items":{"$ref":"#/components/schemas/IngredientTagResponse"}}},"required":["category","discountRate","ingredientTags","initialQty","name","originalPrice","photoUrl","pickupEndAt","pickupStartAt","salePrice"]},"ApiResponseProductPhotoResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/ProductPhotoResponse"}},"required":["code","data","message","status"]},"ProductPhotoResponse":{"type":"object","properties":{"photoUrl":{"type":"string"}},"required":["photoUrl"]},"ApiResponseOwnerHoldDetailResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/OwnerHoldDetailResponse"}},"required":["code","data","message","status"]},"OwnerHoldDetailResponse":{"type":"object","properties":{"groupId":{"type":"integer","format":"int64"},"status":{"type":"string","enum":["HOLDING","COMPLETED","EXPIRED","CANCELED_BY_OWNER","CANCELED_BY_USER"]},"nickname":{"type":"string"},"storeName":{"type":"string"},"totalQty":{"type":"integer","format":"int32"},"totalPrice":{"type":"integer","format":"int32"},"items":{"type":"array","items":{"$ref":"#/components/schemas/OwnerHoldItem"}},"heldAt":{"type":"string","format":"date-time"},"expiresAt":{"type":"string","format":"date-time"},"serverTime":{"type":"string","format":"date-time"},"completedAt":{"type":"string","format":"date-time"},"canceledAt":{"type":"string","format":"date-time"},"cancelReason":{"type":"string"}},"required":["expiresAt","groupId","heldAt","items","nickname","serverTime","status","storeName","totalPrice","totalQty"]},"OwnerHoldItem":{"type":"object","properties":{"holdId":{"type":"integer","format":"int64"},"productId":{"type":"integer","format":"int64"},"productName":{"type":"string"},"photoUrl":{"type":"string"},"qty":{"type":"integer","format":"int32"},"unitPrice":{"type":"integer","format":"int32"},"lineTotal":{"type":"integer","format":"int32"}},"required":["holdId","lineTotal","photoUrl","productId","productName","qty","unitPrice"]},"OwnerHoldCancelRequest":{"type":"object","properties":{"holdIds":{"type":"array","items":{"type":"integer","format":"int64"},"maxItems":100,"minItems":0}},"required":["holdIds"]},"ApiResponseOwnerHoldCancelCandidatesResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/OwnerHoldCancelCandidatesResponse"}},"required":["code","data","message","status"]},"OwnerHoldCancelCandidate":{"type":"object","properties":{"holdId":{"type":"integer","format":"int64"},"heldOrder":{"type":"integer","format":"int32"},"heldAt":{"type":"string","format":"date-time"},"nickname":{"type":"string"},"qty":{"type":"integer","format":"int32"},"lineTotal":{"type":"integer","format":"int32"},"suggested":{"type":"boolean"}},"required":["heldAt","heldOrder","holdId","lineTotal","nickname","qty","suggested"]},"OwnerHoldCancelCandidatesResponse":{"type":"object","properties":{"productsShortOfStock":{"type":"integer","format":"int32"},"suggestedCancelCount":{"type":"integer","format":"int32"},"noticeMessage":{"type":"string"},"products":{"type":"array","items":{"$ref":"#/components/schemas/OwnerHoldCancelProduct"}}},"required":["noticeMessage","products","productsShortOfStock","suggestedCancelCount"]},"OwnerHoldCancelProduct":{"type":"object","properties":{"productId":{"type":"integer","format":"int64"},"productName":{"type":"string"},"stockQty":{"type":"integer","format":"int32"},"heldQty":{"type":"integer","format":"int32"},"shortfallQty":{"type":"integer","format":"int32"},"holds":{"type":"array","items":{"$ref":"#/components/schemas/OwnerHoldCancelCandidate"}}},"required":["heldQty","holds","productId","productName","shortfallQty","stockQty"]},"ApiResponseNotificationsReadResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/NotificationsReadResponse"}},"required":["code","data","message","status"]},"NotificationsReadResponse":{"type":"object","properties":{"markedCount":{"type":"integer","format":"int32"}},"required":["markedCount"]},"DeviceTokenRegisterRequest":{"type":"object","properties":{"platform":{"type":"string","enum":["ANDROID","IOS"]},"fcmToken":{"type":"string","maxLength":255,"minLength":0}},"required":["fcmToken","platform"]},"ApiResponseVoid":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{}},"required":["code","data","message","status"]},"HoldCreateRequest":{"type":"object","properties":{"productId":{"type":"integer","format":"int64"},"qty":{"type":"integer","format":"int32","minimum":1}},"required":["productId","qty"]},"ApiResponseHoldDetailResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/HoldDetailResponse"}},"required":["code","data","message","status"]},"HoldDetailResponse":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"groupId":{"type":"integer","format":"int64"},"status":{"type":"string","enum":["HOLDING","COMPLETED","CANCELED","EXPIRED"]},"totalQty":{"type":"integer","format":"int32"},"totalPrice":{"type":"integer","format":"int32"},"heldAt":{"type":"string","format":"date-time"},"expiresAt":{"type":"string","format":"date-time"},"serverTime":{"type":"string","format":"date-time"},"completedAt":{"type":"string","format":"date-time"},"canceledAt":{"type":"string","format":"date-time"},"canceledBy":{"type":"string","enum":["USER","OWNER"]},"cancelReason":{"type":"string"},"store":{"$ref":"#/components/schemas/HoldStore"},"items":{"type":"array","items":{"$ref":"#/components/schemas/HoldItemResponse"}}},"required":["expiresAt","groupId","heldAt","id","items","serverTime","status","store","totalPrice","totalQty"]},"HoldItemResponse":{"type":"object","properties":{"holdId":{"type":"integer","format":"int64"},"productId":{"type":"integer","format":"int64"},"name":{"type":"string"},"photoUrl":{"type":"string"},"originalPrice":{"type":"integer","format":"int32"},"salePrice":{"type":"integer","format":"int32"},"discountRate":{"type":"integer","format":"int32"},"status":{"type":"string","enum":["ON_SALE","SOLD_OUT","CLOSED"]},"qty":{"type":"integer","format":"int32"},"lineTotal":{"type":"integer","format":"int32"}},"required":["discountRate","holdId","lineTotal","name","originalPrice","photoUrl","productId","qty","salePrice","status"]},"HoldStore":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"name":{"type":"string"},"address":{"type":"string"},"addressDetail":{"type":"string"},"phone":{"type":"string"},"latitude":{"type":"number"},"longitude":{"type":"number"},"businessOpenTime":{"type":"string"},"businessCloseTime":{"type":"string"},"openNow":{"type":"boolean"}},"required":["address","businessCloseTime","businessOpenTime","id","latitude","longitude","name","openNow","phone"]},"SignupRequest":{"type":"object","properties":{"signupToken":{"type":"string","minLength":1},"serviceTermsAgreed":{"type":"boolean"},"privacyTermsAgreed":{"type":"boolean"},"locationTermsAgreed":{"type":"boolean"},"thirdPartyTermsAgreed":{"type":"boolean"},"marketingOptIn":{"type":"boolean"}},"required":["locationTermsAgreed","marketingOptIn","privacyTermsAgreed","serviceTermsAgreed","signupToken","thirdPartyTermsAgreed"]},"ApiResponseTokenResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/TokenResponse"}},"required":["code","data","message","status"]},"TokenResponse":{"type":"object","properties":{"accessToken":{"type":"string"},"refreshToken":{"type":"string"}},"required":["accessToken","refreshToken"]},"RefreshRequest":{"type":"object","properties":{"refreshToken":{"type":"string","minLength":1}},"required":["refreshToken"]},"KakaoLoginRequest":{"type":"object","properties":{"kakaoAccessToken":{"type":"string","minLength":1}},"required":["kakaoAccessToken"]},"ApiResponseKakaoLoginResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/KakaoLoginResponse"}},"required":["code","data","message","status"]},"KakaoLoginResponse":{"type":"object","properties":{"registered":{"type":"boolean"},"accessToken":{"type":"string"},"refreshToken":{"type":"string"},"signupToken":{"type":"string"}},"required":["accessToken","refreshToken","registered","signupToken"]},"KakaoTokenExchangeRequest":{"type":"object","properties":{"code":{"type":"string","minLength":1},"redirectUri":{"type":"string","minLength":1}},"required":["code","redirectUri"]},"ApiResponseKakaoTokenExchangeResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/KakaoTokenExchangeResponse"}},"required":["code","data","message","status"]},"KakaoTokenExchangeResponse":{"type":"object","properties":{"kakaoAccessToken":{"type":"string"}},"required":["kakaoAccessToken"]},"GuestTokenRequest":{"type":"object","properties":{"installId":{"type":"string","maxLength":64,"minLength":0}},"required":["installId"]},"ApiResponseGuestTokenResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/GuestTokenResponse"}},"required":["code","data","message","status"]},"GuestTokenResponse":{"type":"object","properties":{"accessToken":{"type":"string"}},"required":["accessToken"]},"StockUpdateRequest":{"type":"object","properties":{"stockQty":{"type":"integer","format":"int32","maximum":9999,"minimum":0}},"required":["stockQty"]},"ApiResponseNotificationResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/NotificationResponse"}},"required":["code","data","message","status"]},"NotificationResponse":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"type":{"type":"string","enum":["HOLD_CREATED","HOLD_EXPIRING_SOON","HOLD_EXPIRED","PICKUP_COMPLETED","HOLD_UNCONFIRMED","HOLD_CANCELED_BY_OWNER","NEARBY_PRODUCT_REGISTERED","STOCK_RECONFIRM_REQUEST","NEW_HOLD_RECEIVED"]},"title":{"type":"string"},"body":{"type":"string"},"deepLink":{"type":"string"},"readAt":{"type":"string","format":"date-time"},"notifiedAt":{"type":"string","format":"date-time"}},"required":["body","id","notifiedAt","title","type"]},"ApiResponseMeResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/MeResponse"}},"required":["code","data","message","status"]},"MeResponse":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"role":{"type":"string","enum":["CONSUMER","OWNER"]},"nickname":{"type":"string"},"phone":{"type":"string"},"marketingOptIn":{"type":"boolean"},"termsAgreedAt":{"type":"string","format":"date-time"},"joinedAt":{"type":"string","format":"date-time"}},"required":["id","joinedAt","marketingOptIn","nickname","role","termsAgreedAt"]},"ApiResponseTermsDocumentsResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/TermsDocumentsResponse"}},"required":["code","data","message","status"]},"TermsDocumentSummaryResponse":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"type":{"type":"string","enum":["SERVICE","PRIVACY_COLLECTION","LOCATION","THIRD_PARTY","MARKETING","PRIVACY_POLICY"]},"version":{"type":"integer","format":"int32"},"title":{"type":"string"},"requirement":{"type":"string","enum":["REQUIRED","OPTIONAL","NOTICE"]},"effectiveDate":{"type":"string","format":"date"}},"required":["id","requirement","title","type","version"]},"TermsDocumentsResponse":{"type":"object","properties":{"documents":{"type":"array","items":{"$ref":"#/components/schemas/TermsDocumentSummaryResponse"}}},"required":["documents"]},"ApiResponseTermsDocumentResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/TermsDocumentResponse"}},"required":["code","data","message","status"]},"TermsDocumentResponse":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"role":{"type":"string","enum":["CONSUMER","OWNER"]},"type":{"type":"string","enum":["SERVICE","PRIVACY_COLLECTION","LOCATION","THIRD_PARTY","MARKETING","PRIVACY_POLICY"]},"version":{"type":"integer","format":"int32"},"title":{"type":"string"},"requirement":{"type":"string","enum":["REQUIRED","OPTIONAL","NOTICE"]},"effectiveDate":{"type":"string","format":"date"},"contentMarkdown":{"type":"string"}},"required":["contentMarkdown","id","requirement","role","title","type","version"]},"ApiResponseStoreProductsResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/StoreProductsResponse"}},"required":["code","data","message","status"]},"SellableProductResponse":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"name":{"type":"string"},"photoUrl":{"type":"string"},"category":{"type":"string","enum":["VEGETABLE","FRUIT","MEAT","SEAFOOD","DAIRY_EGG","BAKERY","SIDE_DISH","ETC"]},"originalPrice":{"type":"integer","format":"int32"},"salePrice":{"type":"integer","format":"int32"},"discountRate":{"type":"integer","format":"int32"},"availableQty":{"type":"integer","format":"int32"},"pickupEndAt":{"type":"string","format":"date-time"}},"required":["availableQty","category","discountRate","id","name","originalPrice","photoUrl","pickupEndAt","salePrice"]},"StoreProductsResponse":{"type":"object","properties":{"storeId":{"type":"integer","format":"int64"},"name":{"type":"string"},"latitude":{"type":"number"},"longitude":{"type":"number"},"distanceMeters":{"type":"integer","format":"int32"},"walkingMinutes":{"type":"integer","format":"int32"},"businessCloseTime":{"type":"string"},"earliestPickupEndAt":{"type":"string","format":"date-time"},"productCount":{"type":"integer","format":"int32"},"products":{"type":"array","items":{"$ref":"#/components/schemas/SellableProductResponse"}}},"required":["businessCloseTime","latitude","longitude","name","productCount","products","storeId"]},"ApiResponseNearbyStoresResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/NearbyStoresResponse"}},"required":["code","data","message","status"]},"NearbyStoreMarkerResponse":{"type":"object","properties":{"storeId":{"type":"integer","format":"int64"},"name":{"type":"string"},"latitude":{"type":"number"},"longitude":{"type":"number"},"sellableProductCount":{"type":"integer","format":"int32"}},"required":["latitude","longitude","name","sellableProductCount","storeId"]},"NearbyStoresResponse":{"type":"object","properties":{"totalStoreCount":{"type":"integer","format":"int32"},"truncated":{"type":"boolean"},"stores":{"type":"array","items":{"$ref":"#/components/schemas/NearbyStoreMarkerResponse"}}},"required":["stores","totalStoreCount","truncated"]},"ApiResponsePageResponseRecipeSummaryResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/PageResponseRecipeSummaryResponse"}},"required":["code","data","message","status"]},"PageResponseRecipeSummaryResponse":{"type":"object","properties":{"content":{"type":"array","items":{"$ref":"#/components/schemas/RecipeSummaryResponse"}},"page":{"type":"integer","format":"int32"},"size":{"type":"integer","format":"int32"},"totalElements":{"type":"integer","format":"int64"},"totalPages":{"type":"integer","format":"int32"},"last":{"type":"boolean"}},"required":["content","last","page","size","totalElements","totalPages"]},"RecipeSummaryResponse":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"title":{"type":"string"},"category":{"type":"string"},"cookTimeMinutes":{"type":"integer","format":"int32"},"difficulty":{"type":"string","enum":["EASY","NORMAL","HARD"]},"imageThumbUrl":{"type":"string"},"viewCount":{"type":"integer","format":"int32"},"likeCount":{"type":"integer","format":"int32"}},"required":["id","likeCount","title","viewCount"]},"ApiResponseRecipeDetailResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/RecipeDetailResponse"}},"required":["code","data","message","status"]},"RecipeDetailResponse":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"title":{"type":"string"},"category":{"type":"string"},"cookMethod":{"type":"string"},"cookTimeMinutes":{"type":"integer","format":"int32"},"difficulty":{"type":"string","enum":["EASY","NORMAL","HARD"]},"servings":{"type":"integer","format":"int32"},"imageUrl":{"type":"string"},"imageThumbUrl":{"type":"string"},"sourceUrl":{"type":"string"},"viewCount":{"type":"integer","format":"int32"},"likeCount":{"type":"integer","format":"int32"},"steps":{"type":"array","items":{"$ref":"#/components/schemas/RecipeStepResponse"}},"ingredients":{"type":"array","items":{"$ref":"#/components/schemas/RecipeIngredientResponse"}},"nutrition":{"$ref":"#/components/schemas/RecipeNutritionResponse"},"tags":{"type":"array","items":{"type":"string"}}},"required":["id","ingredients","likeCount","servings","steps","tags","title","viewCount"]},"RecipeIngredientResponse":{"type":"object","properties":{"seq":{"type":"integer","format":"int32"},"groupName":{"type":"string"},"ingredientName":{"type":"string"},"amount":{"type":"number"},"unit":{"type":"string"},"rawText":{"type":"string"}},"required":["rawText","seq"]},"RecipeNutritionResponse":{"type":"object","properties":{"basis":{"type":"string"},"servingWeightG":{"type":"number"},"calories":{"type":"number"},"carbsG":{"type":"number"},"proteinG":{"type":"number"},"fatG":{"type":"number"},"sodiumMg":{"type":"number"}},"required":["basis"]},"RecipeStepResponse":{"type":"object","properties":{"seq":{"type":"integer","format":"int32"},"content":{"type":"string"},"imageUrl":{"type":"string"}},"required":["content","seq"]},"ApiResponseListString":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"type":"array","items":{"type":"string"}}},"required":["code","data","message","status"]},"ApiResponseProductBrowseDetailResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/ProductBrowseDetailResponse"}},"required":["code","data","message","status"]},"ProductBrowseDetailResponse":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"name":{"type":"string"},"category":{"type":"string","enum":["VEGETABLE","FRUIT","MEAT","SEAFOOD","DAIRY_EGG","BAKERY","SIDE_DISH","ETC"]},"tags":{"type":"array","items":{"type":"string"}},"photoUrls":{"type":"array","items":{"type":"string"}},"originalPrice":{"type":"integer","format":"int32"},"salePrice":{"type":"integer","format":"int32"},"discountRate":{"type":"integer","format":"int32"},"availableQty":{"type":"integer","format":"int32"},"pickupStartAt":{"type":"string","format":"date-time"},"pickupEndAt":{"type":"string","format":"date-time"},"status":{"type":"string","enum":["ON_SALE","SOLD_OUT","CLOSED"]},"holdButton":{"type":"string","enum":["AVAILABLE","ALREADY_HOLDING","OTHER_STORE","SOLD_OUT","CLOSED"]},"myHoldId":{"type":"integer","format":"int64"},"store":{"$ref":"#/components/schemas/ProductStore"},"recipes":{"type":"array","items":{"$ref":"#/components/schemas/RecipeSuggestionResponse"}}},"required":["availableQty","category","discountRate","holdButton","id","name","originalPrice","photoUrls","pickupEndAt","pickupStartAt","recipes","salePrice","status","store","tags"]},"ProductStore":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"name":{"type":"string"},"address":{"type":"string"},"addressDetail":{"type":"string"},"phone":{"type":"string"},"latitude":{"type":"number"},"longitude":{"type":"number"},"distanceMeters":{"type":"integer","format":"int32"},"walkingMinutes":{"type":"integer","format":"int32"},"businessOpenTime":{"type":"string"},"businessCloseTime":{"type":"string"},"openNow":{"type":"boolean"}},"required":["address","businessCloseTime","businessOpenTime","id","latitude","longitude","name","openNow","phone"]},"RecipeSuggestionResponse":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"title":{"type":"string"},"imageThumbUrl":{"type":"string"},"cookTimeMinutes":{"type":"integer","format":"int32"},"difficulty":{"type":"string","enum":["EASY","NORMAL","HARD"]},"ingredientNames":{"type":"array","items":{"type":"string"}}},"required":["id","ingredientNames","title"]},"ApiResponseNearbyProductsResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/NearbyProductsResponse"}},"required":["code","data","message","status"]},"NearbyProductsResponse":{"type":"object","properties":{"totalProductCount":{"type":"integer","format":"int64"},"stores":{"$ref":"#/components/schemas/PageResponseNearbyStoreGroupResponse"}},"required":["stores","totalProductCount"]},"NearbyStoreGroupResponse":{"type":"object","properties":{"storeId":{"type":"integer","format":"int64"},"storeName":{"type":"string"},"distanceMeters":{"type":"integer","format":"int32"},"walkingMinutes":{"type":"integer","format":"int32"},"productCount":{"type":"integer","format":"int32"},"hasMoreProducts":{"type":"boolean"},"earliestPickupEndAt":{"type":"string","format":"date-time"},"products":{"type":"array","items":{"$ref":"#/components/schemas/SellableProductResponse"}}},"required":["distanceMeters","earliestPickupEndAt","hasMoreProducts","productCount","products","storeId","storeName","walkingMinutes"]},"PageResponseNearbyStoreGroupResponse":{"type":"object","properties":{"content":{"type":"array","items":{"$ref":"#/components/schemas/NearbyStoreGroupResponse"}},"page":{"type":"integer","format":"int32"},"size":{"type":"integer","format":"int32"},"totalElements":{"type":"integer","format":"int64"},"totalPages":{"type":"integer","format":"int32"},"last":{"type":"boolean"}},"required":["content","last","page","size","totalElements","totalPages"]},"ApiResponsePingResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/PingResponse"}},"required":["code","data","message","status"]},"PingResponse":{"type":"object","properties":{"message":{"type":"string"}},"required":["message"]},"ApiResponseListIngredientTagResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"type":"array","items":{"$ref":"#/components/schemas/IngredientTagResponse"}}},"required":["code","data","message","status"]},"ApiResponseOwnerHomeResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/OwnerHomeResponse"}},"required":["code","data","message","status"]},"OwnerHomeIssues":{"type":"object","properties":{"expiredTodayCount":{"type":"integer","format":"int32"},"productsShortOfStock":{"type":"integer","format":"int32"},"shortfallQty":{"type":"integer","format":"int32"}},"required":["expiredTodayCount","productsShortOfStock","shortfallQty"]},"OwnerHomeProductCard":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"name":{"type":"string"},"category":{"type":"string"},"photoUrl":{"type":"string"},"salePrice":{"type":"integer","format":"int32"},"availableQty":{"type":"integer","format":"int32"},"activeHoldQty":{"type":"integer","format":"int64"},"shortfallQty":{"type":"integer","format":"int32"},"status":{"type":"string"},"reconfirmPending":{"type":"boolean"}},"required":["activeHoldQty","availableQty","category","id","name","photoUrl","reconfirmPending","salePrice","shortfallQty","status"]},"OwnerHomeResponse":{"type":"object","properties":{"serverTime":{"type":"string","format":"date-time"},"store":{"$ref":"#/components/schemas/OwnerHomeStore"},"summary":{"$ref":"#/components/schemas/OwnerHomeSummary"},"issues":{"$ref":"#/components/schemas/OwnerHomeIssues"},"unreadNotificationCount":{"type":"integer","format":"int64"},"reconfirmPendingCount":{"type":"integer","format":"int32"},"hasRegisteredProduct":{"type":"boolean"},"upcomingVisits":{"type":"array","items":{"$ref":"#/components/schemas/OwnerHomeVisit"}},"products":{"type":"array","items":{"$ref":"#/components/schemas/OwnerHomeProductCard"}}},"required":["hasRegisteredProduct","issues","products","reconfirmPendingCount","serverTime","store","summary","unreadNotificationCount","upcomingVisits"]},"OwnerHomeStore":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"name":{"type":"string"},"status":{"type":"string"},"categories":{"type":"array","items":{"type":"string","enum":["VEGETABLE","FRUIT","MEAT","SEAFOOD","DAIRY_EGG","BAKERY","PREPARED_FOOD","ETC"]}}},"required":["categories","id","name","status"]},"OwnerHomeSummary":{"type":"object","properties":{"upcomingVisitCount":{"type":"integer","format":"int32"},"completedTodayCount":{"type":"integer","format":"int64"},"onSaleQty":{"type":"integer","format":"int32"}},"required":["completedTodayCount","onSaleQty","upcomingVisitCount"]},"OwnerHomeVisit":{"type":"object","properties":{"holdId":{"type":"integer","format":"int64"},"nickname":{"type":"string"},"summary":{"type":"string"},"totalQty":{"type":"integer","format":"int32"},"expiresAt":{"type":"string","format":"date-time"}},"required":["expiresAt","holdId","nickname","summary","totalQty"]},"ApiResponseOwnerHoldListResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/OwnerHoldListResponse"}},"required":["code","data","message","status"]},"OwnerHoldCounts":{"type":"object","properties":{"all":{"type":"integer","format":"int64"},"holding":{"type":"integer","format":"int64"},"completed":{"type":"integer","format":"int64"},"expired":{"type":"integer","format":"int64"},"canceledByOwner":{"type":"integer","format":"int64"},"canceledByUser":{"type":"integer","format":"int64"}},"required":["all","canceledByOwner","canceledByUser","completed","expired","holding"]},"OwnerHoldListResponse":{"type":"object","properties":{"serverTime":{"type":"string","format":"date-time"},"counts":{"$ref":"#/components/schemas/OwnerHoldCounts"},"holds":{"$ref":"#/components/schemas/PageResponseOwnerHoldSummaryResponse"}},"required":["counts","holds","serverTime"]},"OwnerHoldSummaryResponse":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"groupId":{"type":"integer","format":"int64"},"status":{"type":"string","enum":["HOLDING","COMPLETED","EXPIRED","CANCELED_BY_OWNER","CANCELED_BY_USER"]},"nickname":{"type":"string"},"productId":{"type":"integer","format":"int64"},"productName":{"type":"string"},"qty":{"type":"integer","format":"int32"},"heldAt":{"type":"string","format":"date-time"},"expiresAt":{"type":"string","format":"date-time"}},"required":["expiresAt","groupId","heldAt","id","nickname","productId","productName","qty","status"]},"PageResponseOwnerHoldSummaryResponse":{"type":"object","properties":{"content":{"type":"array","items":{"$ref":"#/components/schemas/OwnerHoldSummaryResponse"}},"page":{"type":"integer","format":"int32"},"size":{"type":"integer","format":"int32"},"totalElements":{"type":"integer","format":"int64"},"totalPages":{"type":"integer","format":"int32"},"last":{"type":"boolean"}},"required":["content","last","page","size","totalElements","totalPages"]},"ApiResponseNotificationsResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/NotificationsResponse"}},"required":["code","data","message","status"]},"NotificationsResponse":{"type":"object","properties":{"unreadCount":{"type":"integer","format":"int64"},"notifications":{"$ref":"#/components/schemas/PageResponseNotificationResponse"}},"required":["notifications","unreadCount"]},"PageResponseNotificationResponse":{"type":"object","properties":{"content":{"type":"array","items":{"$ref":"#/components/schemas/NotificationResponse"}},"page":{"type":"integer","format":"int32"},"size":{"type":"integer","format":"int32"},"totalElements":{"type":"integer","format":"int64"},"totalPages":{"type":"integer","format":"int32"},"last":{"type":"boolean"}},"required":["content","last","page","size","totalElements","totalPages"]},"ApiResponseHoldHistoryResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/HoldHistoryResponse"}},"required":["code","data","message","status"]},"HoldHistoryResponse":{"type":"object","properties":{"serverTime":{"type":"string","format":"date-time"},"holds":{"$ref":"#/components/schemas/PageResponseHoldSummaryResponse"}},"required":["holds","serverTime"]},"HoldSummaryResponse":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"status":{"type":"string","enum":["HOLDING","COMPLETED","CANCELED","EXPIRED"]},"storeId":{"type":"integer","format":"int64"},"storeName":{"type":"string"},"productId":{"type":"integer","format":"int64"},"productName":{"type":"string"},"photoUrl":{"type":"string"},"qty":{"type":"integer","format":"int32"},"totalPrice":{"type":"integer","format":"int32"},"heldAt":{"type":"string","format":"date-time"},"expiresAt":{"type":"string","format":"date-time"},"completedAt":{"type":"string","format":"date-time"},"canceledAt":{"type":"string","format":"date-time"},"canceledBy":{"type":"string","enum":["USER","OWNER"]},"cancelCreditUsed":{"type":"boolean"}},"required":["cancelCreditUsed","expiresAt","heldAt","id","photoUrl","productId","productName","qty","status","storeId","storeName","totalPrice"]},"PageResponseHoldSummaryResponse":{"type":"object","properties":{"content":{"type":"array","items":{"$ref":"#/components/schemas/HoldSummaryResponse"}},"page":{"type":"integer","format":"int32"},"size":{"type":"integer","format":"int32"},"totalElements":{"type":"integer","format":"int64"},"totalPages":{"type":"integer","format":"int32"},"last":{"type":"boolean"}},"required":["content","last","page","size","totalElements","totalPages"]},"ActiveHoldResponse":{"type":"object","properties":{"hold":{"$ref":"#/components/schemas/HoldDetailResponse"},"cancelsLeft":{"type":"integer","format":"int32"},"nextCancelCreditAt":{"type":"string","format":"date-time"}},"required":["cancelsLeft"]},"ApiResponseActiveHoldResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/ActiveHoldResponse"}},"required":["code","data","message","status"]},"DeviceTokenDeleteRequest":{"type":"object","properties":{"fcmToken":{"type":"string","maxLength":255,"minLength":0}},"required":["fcmToken"]},"ErrorResponse":{"properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"fieldErrors":{"type":"object","additionalProperties":{"type":"string"}},"retryAt":{"type":"string","format":"date-time"}},"required":["code","message","status"]},"ApiResponseOwnerProductListResponse":{"type":"object","properties":{"status":{"type":"integer","format":"int32"},"code":{"type":"string"},"message":{"type":"string"},"data":{"$ref":"#/components/schemas/OwnerProductListResponse"}},"required":["code","data","message","status"]},"OwnerProductListResponse":{"type":"object","properties":{"serverTime":{"type":"string","format":"date-time"},"products":{"$ref":"#/components/schemas/PageResponseOwnerProductSummaryResponse"}},"required":["products","serverTime"]},"OwnerProductSummaryResponse":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"name":{"type":"string"},"category":{"type":"string"},"photoUrl":{"type":"string"},"initialQty":{"type":"integer","format":"int32"},"availableQty":{"type":"integer","format":"int32"},"activeHoldQty":{"type":"integer","format":"int64"},"shortfallQty":{"type":"integer","format":"int32"},"originalPrice":{"type":"integer","format":"int32"},"salePrice":{"type":"integer","format":"int32"},"discountRate":{"type":"integer","format":"int32"},"pickupEndAt":{"type":"string","format":"date-time"},"status":{"type":"string"},"reconfirmPending":{"type":"boolean"},"createdAt":{"type":"string","format":"date-time"}},"required":["activeHoldQty","availableQty","category","createdAt","discountRate","id","initialQty","name","originalPrice","photoUrl","pickupEndAt","reconfirmPending","salePrice","shortfallQty","status"]},"PageResponseOwnerProductSummaryResponse":{"type":"object","properties":{"content":{"type":"array","items":{"$ref":"#/components/schemas/OwnerProductSummaryResponse"}},"page":{"type":"integer","format":"int32"},"size":{"type":"integer","format":"int32"},"totalElements":{"type":"integer","format":"int64"},"totalPages":{"type":"integer","format":"int32"},"last":{"type":"boolean"}},"required":["content","last","page","size","totalElements","totalPages"]}},"securitySchemes":{"bearerAuth":{"type":"http","scheme":"bearer","bearerFormat":"JWT"}}}}</script>
+  <script id="map-data" type="application/json">{"GET /users/me/location":{"module":"consumer","section":"User","method":"fetchMyLocation"},"PUT /users/me/location":{"module":"consumer","section":"User","method":"setMyLocation"},"POST /owner/stores":{"module":"owner","section":"Store","method":"registerStore"},"POST /owner/products":{"module":"owner","section":"Product","method":"registerProduct"},"POST /owner/products/{id}/stock-reconfirm":{"module":"owner","section":"Product","method":"answerStockReconfirm"},"POST /owner/products/preview":{"module":"owner","section":"Product","method":"previewProduct"},"POST /owner/products/photos":{"module":"owner","section":"Product","method":"uploadProductPhoto"},"POST /owner/holds/{id}/complete":{"module":"owner","section":"Hold","method":"completePickup"},"POST /notifications/read-all":{"module":"user","section":"Notification","method":"readAllNotifications"},"POST /notifications/device-tokens":{"module":"user","section":"Notification","method":"registerDeviceToken"},"DELETE /notifications/device-tokens":{"module":"user","section":"Notification","method":"deleteDeviceToken"},"GET /holds":{"module":"consumer","section":"Hold","method":"fetchHolds"},"POST /holds":{"module":"consumer","section":"Hold","method":"registerHold"},"POST /holds/{holdId}/cancel":{"module":"consumer","section":"Hold","method":"cancelHold"},"POST /auth/signup":{"module":"auth","section":"Auth","method":"registerUser"},"POST /auth/refresh":{"module":"auth","section":"Auth","method":"refreshUserAuthKey"},"POST /auth/owner/kakao":{"module":"auth","section":"Auth","method":"verifyOwnerKakaoTokenAndLogin"},"POST /auth/owner/kakao/exchange":{"module":"auth","section":"Auth","method":"exchangeOwnerCode"},"POST /auth/logout":{"module":"auth","section":"Auth","method":"logout"},"POST /auth/guest":{"module":"auth","section":"Auth","method":"issueGuestToken"},"POST /auth/consumer/kakao":{"module":"auth","section":"Auth","method":"verifyConsumerKakaoTokenAndLogin"},"POST /auth/consumer/kakao/exchange":{"module":"auth","section":"Auth","method":"exchangeConsumerCode"},"PATCH /owner/products/{id}/stock":{"module":"owner","section":"Product","method":"updateStock"},"PATCH /notifications/{notificationId}/read":{"module":"user","section":"Notification","method":"readNotification"},"GET /users/me":{"module":"user","section":"User","method":"fetchMe"},"DELETE /users/me":{"module":"user","section":"User","method":"deleteMe"},"GET /terms":{"module":"auth","section":"Terms","method":"fetchTerms"},"GET /terms/{termsDocumentId}":{"module":"auth","section":"Terms","method":"fetchTerm"},"GET /stores/{storeId}/products":{"module":"consumer","section":"Store","method":"fetchStoreProducts"},"GET /stores/nearby":{"module":"consumer","section":"Store","method":"fetchNearbyStores"},"GET /recipes":{"module":"consumer","section":"Recipe","method":"fetchRecipes"},"GET /recipes/{id}":{"module":"consumer","section":"Recipe","method":"fetchRecipe"},"GET /recipes/categories":{"module":"consumer","section":"Recipe","method":"fetchCategories"},"GET /products/{productId}":{"module":"consumer","section":"Product","method":"fetchProduct"},"GET /products/nearby":{"module":"consumer","section":"Product","method":"fetchNearbyProducts"},"GET /ping":{"module":"consumer","section":"Health","method":"checkHealth"},"GET /owner/stores/me":{"module":"owner","section":"Store","method":"fetchMyStore"},"GET /owner/products/{id}":{"module":"owner","section":"Product","method":"fetchMyProduct"},"GET /owner/home":{"module":"owner","section":"Home","method":"fetchOwnerHome"},"GET /owner/holds":{"module":"owner","section":"Hold","method":"fetchOwnerHolds"},"GET /owner/holds/{id}":{"module":"owner","section":"Hold","method":"fetchOwnerHold"},"GET /notifications":{"module":"user","section":"Notification","method":"fetchNotifications"},"GET /holds/{holdId}":{"module":"consumer","section":"Hold","method":"fetchHold"},"GET /holds/active":{"module":"consumer","section":"Hold","method":"fetchActiveHold"},"GET /owner/holds/cancel-candidates":{"module":"owner","section":"Hold","method":"fetchHoldCancelCandidates"},"POST /owner/holds/cancel":{"module":"owner","section":"Hold","method":"cancelHoldsForShortage"},"GET /owner/ingredients":{"module":"owner","section":"Ingredient","method":"searchIngredients"},"GET /owner/ingredients/recommendations":{"module":"owner","section":"Ingredient","method":"recommendIngredientTags"},"GET /owner/products":{"module":"owner","section":"Product","method":"fetchMyProducts"}}</script>
+  <script>
+    (function () {
+      "use strict";
+
+      var spec = JSON.parse(document.getElementById("spec-data").textContent);
+      var endpointMap = JSON.parse(document.getElementById("map-data").textContent);
+      var methodOrder = { get: 1, post: 2, put: 3, patch: 4, delete: 5, options: 6, head: 7 };
+      var moduleLabels = {
+        auth: "인증",
+        consumer: "소비자",
+        owner: "점주",
+        user: "사용자"
+      };
+      var tagLabels = {};
+      (spec.tags || []).forEach(function (tag) {
+        tagLabels[tag.name] = tag.description || tag.name;
+      });
+
+      var endpointGuides = {
+        "GET /users/me/location": {
+          title: "내 위치 조회",
+          description: "현재 사용자가 저장한 지역명과 위도·경도 정보를 조회합니다.",
+          when: "주변 가게나 상품을 보여주기 전에 사용자의 현재 위치를 읽을 때 사용합니다."
+        },
+        "PUT /users/me/location": {
+          title: "내 위치 변경",
+          description: "사용자가 선택한 지역명과 좌표를 자신의 위치 정보로 저장합니다.",
+          when: "사용자가 지도나 지역 선택 화면에서 위치를 확정했을 때 호출합니다."
+        },
+        "POST /owner/stores": {
+          title: "점주 가게 등록",
+          description: "점주의 가게 이름, 주소, 영업시간, 사업자 정보 등을 등록합니다.",
+          when: "점주 온보딩에서 아직 등록된 가게가 없을 때 가게 등록을 완료하는 데 사용합니다."
+        },
+        "POST /owner/products": {
+          title: "상품 등록",
+          description: "상품명, 카테고리, 수량, 가격, 식자재 태그, 픽업 종료 시각을 점주 가게의 상품으로 등록합니다.",
+          when: "상품 등록 폼의 입력을 검증하고 실제 판매 상품을 생성할 때 호출합니다."
+        },
+        "GET /owner/products": {
+          title: "내 상품 목록 조회",
+          description: "현재 점주가 등록한 상품을 페이지 단위로 조회하고 재고·찜 수량·재확인 상태를 함께 보여줍니다.",
+          when: "점주 상품 관리 화면을 열거나 재고 부족 상품만 필터링할 때 사용합니다."
+        },
+        "POST /owner/products/{id}/stock-reconfirm": {
+          title: "재고 부족 재확인 응답",
+          description: "재고 부족으로 확인이 필요한 상품에 대해 점주가 처리 가능 여부를 답변합니다.",
+          when: "상품의 재고 부족 알림에서 점주가 확인 또는 대응을 선택했을 때 호출합니다."
+        },
+        "POST /owner/products/preview": {
+          title: "상품 등록 미리보기",
+          description: "상품 등록 정보를 저장하기 전에 가격, 할인율, 픽업 정보 등 계산된 미리보기 결과를 반환합니다.",
+          when: "상품 등록 화면에서 최종 등록 전에 입력 결과를 미리 보여줄 때 사용합니다."
+        },
+        "POST /owner/products/photos": {
+          title: "상품 사진 업로드",
+          description: "상품 이미지 파일을 업로드하고 저장된 이미지 URL을 반환합니다.",
+          when: "상품 등록 폼에서 이미지를 선택한 직후 상품 본문에 넣을 photoUrl을 얻을 때 호출합니다."
+        },
+        "POST /owner/holds/{id}/complete": {
+          title: "픽업 완료 처리",
+          description: "점주가 특정 찜 또는 예약 상품의 고객 픽업이 완료되었음을 처리합니다.",
+          when: "고객에게 상품을 전달한 뒤 해당 픽업 건을 완료 상태로 변경할 때 사용합니다."
+        },
+        "POST /owner/holds/cancel": {
+          title: "재고 부족 찜 일괄 취소",
+          description: "재고 부족으로 처리할 수 없는 찜 또는 예약 건들을 한 번에 취소합니다.",
+          when: "점주가 재고 부족 상황에서 취소 후보를 확인한 뒤 여러 건을 일괄 처리할 때 호출합니다."
+        },
+        "POST /notifications/read-all": {
+          title: "모든 알림 읽음 처리",
+          description: "현재 사용자의 읽지 않은 알림을 모두 읽음 상태로 변경합니다.",
+          when: "알림 화면에서 전체 읽음 버튼을 눌렀을 때 사용합니다."
+        },
+        "POST /notifications/device-tokens": {
+          title: "푸시 디바이스 토큰 등록",
+          description: "플랫폼과 FCM 토큰을 현재 사용자 계정에 등록해 푸시 알림을 받을 수 있게 합니다.",
+          when: "로그인 후 또는 FCM 토큰이 갱신된 시점에 앱에서 호출합니다."
+        },
+        "DELETE /notifications/device-tokens": {
+          title: "푸시 디바이스 토큰 해제",
+          description: "요청에 포함된 FCM 토큰을 현재 사용자 계정에서 제거합니다.",
+          when: "로그아웃하거나 해당 기기에서 더 이상 알림을 받지 않도록 할 때 사용합니다."
+        },
+        "GET /holds": {
+          title: "찜·예약 내역 조회",
+          description: "사용자의 찜 또는 예약 이력을 페이지 단위로 조회하고 상태별 상세 내역을 반환합니다.",
+          when: "마이페이지의 이용 내역 화면에서 과거와 현재의 찜·예약 목록을 보여줄 때 사용합니다."
+        },
+        "POST /holds": {
+          title: "상품 찜·예약 생성",
+          description: "상품 ID와 수량을 받아 해당 상품에 대한 찜 또는 예약을 생성합니다.",
+          when: "상품 상세 화면에서 사용자가 수량을 선택하고 예약을 확정할 때 호출합니다."
+        },
+        "POST /holds/{holdId}/cancel": {
+          title: "찜·예약 취소",
+          description: "지정한 찜 또는 예약 건을 취소하고 변경된 상태를 반환합니다.",
+          when: "사용자가 픽업 전에 예약 취소를 요청했을 때 사용합니다."
+        },
+        "POST /auth/signup": {
+          title: "회원 가입 완료",
+          description: "카카오 인증으로 발급받은 signupToken과 약관 동의 정보를 사용해 회원 가입을 완료하고 인증 토큰을 발급합니다.",
+          when: "소셜 인증은 끝났지만 아직 Mangro 회원이 아닌 사용자가 약관 동의를 제출할 때 호출합니다."
+        },
+        "POST /auth/refresh": {
+          title: "인증 토큰 갱신",
+          description: "refresh token을 검증해 새로운 access token과 refresh token을 발급합니다.",
+          when: "access token이 만료되었거나 만료되기 직전에 로그인 상태를 유지할 때 사용합니다."
+        },
+        "POST /auth/owner/kakao": {
+          title: "점주 카카오 로그인",
+          description: "카카오 access token을 검증하고 점주 계정으로 로그인한 결과를 반환합니다.",
+          when: "점주 로그인 화면에서 카카오 인증이 완료된 직후 호출합니다."
+        },
+        "POST /auth/owner/kakao/exchange": {
+          title: "점주 카카오 인가 코드 교환",
+          description: "카카오 redirect로 전달받은 인가 코드와 redirect URI를 Mangro 인증 토큰으로 교환합니다.",
+          when: "인가 코드 기반의 점주 카카오 로그인 흐름을 사용할 때 호출합니다."
+        },
+        "POST /auth/logout": {
+          title: "로그아웃",
+          description: "refresh token을 폐기해 현재 로그인 세션을 종료합니다.",
+          when: "사용자가 로그아웃을 선택했을 때 서버 세션을 정리하기 위해 사용합니다."
+        },
+        "POST /auth/guest": {
+          title: "게스트 토큰 발급",
+          description: "기기 식별자인 installId를 기준으로 로그인 전 사용자를 위한 게스트 토큰을 발급합니다.",
+          when: "회원 가입이나 로그인 전에 앱의 공개·게스트 기능을 이용하게 할 때 호출합니다."
+        },
+        "POST /auth/consumer/kakao": {
+          title: "소비자 카카오 로그인",
+          description: "카카오 access token을 검증하고 소비자 계정으로 로그인한 결과를 반환합니다.",
+          when: "소비자 로그인 화면에서 카카오 인증이 완료된 직후 호출합니다."
+        },
+        "POST /auth/consumer/kakao/exchange": {
+          title: "소비자 카카오 인가 코드 교환",
+          description: "카카오 redirect로 전달받은 인가 코드와 redirect URI를 Mangro 인증 토큰으로 교환합니다.",
+          when: "인가 코드 기반의 소비자 카카오 로그인 흐름을 사용할 때 호출합니다."
+        },
+        "PATCH /owner/products/{id}/stock": {
+          title: "상품 재고 수정",
+          description: "지정한 상품의 현재 재고 수량을 점주가 직접 변경합니다.",
+          when: "점주 상품 관리 화면에서 재고 수량을 조정하거나 실물 재고를 반영할 때 사용합니다."
+        },
+        "PATCH /notifications/{notificationId}/read": {
+          title: "알림 읽음 처리",
+          description: "지정한 알림 하나를 읽음 상태로 변경합니다.",
+          when: "사용자가 알림 항목을 열거나 확인했을 때 해당 항목만 처리할 때 사용합니다."
+        },
+        "GET /users/me": {
+          title: "내 계정 정보 조회",
+          description: "현재 인증된 사용자의 기본 프로필과 계정 정보를 조회합니다.",
+          when: "마이페이지, 프로필 화면, 로그인 후 사용자 상태를 초기화할 때 사용합니다."
+        },
+        "DELETE /users/me": {
+          title: "회원 탈퇴",
+          description: "현재 인증된 사용자의 Mangro 계정을 탈퇴 처리합니다.",
+          when: "사용자가 회원 탈퇴를 최종 확인한 뒤 계정과 관련된 사용자 상태를 정리할 때 호출합니다."
+        },
+        "GET /terms": {
+          title: "약관 목록 조회",
+          description: "역할(role)에 맞는 서비스 약관 문서 목록과 동의에 필요한 정보를 조회합니다.",
+          when: "회원 가입 또는 약관 관리 화면에서 현재 적용 중인 약관 목록을 보여줄 때 사용합니다."
+        },
+        "GET /terms/{termsDocumentId}": {
+          title: "약관 상세 조회",
+          description: "약관 문서 ID에 해당하는 약관의 제목, 본문, 버전 등 상세 내용을 조회합니다.",
+          when: "사용자가 특정 약관의 전문을 열어 읽을 때 사용합니다."
+        },
+        "GET /stores/{storeId}/products": {
+          title: "가게 상품 목록 조회",
+          description: "특정 가게의 판매 상품과 가게 위치·픽업 가능 시간 정보를 조회합니다.",
+          when: "가게 상세 화면에서 해당 가게가 판매 중인 상품을 보여줄 때 사용합니다."
+        },
+        "GET /stores/nearby": {
+          title: "주변 가게 조회",
+          description: "지도 영역의 위도·경도 범위 안에 있는 가게 목록을 조회합니다.",
+          when: "지도나 주변 가게 목록에서 현재 화면 영역에 맞는 가게를 표시할 때 사용합니다."
+        },
+        "GET /recipes": {
+          title: "레시피 목록 조회",
+          description: "카테고리와 페이지 조건에 맞는 레시피 요약 목록을 조회합니다.",
+          when: "레시피 홈 또는 카테고리별 목록을 페이지 단위로 보여줄 때 사용합니다."
+        },
+        "GET /recipes/{id}": {
+          title: "레시피 상세 조회",
+          description: "레시피 ID에 해당하는 조리 방법, 재료, 설명 등 상세 정보를 조회합니다.",
+          when: "레시피 목록에서 하나를 선택해 상세 화면을 열 때 사용합니다."
+        },
+        "GET /recipes/categories": {
+          title: "레시피 카테고리 조회",
+          description: "레시피 필터에 사용할 수 있는 카테고리 목록을 조회합니다.",
+          when: "레시피 화면의 카테고리 탭이나 필터를 구성할 때 사용합니다."
+        },
+        "GET /products/{productId}": {
+          title: "상품 상세 조회",
+          description: "상품 정보와 판매 가게, 가격, 재고, 픽업 정보 등을 조회합니다.",
+          when: "상품 목록이나 지도에서 상품을 선택해 상세 화면을 열 때 사용합니다."
+        },
+        "GET /products/nearby": {
+          title: "주변 상품 조회",
+          description: "현재 위치와 검색 조건에 맞는 주변 상품을 페이지 단위로 조회합니다.",
+          when: "주변 상품 탐색 화면에서 카테고리·정렬·검색 반경을 적용해 목록을 보여줄 때 사용합니다."
+        },
+        "GET /ping": {
+          title: "서버 상태 확인",
+          description: "Mangro API 서버가 요청을 처리할 수 있는지 간단히 확인합니다.",
+          when: "앱 시작 시 서버 연결 상태를 점검하거나 운영 모니터링에서 사용할 수 있습니다."
+        },
+        "GET /owner/stores/me": {
+          title: "내 가게 조회",
+          description: "현재 점주 계정에 연결된 가게의 기본 정보와 영업 정보를 조회합니다.",
+          when: "점주 홈이나 가게 설정 화면을 초기화할 때 사용합니다."
+        },
+        "GET /owner/products/{id}": {
+          title: "내 상품 상세 조회",
+          description: "현재 점주가 등록한 상품 하나의 상세 정보, 가격, 재고, 픽업 상태를 조회합니다.",
+          when: "점주 상품 관리에서 상품을 편집하거나 상세 정보를 열 때 사용합니다."
+        },
+        "GET /owner/ingredients": {
+          title: "식자재 태그 검색",
+          description: "검색어와 개수 조건에 맞는 식자재 태그 후보를 조회합니다.",
+          when: "상품 등록 화면에서 식자재 태그를 입력할 때 자동완성 후보를 보여주기 위해 사용합니다."
+        },
+        "GET /owner/ingredients/recommendations": {
+          title: "식자재 태그 추천",
+          description: "상품명을 기준으로 연관성이 높은 식자재 태그를 추천합니다.",
+          when: "점주가 상품명을 입력한 뒤 태그 입력을 빠르게 제안할 때 사용합니다."
+        },
+        "GET /owner/home": {
+          title: "점주 홈 요약 조회",
+          description: "점주 홈에 필요한 가게 정보, 상품 요약, 픽업 예정, 알림 수, 재고 이슈를 한 번에 조회합니다.",
+          when: "점주 앱의 홈 화면을 진입하거나 새로고침할 때 사용합니다."
+        },
+        "GET /owner/holds": {
+          title: "점주 찜·예약 현황 조회",
+          description: "점주 가게에 들어온 찜 또는 예약 건을 상태와 페이지 조건으로 조회합니다.",
+          when: "점주가 픽업 대기, 완료, 취소 등의 처리 현황을 확인할 때 사용합니다."
+        },
+        "GET /owner/holds/{id}": {
+          title: "점주 찜·예약 상세 조회",
+          description: "점주가 처리해야 하는 특정 찜 또는 예약 건의 고객·상품·픽업 상세 정보를 조회합니다.",
+          when: "점주 현황 목록에서 하나를 선택해 처리 상세 화면을 열 때 사용합니다."
+        },
+        "GET /owner/holds/cancel-candidates": {
+          title: "재고 부족 취소 후보 조회",
+          description: "현재 재고로 처리하기 어려운 찜 또는 예약 상품과 취소 권장 건수를 조회합니다.",
+          when: "점주가 재고 부족 문제를 확인하고 취소 대상을 선택하기 전에 사용합니다."
+        },
+        "GET /notifications": {
+          title: "알림 목록 조회",
+          description: "현재 사용자의 알림 목록과 읽지 않은 알림 수를 페이지 단위로 조회합니다.",
+          when: "알림 센터를 열거나 앱의 알림 배지를 갱신할 때 사용합니다."
+        },
+        "GET /holds/{holdId}": {
+          title: "찜·예약 상세 조회",
+          description: "사용자의 특정 찜 또는 예약 건에 대한 상품, 가게, 상태, 픽업 시간 정보를 조회합니다.",
+          when: "예약 내역에서 하나를 선택해 상세 정보나 픽업 안내를 보여줄 때 사용합니다."
+        },
+        "GET /holds/active": {
+          title: "활성 찜·예약 조회",
+          description: "현재 사용자가 진행 중인 활성 찜 또는 예약과 취소 가능 횟수 정보를 조회합니다.",
+          when: "홈이나 마이페이지에서 현재 진행 중인 예약 상태를 빠르게 보여줄 때 사용합니다."
+        }
+      };
+
+      var operations = [];
+      Object.keys(spec.paths || {}).forEach(function (path) {
+        var pathItem = spec.paths[path] || {};
+        Object.keys(pathItem).forEach(function (method) {
+          if (!Object.prototype.hasOwnProperty.call(methodOrder, method)) return;
+          var operation = pathItem[method] || {};
+          var key = method.toUpperCase() + " " + path;
+          var mapping = endpointMap[key] || {};
+          var module = mapping.module || inferModule(path);
+          operations.push({
+            key: key,
+            path: path,
+            method: method,
+            operation: operation,
+            mapping: mapping,
+            module: module,
+            section: mapping.section || (operation.tags || [])[0] || "기타",
+            tag: (operation.tags || [])[0] || "기타"
+          });
+        });
+      });
+
+      operations.sort(function (a, b) {
+        var moduleCompare = moduleRank(a.module) - moduleRank(b.module);
+        if (moduleCompare !== 0) return moduleCompare;
+        var sectionCompare = a.section.localeCompare(b.section);
+        if (sectionCompare !== 0) return sectionCompare;
+        var methodCompare = methodOrder[a.method] - methodOrder[b.method];
+        if (methodCompare !== 0) return methodCompare;
+        return a.path.localeCompare(b.path);
+      });
+
+      var state = {
+        search: "",
+        module: "all",
+        tag: "all",
+        selected: 0
+      };
+
+      function inferModule(path) {
+        if (path.indexOf("/auth") === 0 || path.indexOf("/terms") === 0) return "auth";
+        if (path.indexOf("/owner") === 0) return "owner";
+        if (path.indexOf("/notifications") === 0 || path.indexOf("/users") === 0) return "user";
+        return "consumer";
+      }
+
+      function moduleRank(module) {
+        var ranks = { auth: 1, consumer: 2, owner: 3, user: 4 };
+        return ranks[module] || 99;
+      }
+
+      function esc(value) {
+        return String(value === undefined || value === null ? "" : value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function text(value) {
+        return esc(value).replace(/\n/g, "<br>");
+      }
+
+      function methodClass(method) {
+        return "method-" + method.toLowerCase();
+      }
+
+      function refName(ref) {
+        return String(ref || "").split("/").pop();
+      }
+
+      function resolveSchema(schema) {
+        if (!schema || !schema.$ref) return schema || {};
+        return (spec.components && spec.components.schemas && spec.components.schemas[refName(schema.$ref)]) || schema;
+      }
+
+      function schemaType(schema) {
+        if (!schema) return "unknown";
+        if (schema.$ref) return refName(schema.$ref);
+        if (schema.type === "array") return "array<" + schemaType(schema.items) + ">";
+        if (schema.type) return schema.type;
+        if (schema.properties) return "object";
+        if (schema.oneOf || schema.anyOf) return "oneOf";
+        return "object";
+      }
+
+      function cloneObject(source) {
+        var copy = {};
+        Object.keys(source || {}).forEach(function (key) { copy[key] = source[key]; });
+        return copy;
+      }
+
+      function exampleValue(schema, stack, depth) {
+        if (!schema || depth > 8) return {};
+        stack = stack || {};
+
+        if (schema.example !== undefined) return schema.example;
+        if (schema.examples && schema.examples.length) {
+          var firstExample = schema.examples[0];
+          return firstExample && firstExample.value !== undefined ? firstExample.value : firstExample;
+        }
+        if (schema.default !== undefined) return schema.default;
+        if (schema.enum && schema.enum.length) return schema.enum[0];
+
+        if (schema.$ref) {
+          var ref = schema.$ref;
+          if (stack[ref]) return {};
+          var nextStack = cloneObject(stack);
+          nextStack[ref] = true;
+          return exampleValue(resolveSchema(schema), nextStack, depth + 1);
+        }
+
+        if (schema.allOf && schema.allOf.length) {
+          var merged = {};
+          schema.allOf.forEach(function (part) {
+            var partValue = exampleValue(part, stack, depth + 1);
+            if (partValue && typeof partValue === "object" && !Array.isArray(partValue)) {
+              Object.keys(partValue).forEach(function (key) { merged[key] = partValue[key]; });
+            }
+          });
+          return Object.keys(merged).length ? merged : exampleValue(schema.allOf[0], stack, depth + 1);
+        }
+
+        if (schema.oneOf && schema.oneOf.length) return exampleValue(schema.oneOf[0], stack, depth + 1);
+        if (schema.anyOf && schema.anyOf.length) return exampleValue(schema.anyOf[0], stack, depth + 1);
+
+        var resolved = resolveSchema(schema);
+        if (resolved !== schema) return exampleValue(resolved, stack, depth + 1);
+
+        if (schema.type === "array" || schema.items) {
+          return [exampleValue(schema.items || {}, stack, depth + 1)];
+        }
+
+        if (schema.type === "object" || schema.properties || schema.additionalProperties) {
+          var objectValue = {};
+          Object.keys(schema.properties || {}).forEach(function (key) {
+            objectValue[key] = exampleValue(schema.properties[key], stack, depth + 1);
+          });
+          if (!Object.keys(objectValue).length && schema.additionalProperties && schema.additionalProperties !== true) {
+            objectValue["key"] = exampleValue(schema.additionalProperties, stack, depth + 1);
+          }
+          return objectValue;
+        }
+
+        if (schema.format === "binary" || schema.format === "byte") return "<binary file>";
+        if (schema.format === "date-time") return "2026-09-18T12:00:00Z";
+        if (schema.format === "date") return "2026-09-18";
+        if (schema.format === "uuid") return "00000000-0000-0000-0000-000000000000";
+        if (schema.type === "integer" || schema.type === "number") return 0;
+        if (schema.type === "boolean") return false;
+        return "<string>";
+      }
+
+      function pretty(value) {
+        return JSON.stringify(value, null, 2);
+      }
+
+      function mediaInfo(content) {
+        if (!content) return null;
+        var mediaTypes = Object.keys(content);
+        if (!mediaTypes.length) return null;
+        var selected = mediaTypes.indexOf("application/json") >= 0 ? "application/json" : mediaTypes[0];
+        return {
+          type: selected,
+          media: content[selected] || {},
+          schema: (content[selected] || {}).schema
+        };
+      }
+
+      function parameterList(item) {
+        var pathItem = spec.paths[item.path] || {};
+        return (pathItem.parameters || []).concat(item.operation.parameters || []);
+      }
+
+      function parameterExample(parameter) {
+        if (parameter.example !== undefined) return parameter.example;
+        if (parameter.examples) {
+          var keys = Object.keys(parameter.examples);
+          if (keys.length) {
+            var value = parameter.examples[keys[0]];
+            return value && value.value !== undefined ? value.value : value;
+          }
+        }
+        return exampleValue(parameter.schema || {}, {}, 0);
+      }
+
+      function requestInfo(item) {
+        var groups = {};
+        parameterList(item).forEach(function (parameter) {
+          var bucket = parameter.in || "query";
+          if (!groups[bucket]) groups[bucket] = {};
+          groups[bucket][parameter.name] = parameterExample(parameter);
+        });
+
+        var body = null;
+        var contentType = null;
+        if (item.operation.requestBody && item.operation.requestBody.content) {
+          var info = mediaInfo(item.operation.requestBody.content);
+          if (info) {
+            contentType = info.type;
+            body = info.media.example !== undefined
+              ? info.media.example
+              : exampleValue(info.schema || {}, {}, 0);
+            groups.body = body;
+          }
+        }
+
+        var groupKeys = Object.keys(groups);
+        var json = groupKeys.length === 1 && groupKeys[0] === "body" ? body : groups;
+        return { json: json, contentType: contentType, hasData: groupKeys.length > 0 };
+      }
+
+      function responseInfo(response) {
+        var info = mediaInfo(response.content);
+        if (!info) return { info: null, example: null };
+        var example = info.media.example;
+        if (example === undefined && info.media.examples) {
+          var keys = Object.keys(info.media.examples);
+          if (keys.length) {
+            var item = info.media.examples[keys[0]];
+            example = item && item.value !== undefined ? item.value : item;
+          }
+        }
+        if (example === undefined) example = exampleValue(info.schema || {}, {}, 0);
+        return { info: info, example: example };
+      }
+
+      function jsonPanel(label, value, id) {
+        return "<div class=\"json-box\">"
+          + "<div class=\"json-toolbar\"><span>" + esc(label) + "</span>"
+          + "<button class=\"copy-button\" type=\"button\" data-copy-id=\"" + esc(id) + "\">JSON 복사</button></div>"
+          + "<pre id=\"" + esc(id) + "\" class=\"json\">" + esc(pretty(value)) + "</pre>"
+          + "</div>";
+      }
+
+      function schemaPanel(schema, label) {
+        if (!schema) return "";
+        return "<details class=\"schema\"><summary>" + esc(label || "스키마 원본 보기") + "</summary>"
+          + "<pre>" + esc(pretty(schema)) + "</pre></details>";
+      }
+
+      function renderParameterTable(item) {
+        var parameters = parameterList(item);
+        if (!parameters.length) return "<div class=\"no-content\">path, query, header 파라미터가 없습니다.</div>";
+        var rows = parameters.map(function (parameter) {
+          var value = parameterExample(parameter);
+          var description = parameter.description || "";
+          var required = parameter.required ? "<span class=\"required\">필수</span>" : "선택";
+          return "<tr>"
+            + "<td><code>" + esc(parameter.name) + "</code></td>"
+            + "<td><span class=\"where\">" + esc(parameter.in || "") + "</span></td>"
+            + "<td><code>" + esc(schemaType(parameter.schema || {})) + "</code></td>"
+            + "<td>" + required + "</td>"
+            + "<td>" + text(description || "-") + "</td>"
+            + "<td><code>" + esc(typeof value === "object" ? pretty(value) : value) + "</code></td>"
+            + "</tr>";
+        }).join("");
+        return "<div class=\"table-wrap\"><table><thead><tr>"
+          + "<th>이름</th><th>위치</th><th>형식</th><th>조건</th><th>설명</th><th>예시</th>"
+          + "</tr></thead><tbody>" + rows + "</tbody></table></div>";
+      }
+
+      function renderRequest(item, index) {
+        var request = requestInfo(item);
+        var operationBody = item.operation.requestBody;
+        var bodySchema = null;
+        if (operationBody && operationBody.content) {
+          var bodyMedia = mediaInfo(operationBody.content);
+          bodySchema = bodyMedia && bodyMedia.schema;
+        }
+        var bodyLabel = operationBody && operationBody.required ? "요청 본문 · 필수" : "요청 본문";
+        var contentPill = request.contentType
+          ? "<span class=\"media-pill\">" + esc(request.contentType) + "</span>"
+          : "";
+        var output = "<section class=\"section-card\">"
+          + "<div class=\"section-heading\"><h3>Request</h3><span>호출에 필요한 값</span></div>";
+        if (parameterList(item).length) {
+          output += "<p class=\"subheading\">Parameters</p>" + renderParameterTable(item);
+        }
+        if (request.hasData) {
+          output += "<p class=\"subheading\">" + esc(bodyLabel) + "</p>"
+            + contentPill
+            + jsonPanel("요청 JSON 예시", request.json, "request-json-" + index);
+          if (bodySchema) output += schemaPanel(bodySchema, "요청 본문 스키마 원본 보기");
+        } else {
+          output += "<div class=\"no-content\">요청 파라미터와 request body가 없습니다.</div>";
+        }
+        return output + "</section>";
+      }
+
+      function isErrorStatus(status) {
+        var code = parseInt(status, 10);
+        return code >= 400 || status === "default";
+      }
+
+      function renderResponses(item, index) {
+        var responses = item.operation.responses || {};
+        var keys = Object.keys(responses);
+        if (!keys.length) return "<section class=\"section-card\"><div class=\"no-content\">응답 정의가 없습니다.</div></section>";
+        var blocks = keys.map(function (status, responseIndex) {
+          var response = responses[status] || {};
+          var result = responseInfo(response);
+          var description = response.description || "응답";
+          var responseId = "response-json-" + index + "-" + responseIndex;
+          var body = result.info
+            ? jsonPanel("응답 JSON 예시", result.example, responseId)
+            : "<div class=\"no-content\">응답 본문이 없습니다. 상태 코드와 설명만 반환됩니다.</div>";
+          var schema = result.info ? schemaPanel(result.info.schema, "응답 스키마 원본 보기") : "";
+          return "<div class=\"response\">"
+            + "<div class=\"response-head\"><div class=\"status " + (isErrorStatus(status) ? "error" : "") + "\">"
+            + "<span class=\"status-code\">" + esc(status) + "</span><span>" + text(description) + "</span></div>"
+            + (result.info ? "<span class=\"response-description\">" + esc(result.info.type) + "</span>" : "")
+            + "</div><div class=\"response-body\">" + body + schema + "</div></div>";
+        }).join("");
+        return "<section class=\"section-card wide\"><div class=\"section-heading\"><h3>Responses</h3>"
+          + "<span>" + keys.length + "개 상태 코드</span></div>" + blocks + "</section>";
+      }
+
+      function renderDetail(item, index) {
+        var operation = item.operation;
+        var guide = endpointGuides[item.key] || {};
+        var tags = operation.tags || [];
+        var secured = operation.security !== undefined
+          ? Array.isArray(operation.security) && operation.security.length > 0
+          : Array.isArray(spec.security) && spec.security.length > 0;
+        var tagChips = tags.map(function (tag) {
+          return "<span class=\"chip purple\">" + esc(tagLabels[tag] || tag) + "</span>";
+        }).join("");
+        var authChip = secured ? "<span class=\"chip auth\">🔒 인증 필요</span>" : "<span class=\"chip\">인증 선택 또는 불필요</span>";
+        var operationId = operation.operationId
+          ? "<span class=\"chip\"><span>operationId</span> <code class=\"operation-id\">" + esc(operation.operationId) + "</code></span>"
+          : "";
+        var clientMethod = item.mapping.method
+          ? "<span class=\"chip brand\"><span>클라이언트</span> <code class=\"operation-id\">" + esc(item.mapping.method) + "</code></span>"
+          : "";
+        var module = "<span class=\"chip brand\">" + esc(moduleLabels[item.module] || item.module) + "</span>";
+
+        var title = guide.title || operation.summary || operation.description || "API endpoint";
+        var description = guide.description || operation.description || "";
+        var guideBlock = guide.when
+          ? "<div class=\"guide-box\"><p class=\"guide-kicker\">Endpoint 설명</p>"
+            + "<p class=\"guide-main\">" + text(description) + "</p>"
+            + "<p class=\"guide-when\"><strong>사용 시점</strong> · " + text(guide.when) + "</p></div>"
+          : "";
+        return "<div class=\"operation-card\">"
+          + "<div class=\"operation-head\">"
+          + "<div class=\"operation-breadcrumb\"><span class=\"crumb\">" + esc(item.section) + "</span><span>›</span><span class=\"crumb\">" + esc(item.module) + "</span></div>"
+          + "<div class=\"operation-title\"><span class=\"method " + methodClass(item.method) + "\">" + esc(item.method.toUpperCase()) + "</span>"
+          + "<h1 class=\"path\">" + esc(item.path) + "</h1></div>"
+          + "<p class=\"summary\">" + text(title) + "</p>"
+          + "<div class=\"chips\">" + module + tagChips + authChip + operationId + clientMethod + "</div>"
+          + guideBlock
+          + "</div></div>"
+          + "<div class=\"body-grid\">"
+          + renderRequest(item, index)
+          + renderResponses(item, index)
+          + "</div>";
+      }
+
+      function searchable(item) {
+        var operation = item.operation;
+        return [
+          item.key,
+          item.module,
+          item.section,
+          item.mapping.method,
+          item.mapping.module,
+          (operation.tags || []).join(" "),
+          operation.summary,
+          operation.description,
+          operation.operationId,
+          (endpointGuides[item.key] || {}).title,
+          (endpointGuides[item.key] || {}).description,
+          (endpointGuides[item.key] || {}).when
+        ].join(" ").toLowerCase();
+      }
+
+      function visibleOperations() {
+        var query = state.search.trim().toLowerCase();
+        return operations.filter(function (item) {
+          if (state.module !== "all" && item.module !== state.module) return false;
+          if (state.tag !== "all" && item.tag !== state.tag) return false;
+          return !query || searchable(item).indexOf(query) >= 0;
+        });
+      }
+
+      function renderFilters() {
+        var moduleSelect = document.getElementById("module-filter");
+        var tagSelect = document.getElementById("tag-filter");
+        var modules = {};
+        var tags = {};
+        operations.forEach(function (item) {
+          modules[item.module] = true;
+          tags[item.tag] = true;
+        });
+        var moduleOptions = Object.keys(modules).sort(function (a, b) {
+          return moduleRank(a) - moduleRank(b);
+        }).map(function (module) {
+          return "<option value=\"" + esc(module) + "\">" + esc(moduleLabels[module] || module) + "</option>";
+        }).join("");
+        var tagOptions = Object.keys(tags).sort(function (a, b) {
+          return a.localeCompare(b);
+        }).map(function (tag) {
+          return "<option value=\"" + esc(tag) + "\">" + esc(tagLabels[tag] || tag) + "</option>";
+        }).join("");
+        moduleSelect.innerHTML = "<option value=\"all\">모든 모듈</option>" + moduleOptions;
+        tagSelect.innerHTML = "<option value=\"all\">모든 태그</option>" + tagOptions;
+        moduleSelect.value = state.module;
+        tagSelect.value = state.tag;
+      }
+
+      function renderList() {
+        var list = document.getElementById("endpoint-list");
+        var visible = visibleOperations();
+        var count = document.getElementById("counts");
+        count.innerHTML = "<span>" + visible.length + " / " + operations.length + " endpoints</span>"
+          + "<span>" + Object.keys(spec.components && spec.components.schemas || {}).length + " schemas</span>";
+        if (!visible.length) {
+          list.innerHTML = "<div class=\"empty\">검색 조건에 맞는 endpoint가 없습니다.</div>";
+          return;
+        }
+        list.innerHTML = visible.map(function (item) {
+          var index = operations.indexOf(item);
+          var active = index === state.selected ? " active" : "";
+          var label = (endpointGuides[item.key] || {}).title || item.mapping.method || item.operation.operationId || item.section;
+          return "<button class=\"endpoint-item" + active + "\" type=\"button\" data-index=\"" + index + "\">"
+            + "<span class=\"endpoint-topline\"><span class=\"method " + methodClass(item.method) + "\">" + esc(item.method.toUpperCase()) + "</span>"
+            + "<span class=\"mini-path\">" + esc(item.path) + "</span></span>"
+            + "<span class=\"endpoint-meta\"><span>" + esc(moduleLabels[item.module] || item.module) + "</span><span>·</span><span>" + esc(label) + "</span></span>"
+            + "</button>";
+        }).join("");
+      }
+
+      function selectOperation(index, updateHash) {
+        if (!operations[index]) return;
+        state.selected = index;
+        renderList();
+        document.getElementById("detail").innerHTML = renderDetail(operations[index], index);
+        if (updateHash) {
+          window.history.replaceState(null, "", "#" + encodeURIComponent(operations[index].key));
+        }
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function copyText(value) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(value).then(function () {}).catch(function () { fallbackCopy(value); });
+        } else {
+          fallbackCopy(value);
+        }
+      }
+
+      function fallbackCopy(value) {
+        var area = document.createElement("textarea");
+        area.value = value;
+        area.style.position = "fixed";
+        area.style.opacity = "0";
+        document.body.appendChild(area);
+        area.select();
+        try { document.execCommand("copy"); } finally { document.body.removeChild(area); }
+      }
+
+      document.getElementById("search").addEventListener("input", function (event) {
+        state.search = event.target.value;
+        renderList();
+      });
+      document.getElementById("module-filter").addEventListener("change", function (event) {
+        state.module = event.target.value;
+        renderList();
+      });
+      document.getElementById("tag-filter").addEventListener("change", function (event) {
+        state.tag = event.target.value;
+        renderList();
+      });
+      document.getElementById("endpoint-list").addEventListener("click", function (event) {
+        var button = event.target.closest("button[data-index]");
+        if (button) selectOperation(parseInt(button.getAttribute("data-index"), 10), true);
+      });
+      document.getElementById("detail").addEventListener("click", function (event) {
+        var button = event.target.closest("button[data-copy-id]");
+        if (!button) return;
+        var element = document.getElementById(button.getAttribute("data-copy-id"));
+        if (!element) return;
+        copyText(element.textContent);
+        var original = button.textContent;
+        button.textContent = "복사됨";
+        window.setTimeout(function () { button.textContent = original; }, 1200);
+      });
+
+      document.getElementById("server-url").textContent = (spec.servers && spec.servers[0] && spec.servers[0].url) || "환경별 설정 필요";
+      renderFilters();
+
+      var hashKey = "";
+      if (window.location.hash) {
+        try { hashKey = decodeURIComponent(window.location.hash.slice(1)); } catch (error) { hashKey = ""; }
+      }
+      var hashIndex = operations.findIndex(function (item) { return item.key === hashKey; });
+      state.selected = hashIndex >= 0 ? hashIndex : 0;
+      renderList();
+      if (operations.length) {
+        document.getElementById("detail").innerHTML = renderDetail(operations[state.selected], state.selected);
+      } else {
+        document.getElementById("detail").innerHTML = "<div class=\"empty\">OpenAPI endpoint를 찾지 못했습니다.</div>";
+      }
+    }());
+  </script>
+</body>
+</html>

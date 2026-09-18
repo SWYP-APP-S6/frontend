@@ -21,6 +21,9 @@ class OwnerHoldPagingSourceTest {
     private var failure: Exception? = null
     private var empty = false
     private val repository = object : OwnerProductRepository {
+        override fun pagedProducts() = error("unused")
+        override fun refreshProducts() = Unit
+        override fun fetchProducts(page: Int) = error("unused")
         override fun pagedHolds(status: HoldStatus?, onPageLoaded: (HoldPage) -> Unit) = error("unused")
         override fun refreshHolds() = Unit
         override fun fetchHolds(page: Int, status: HoldStatus?) = flow {

@@ -11,9 +11,18 @@
 - 취소 화면은 서버 후보·순번·`suggested` 선택과 `noticeMessage`를 사용한다. 최종 확인한 ID만 전송하며 오류 시 후보를 재조회하고 자동 재시도하지 않는다.
 - 화면 복귀 시 서버를 재조회한다. 서버 오류는 빈 목록이나 저장 성공으로 표시하지 않는다.
 
+## 등록 상품 목록 (2026-09-18)
+
+- `GET /owner/products?page=0&size=20`를 `OwnerProductRepository.fetchProducts` → `ProductListViewModel` → `ProductListScreen`으로 연결한다. 기존 생성 서비스와 Hilt 바인딩을 재사용한다.
+- 등록 상품도 `OwnerProductPagingSource` → Repository의 `Pager` → ViewModel의 `cachedIn(viewModelScope)` → 화면의 `LazyPagingItems`를 사용한다. 첫 요청과 후속 요청 모두 `size=20`이며, 항목 접근에 따라 다음 페이지를 조회하고 `last=true`에서 중단한다.
+- 화면 복귀·명시적 갱신·찜 처리 성공 시 상품 PagingSource를 무효화한다. 갱신 키는 현재 보이는 항목의 페이지를 기준으로 계산하며 이전/다음 페이지를 모두 조회할 수 있다. 상품/찜 탭의 스크롤 상태는 분리해서 유지한다.
+- 최초·갱신·이전/다음 페이지 오류는 Paging의 LoadState로 표시하고 retry로 실패한 요청을 재시도한다. 추가 로딩 실패 시 기존 항목을 유지한다. 수동 페이지 번호와 목록 크기에 의존하는 추가 요청은 사용하지 않는다.
+- 목록 전용 모델은 `availableQty`, `activeHoldQty`, `shortfallQty`를 각각 보존한다. 가용 수량을 상세의 실재고 `stockQty`로 대체하지 않는다. 카드 선택 시 상품 ID로 기존 상세 화면을 연다.
+- 찜 상태 필터는 찜 탭에만 표시하고 상품 탭은 등록 상품 전체 목록을 표시한다.
+- 자동 검증 시작 후 사용자가 직접 앱에서 검증하도록 요청했으므로, 최종 구현의 테스트·빌드·기기 검증은 실행하지 않았다.
+
 ## 서버 계약 대기
 
-- **등록 상품 전체 목록은 미연결**: 9월 15일·17일 명세 모두 점주 전체 목록 API가 없다. `/owner/home.products`는 판매 중 상품만 포함하므로 대체하지 않는다. 서버 API 추가 후 연결한다.
 - 상품 응답의 `ingredientTags`는 `id`, `name`, nullable `category` 객체 목록이다. 현재 도메인은 ID 집합만 보존하므로 태그 이름을 화면에 임의로 생성하지 않는다.
 - 원격 `/v3/api-docs`는 401을 반환했다. 로컬 9월 17일 전달 명세의 점주 경로가 병합 입력과 동일하고 체크섬이 일치함을 확인했다. 배포 서버와의 실시간 동일성은 확인하지 못했다.
 - 상품 신규 등록은 별도 작업 브랜치의 범위다.

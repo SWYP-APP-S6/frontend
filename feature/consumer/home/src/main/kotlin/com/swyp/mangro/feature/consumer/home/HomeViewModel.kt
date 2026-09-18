@@ -54,7 +54,7 @@ class HomeViewModel @Inject constructor(
                         applyLocation(location.regionName, location.latitude, location.longitude)
                     }
                     .onFailure {
-                        android.util.Log.e("HomeViewModel", "fetchMyLocation failed", it)
+                        // TODO: 실패 처리
                     }
             }
         }
@@ -68,7 +68,6 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val deviceLocation = locationProvider.fetchCurrentLocation()
             if (deviceLocation == null) {
-                android.util.Log.e("HomeViewModel", "GPS location unavailable")
                 return@launch
             }
             val regionName = locationProvider.fetchRegionName(deviceLocation.latitude, deviceLocation.longitude)
@@ -81,7 +80,9 @@ class HomeViewModel @Inject constructor(
             ).collect { result ->
                 result
                     .onSuccess { saved -> applyLocation(saved.regionName, saved.latitude, saved.longitude) }
-                    .onFailure { android.util.Log.e("HomeViewModel", "setMyLocation failed", it) }
+                    .onFailure {
+                        // TODO: 실패 처리
+                    }
             }
         }
     }
@@ -111,7 +112,6 @@ class HomeViewModel @Inject constructor(
             repository.fetchNearbyStores(minLat, maxLat, minLng, maxLng).collect { result ->
                 result
                     .onSuccess { nearby ->
-                        android.util.Log.e("HomeViewModel", "fetchNearbyStores success: ${nearby.stores.size} stores")
                         _uiState.update { state ->
                             state.copy(
                                 storePins = nearby.stores.map { store ->
@@ -130,7 +130,7 @@ class HomeViewModel @Inject constructor(
                         }
                     }
                     .onFailure {
-                        android.util.Log.e("HomeViewModel", "fetchNearbyStores failed", it)
+                        // TODO: 실패 처리
                     }
             }
         }

@@ -28,7 +28,6 @@ internal class ProductDetailRepositoryImpl @Inject constructor(
         )
         if (!response.isSuccessful) {
             val errorBody = response.errorBody()?.string()
-            android.util.Log.e("ProductDetailRepo", "fetchProduct HTTP ${response.code()}: $errorBody")
             throw HttpException(response)
         }
         val body = requireNotNull(response.body())
@@ -62,7 +61,7 @@ internal class ProductDetailRepositoryImpl @Inject constructor(
                     difficulty = it.difficulty?.value,
                     ingredientNames = it.ingredientNames.splitIngredientsIfNeeded(),
                 )
-            }.also { android.util.Log.e("ProductDetailRepo", "recipes mapped: $it") },
+            },
         )
     }
 
@@ -72,7 +71,6 @@ internal class ProductDetailRepositoryImpl @Inject constructor(
         )
         if (!response.isSuccessful) {
             val errorBody = response.errorBody()?.string()
-            android.util.Log.e("ProductDetailRepo", "registerHold HTTP ${response.code()}: $errorBody")
             throw HttpException(response)
         }
         requireNotNull(response.body()).id

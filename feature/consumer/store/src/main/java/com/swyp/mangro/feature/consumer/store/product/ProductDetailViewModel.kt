@@ -62,7 +62,7 @@ class ProductDetailViewModel @Inject constructor(
                                 _uiEvent.send(ProductDetailUiEvent.WishConfirmed(holdId.toString()))
                             }
                             .onFailure {
-                                android.util.Log.e("ProductDetailViewModel", "registerHold failed", it)
+                                // TODO: 실패 처리
                             }
                     }
                 }
@@ -89,7 +89,7 @@ class ProductDetailViewModel @Inject constructor(
                         _uiState.update { it.copy(productInfo = detail.toProductInfo()) }
                     }
                     .onFailure {
-                        android.util.Log.e("ProductDetailViewModel", "fetchProduct failed", it)
+                        // TODO: 실패 처리
                     }
             }
         }

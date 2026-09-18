@@ -49,7 +49,6 @@ internal class ConsumerHomeRepositoryImpl @Inject constructor(
         )
         if (!response.isSuccessful) {
             val errorBody = response.errorBody()?.string()
-            android.util.Log.e("ConsumerHomeRepo", "setMyLocation HTTP ${response.code()}: $errorBody")
             throw HttpException(response)
         }
         requireNotNull(response.body()?.location).toMyLocation()
@@ -64,7 +63,6 @@ internal class ConsumerHomeRepositoryImpl @Inject constructor(
         )
         if (!response.isSuccessful) {
             val errorBody = response.errorBody()?.string()
-            android.util.Log.e("ConsumerHomeRepo", "fetchNearbyStores HTTP ${response.code()}: $errorBody")
             throw HttpException(response)
         }
         val body = requireNotNull(response.body())

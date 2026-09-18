@@ -7,6 +7,8 @@ import com.swyp.mangro.core.model.product.ProductCategory
 
 data class HomeUiState(
     val locationName: String = "",
+    val locationLatitude: Double? = null,
+    val locationLongitude: Double? = null,
     val viewMode: HomeViewMode = HomeViewMode.MAP,
     val isLocationPermissionGranted: Boolean = false,
     val storePins: List<StorePinMarker> = emptyList(),

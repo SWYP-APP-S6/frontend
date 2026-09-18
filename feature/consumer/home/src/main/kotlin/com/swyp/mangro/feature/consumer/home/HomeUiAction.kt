@@ -15,4 +15,5 @@ sealed interface HomeUiAction {
     data class ListProductClicked(val productId: String) : HomeUiAction
     data class CategorySelected(val category: ProductCategory?) : HomeUiAction
     data class BottomMenuClicked(val menu: ConsumerMenu) : HomeUiAction
+    data class MapBoundsChanged(val minLat: Double, val maxLat: Double, val minLng: Double, val maxLng: Double) : HomeUiAction
 }

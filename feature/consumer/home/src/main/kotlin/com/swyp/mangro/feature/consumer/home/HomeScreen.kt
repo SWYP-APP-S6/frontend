@@ -1,5 +1,7 @@
 package com.swyp.mangro.feature.consumer.home
 
+import android.graphics.Canvas
+import android.graphics.Paint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -29,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,8 +43,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,13 +55,20 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.createBitmap
 import com.naver.maps.geometry.LatLng
+import com.naver.maps.map.CameraPosition
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
+import com.naver.maps.map.compose.LocationTrackingMode
 import com.naver.maps.map.compose.MapEffect
+import com.naver.maps.map.compose.MapProperties
+import com.naver.maps.map.compose.MapUiSettings
 import com.naver.maps.map.compose.MarkerComposable
 import com.naver.maps.map.compose.MarkerState
 import com.naver.maps.map.compose.NaverMap
 import com.naver.maps.map.compose.rememberCameraPositionState
+import com.naver.maps.map.compose.rememberFusedLocationSource
+import com.naver.maps.map.overlay.OverlayImage
 import com.swyp.mangro.core.designsystem.R
 import com.swyp.mangro.core.designsystem.component.MangroStorePin
 import com.swyp.mangro.core.designsystem.component.appbar.ConsumerBottomAppBar
@@ -79,7 +91,6 @@ import com.swyp.mangro.feature.consumer.home.HomeViewMode.LIST
 import com.swyp.mangro.feature.consumer.home.R as homeR
 import com.swyp.mangro.feature.consumer.home.component.CountdownCard
 import com.swyp.mangro.feature.consumer.home.component.HomeCategoryChip
-import com.swyp.mangro.feature.consumer.home.component.LocationPermissionRequiredContent
 import com.swyp.mangro.feature.consumer.home.component.SortDropdown
 import com.swyp.mangro.feature.consumer.home.component.StoreGroupHeader
 import kotlin.collections.filter
@@ -191,20 +202,34 @@ private fun HomeMapContent(
     onAction: (HomeUiAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    if (uiState.storePins.isEmpty()) {
-        LocationPermissionRequiredContent(
-            onExpandRadiusClick = { onAction(HomeUiAction.ExpandRadiusClicked) },
-            modifier = Modifier.fillMaxSize(),
-        )
-        return
-    }
+//    if (uiState.storePins.isEmpty()) {
+//        LocationPermissionRequiredContent(
+//            onExpandRadiusClick = { onAction(HomeUiAction.ExpandRadiusClicked) },
+//            modifier = Modifier.fillMaxSize(),
+//        )
+//        return
+//    }
 
     val cameraPositionState = rememberCameraPositionState()
     var selectedPinScreenOffset by remember { mutableStateOf<Offset?>(null) }
 
+    LaunchedEffect(uiState.locationLatitude, uiState.locationLongitude) {
+        val lat = uiState.locationLatitude
+        val lng = uiState.locationLongitude
+        if (lat != null && lng != null) {
+            cameraPositionState.position = CameraPosition(LatLng(lat, lng), 15.0)
+        }
+    }
+
+    val context = LocalContext.current
+    val locationSource = rememberFusedLocationSource()
+
     NaverMap(
         modifier = modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
+        locationSource = locationSource,
+        properties = MapProperties(locationTrackingMode = LocationTrackingMode.Follow),
+        uiSettings = MapUiSettings(isLocationButtonEnabled = true),
     ) {
         uiState.storePins.forEach { pin ->
             val isSelected = uiState.selectedStore?.storeId == pin.storeId
@@ -231,10 +256,52 @@ private fun HomeMapContent(
             uiState.storePins.find { it.storeId == detail.storeId }
         }
 
-        MapEffect(selectedPin, cameraPositionState.position) { map ->
+        MapEffect(selectedPin) { map ->
             selectedPinScreenOffset = selectedPin?.let {
                 val point = map.projection.toScreenLocation(LatLng(it.latitude, it.longitude))
                 Offset(point.x, point.y)
+            }
+        }
+
+        val primaryColor = MangroTheme.colors.primaryNormal
+
+        MapEffect(primaryColor) { map ->
+            val colorInt = primaryColor.toArgb()
+            val bitmap = createBitmap(48, 48).apply {
+                val canvas = Canvas(this)
+                val fillPaint = Paint().apply {
+                    color = colorInt
+                    isAntiAlias = true
+                }
+                val strokePaint = Paint().apply {
+                    color = android.graphics.Color.WHITE
+                    isAntiAlias = true
+                    style = Paint.Style.STROKE
+                    strokeWidth = 4f
+                }
+                canvas.drawCircle(24f, 24f, 20f, fillPaint)
+                canvas.drawCircle(24f, 24f, 20f, strokePaint)
+            }
+
+            map.locationOverlay.apply {
+                icon = OverlayImage.fromBitmap(bitmap)
+                circleColor = primaryColor.copy(alpha = 0.2f).toArgb()
+                circleOutlineColor = colorInt
+                circleOutlineWidth = 2
+            }
+        }
+
+        MapEffect(cameraPositionState.isMoving) { map ->
+            if (!cameraPositionState.isMoving) {
+                val bounds = map.contentBounds
+                onAction(
+                    HomeUiAction.MapBoundsChanged(
+                        minLat = bounds.southLatitude,
+                        maxLat = bounds.northLatitude,
+                        minLng = bounds.westLongitude,
+                        maxLng = bounds.eastLongitude,
+                    ),
+                )
             }
         }
     }

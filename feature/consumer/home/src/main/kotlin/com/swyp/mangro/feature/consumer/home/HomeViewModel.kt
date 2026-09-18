@@ -8,6 +8,9 @@ import com.swyp.mangro.core.designsystem.component.count
 import com.swyp.mangro.core.designsystem.component.storePinStateOf
 import com.swyp.mangro.core.model.product.Product
 import com.swyp.mangro.core.model.product.ProductCategory
+import com.swyp.mangro.core.utils.LocationProvider
+import com.swyp.mangro.data.consumer.home.model.ProductSortOption
+import com.swyp.mangro.data.consumer.home.repository.ConsumerHomeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.channels.Channel
@@ -17,244 +20,194 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-private val dummyStoreDetails = mapOf(
-    "dummy-1" to SelectedStoreDetail(
-        storeId = "dummy-1",
-        storeName = "청과마을",
-        closingTime = "19:30",
-        walkingMinutes = 7,
-        products = listOf(
-            StoreProduct(id = "1", imageUrl = "", discountRate = 60, productName = "복숭아 4입", price = 4_000),
-            StoreProduct(id = "2", imageUrl = "", discountRate = 50, productName = "알배기 배추 2통", price = 3_000),
-            StoreProduct(id = "3", imageUrl = "", discountRate = null, productName = "대파 1단", price = 3_500),
-        ),
-    ),
-    "dummy-2" to SelectedStoreDetail(
-        storeId = "dummy-2",
-        storeName = "야채가게",
-        closingTime = "20:00",
-        walkingMinutes = 4,
-        products = listOf(
-            StoreProduct(id = "4", imageUrl = "", discountRate = 30, productName = "시금치 1단", price = 2_000),
-        ),
-    ),
-    "dummy-3" to SelectedStoreDetail(
-        storeId = "dummy-3",
-        storeName = "정육점",
-        closingTime = "18:00",
-        walkingMinutes = 10,
-        products = listOf(
-            StoreProduct(id = "5", imageUrl = "", discountRate = 20, productName = "돼지고기 300g", price = 6_000),
-        ),
-    ),
-)
-
-private val dummyStoreGroups = listOf(
-    StoreProductGroup(
-        storeId = "dummy-1",
-        storeName = "청과마을",
-        walkingMinutes = 7,
-        closingInMinutes = 60,
-        products = listOf(
-            Product(
-                id = "1",
-                imageUrl = "",
-                discountRate = 60,
-                name = "복숭아 4입",
-                price = 4_000,
-                originalPrice = 10_000,
-                category = ProductCategory.VEGETABLES,
-                remainingCount = 3,
-            ),
-            Product(
-                id = "2",
-                imageUrl = "",
-                discountRate = 50,
-                name = "알배기 배추 2통",
-                price = 3_000,
-                originalPrice = 6_000,
-                category = ProductCategory.VEGETABLES,
-                remainingCount = 4,
-            ),
-            Product(
-                id = "3",
-                imageUrl = "",
-                discountRate = null,
-                name = "대파 1단",
-                price = 3_500,
-                originalPrice = null,
-                category = ProductCategory.VEGETABLES,
-                remainingCount = 2,
-            ),
-        ),
-    ),
-    StoreProductGroup(
-        storeId = "dummy-2",
-        storeName = "야채가게",
-        walkingMinutes = 4,
-        closingInMinutes = 30,
-        products = listOf(
-            Product(
-                id = "4",
-                imageUrl = "",
-                discountRate = 30,
-                name = "시금치 1단",
-                price = 2_000,
-                originalPrice = null,
-                category = ProductCategory.VEGETABLES,
-                remainingCount = 4,
-            ),
-        ),
-    ),
-    StoreProductGroup(
-        storeId = "dummy-3",
-        storeName = "정육점",
-        walkingMinutes = 10,
-        closingInMinutes = null,
-        products = listOf(
-            Product(
-                id = "5",
-                imageUrl = "",
-                discountRate = 20,
-                name = "돼지고기 300g",
-                price = 6_000,
-                originalPrice = 7_500,
-                category = ProductCategory.MEAT,
-                remainingCount = 5,
-            ),
-            Product(
-                id = "6",
-                imageUrl = "",
-                discountRate = null,
-                name = "닭가슴살 500g",
-                price = 5_000,
-                originalPrice = null,
-                category = ProductCategory.MEAT,
-                remainingCount = 8,
-            ),
-        ),
-    ),
-    StoreProductGroup(
-        storeId = "dummy-4",
-        storeName = "동네수산",
-        walkingMinutes = 3,
-        closingInMinutes = 15,
-        products = listOf(
-            Product(
-                id = "7",
-                imageUrl = "",
-                discountRate = 45,
-                name = "고등어 2마리",
-                price = 5_500,
-                originalPrice = 10_000,
-                category = ProductCategory.SEAFOOD,
-                remainingCount = 1,
-            ),
-            Product(
-                id = "8",
-                imageUrl = "",
-                discountRate = 25,
-                name = "손질 오징어 2팩",
-                price = 6_000,
-                originalPrice = 8_000,
-                category = ProductCategory.SEAFOOD,
-                remainingCount = 3,
-            ),
-        ),
-    ),
-    StoreProductGroup(
-        storeId = "dummy-5",
-        storeName = "곡물가게",
-        walkingMinutes = 12,
-        closingInMinutes = 120,
-        products = listOf(
-            Product(
-                id = "9",
-                imageUrl = "",
-                discountRate = null,
-                name = "백미 4kg",
-                price = 15_000,
-                originalPrice = null,
-                category = ProductCategory.GRAINS,
-                remainingCount = 6,
-            ),
-            Product(
-                id = "10",
-                imageUrl = "",
-                discountRate = 15,
-                name = "혼합 견과 300g",
-                price = 9_000,
-                originalPrice = 10_500,
-                category = ProductCategory.NUTS,
-                remainingCount = 4,
-            ),
-        ),
-    ),
-    StoreProductGroup(
-        storeId = "dummy-6",
-        storeName = "만물상회",
-        walkingMinutes = 6,
-        closingInMinutes = 45,
-        products = listOf(
-            Product(
-                id = "11",
-                imageUrl = "",
-                discountRate = 10,
-                name = "국산 참기름 1병",
-                price = 12_000,
-                originalPrice = 13_500,
-                category = ProductCategory.ETC,
-                remainingCount = 2,
-            ),
-        ),
-    ),
-)
+private const val DEFAULT_BOUNDS_DELTA = 0.01
 
 @HiltViewModel
-class HomeViewModel @Inject constructor() : ViewModel() {
+class HomeViewModel @Inject constructor(
+    private val repository: ConsumerHomeRepository,
+    private val locationProvider: LocationProvider,
+) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(
-        HomeUiState(
-            locationName = "망원동",
-            storePins = listOf(
-                StorePinMarker(
-                    storeId = "dummy-1",
-                    latitude = 37.5563,
-                    longitude = 126.9099,
-                    pinState = storePinStateOf(count = 3, name = "청과마을", isSelected = false),
-                ),
-                StorePinMarker(
-                    storeId = "dummy-2",
-                    latitude = 37.5570,
-                    longitude = 126.9110,
-                    pinState = storePinStateOf(count = 5, name = "야채가게", isSelected = false),
-                ),
-                StorePinMarker(
-                    storeId = "dummy-3",
-                    latitude = 37.5550,
-                    longitude = 126.9080,
-                    pinState = storePinStateOf(count = 2, name = "정육점", isSelected = false),
-                ),
-            ),
-            activeWish = ActiveWishSummary(
-                storeName = "청과 마을",
-                productSummary = "복숭아 4입 · 1개",
-                requestTimeMillis = System.currentTimeMillis() - 5 * 60 * 1000,
-                endTimeMillis = System.currentTimeMillis() + 9 * 60 * 1000 + 24 * 1000,
-            ),
-            storeGroups = dummyStoreGroups,
-        ),
-    )
+    private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     private val _event = Channel<HomeUiEvent>()
     val event = _event.receiveAsFlow()
 
+    private var lastLat: Double? = null
+    private var lastLng: Double? = null
+
+    init {
+        loadInitialLocationAndStores()
+        loadActiveHold()
+    }
+
+    private fun loadInitialLocationAndStores() {
+        viewModelScope.launch {
+            repository.fetchMyLocation().collect { result ->
+                result
+                    .onSuccess { location ->
+                        if (location == null) {
+                            resolveLocationViaGps()
+                            return@onSuccess
+                        }
+                        applyLocation(location.regionName, location.latitude, location.longitude)
+                    }
+                    .onFailure {
+                        // TODO: 실패 처리
+                    }
+            }
+        }
+    }
+
+    private fun resolveLocationViaGps() {
+        if (!_uiState.value.isLocationPermissionGranted) {
+            viewModelScope.launch { _event.send(HomeUiEvent.RequestLocationPermission) }
+            return
+        }
+        viewModelScope.launch {
+            val deviceLocation = locationProvider.fetchCurrentLocation()
+            if (deviceLocation == null) {
+                return@launch
+            }
+            val regionName = locationProvider.fetchRegionName(deviceLocation.latitude, deviceLocation.longitude)
+                ?: "내 위치"
+
+            repository.setMyLocation(
+                regionName = regionName,
+                latitude = deviceLocation.latitude,
+                longitude = deviceLocation.longitude,
+            ).collect { result ->
+                result
+                    .onSuccess { saved -> applyLocation(saved.regionName, saved.latitude, saved.longitude) }
+                    .onFailure {
+                        // TODO: 실패 처리
+                    }
+            }
+        }
+    }
+
+    private fun applyLocation(regionName: String, latitude: Double, longitude: Double) {
+        lastLat = latitude
+        lastLng = longitude
+        _uiState.update {
+            it.copy(
+                locationName = regionName,
+                locationLatitude = latitude,
+                locationLongitude = longitude,
+                isLocationPermissionGranted = true,
+            )
+        }
+        loadNearbyStores(
+            minLat = latitude - DEFAULT_BOUNDS_DELTA,
+            maxLat = latitude + DEFAULT_BOUNDS_DELTA,
+            minLng = longitude - DEFAULT_BOUNDS_DELTA,
+            maxLng = longitude + DEFAULT_BOUNDS_DELTA,
+        )
+        loadNearbyProducts(latitude, longitude, _uiState.value.sortOption)
+    }
+
+    private fun loadNearbyStores(minLat: Double, maxLat: Double, minLng: Double, maxLng: Double) {
+        viewModelScope.launch {
+            repository.fetchNearbyStores(minLat, maxLat, minLng, maxLng).collect { result ->
+                result
+                    .onSuccess { nearby ->
+                        _uiState.update { state ->
+                            state.copy(
+                                storePins = nearby.stores.map { store ->
+                                    StorePinMarker(
+                                        storeId = store.storeId.toString(),
+                                        latitude = store.latitude,
+                                        longitude = store.longitude,
+                                        pinState = storePinStateOf(
+                                            count = store.sellableProductCount,
+                                            name = store.name,
+                                            isSelected = false,
+                                        ),
+                                    )
+                                },
+                            )
+                        }
+                    }
+                    .onFailure {
+                        // TODO: 실패 처리
+                    }
+            }
+        }
+    }
+
+    private fun loadNearbyProducts(lat: Double, lng: Double, sortOption: HomeSortOption) {
+        viewModelScope.launch {
+            repository.fetchNearbyProducts(
+                lat = lat,
+                lng = lng,
+                sort = sortOption.toRemoteSort(),
+            ).collect { result ->
+                result
+                    .onSuccess { nearbyProducts ->
+                        _uiState.update { state ->
+                            state.copy(
+                                storeGroups = nearbyProducts.storeGroups.map { group ->
+                                    StoreProductGroup(
+                                        storeId = group.storeId.toString(),
+                                        storeName = group.storeName,
+                                        walkingMinutes = group.walkingMinutes,
+                                        closingInMinutes = null, // TODO: earliestPickupEndAtMillis로부터 남은 분 계산
+                                        products = group.products.map { product ->
+                                            Product(
+                                                id = product.id.toString(),
+                                                imageUrl = product.photoUrl,
+                                                discountRate = product.discountRate,
+                                                name = product.name,
+                                                price = product.salePrice,
+                                                originalPrice = product.originalPrice.takeIf { it != product.salePrice },
+                                                category = ProductCategory.fromStoreCategory(product.category),
+                                                remainingCount = product.availableQty,
+                                            )
+                                        },
+                                    )
+                                },
+                            )
+                        }
+                    }
+                    .onFailure {
+                        // TODO: 주변 상품 조회 실패 처리
+                    }
+            }
+        }
+    }
+
+    private fun loadActiveHold() {
+        viewModelScope.launch {
+            repository.fetchActiveHold().collect { result ->
+                result
+                    .onSuccess { hold ->
+                        _uiState.update { state ->
+                            state.copy(
+                                activeWish = hold?.let {
+                                    ActiveWishSummary(
+                                        storeName = it.storeName,
+                                        productSummary = "${it.firstItemName} · ${it.totalQty}개",
+                                        requestTimeMillis = it.heldAtMillis,
+                                        endTimeMillis = it.expiresAtMillis,
+                                    )
+                                },
+                            )
+                        }
+                    }
+                    .onFailure {
+                        // TODO: 활성 찜 조회 실패 처리
+                    }
+            }
+        }
+    }
+
     fun handleAction(action: HomeUiAction) {
         when (action) {
             HomeUiAction.PermissionBannerActionClicked -> {
-                // TODO: 실제 권한 요청
-                _uiState.update { it.copy(isLocationPermissionGranted = true) }
+                viewModelScope.launch {
+                    _event.send(HomeUiEvent.RequestLocationPermission)
+                }
             }
             HomeUiAction.ExpandRadiusClicked -> {
                 // TODO: 반경 확장 후 재검색
@@ -292,49 +245,79 @@ class HomeViewModel @Inject constructor() : ViewModel() {
                     }
                 }
             }
-
             is HomeUiAction.SortOptionSelected -> {
-                _uiState.update { state ->
-                    state.copy(
-                        sortOption = action.option,
-                        storeGroups = state.storeGroups.map { group ->
-                            group.copy(
-                                products = when (action.option) {
-                                    HomeSortOption.DISTANCE -> group.products
-                                    HomeSortOption.DEADLINE -> group.products
-                                },
-                            )
-                        },
-                    )
+                _uiState.update { it.copy(sortOption = action.option) }
+                val lat = lastLat
+                val lng = lastLng
+                if (lat != null && lng != null) {
+                    loadNearbyProducts(lat, lng, action.option)
                 }
+            }
+            is HomeUiAction.MapBoundsChanged -> {
+                loadNearbyStores(action.minLat, action.maxLat, action.minLng, action.maxLng)
             }
         }
     }
 
     private fun selectStore(storeId: String) {
-        val detail = dummyStoreDetails[storeId] ?: return
-
-        _uiState.update { state ->
-            state.copy(
-                selectedStore = detail,
-                storePins = state.storePins.map { pin ->
-                    pin.copy(
-                        pinState = storePinStateOf(
-                            count = pin.pinState.count,
-                            name = detail.storeName.takeIf { pin.storeId == storeId } ?: "",
-                            isSelected = pin.storeId == storeId,
-                        ),
-                    )
-                },
-            )
+        val id = storeId.toLongOrNull() ?: return
+        viewModelScope.launch {
+            repository.fetchStoreProducts(id, lastLat, lastLng).collect { result ->
+                result
+                    .onSuccess { detail ->
+                        _uiState.update { state ->
+                            state.copy(
+                                selectedStore = SelectedStoreDetail(
+                                    storeId = storeId,
+                                    storeName = detail.name,
+                                    closingTime = detail.businessCloseTime?.toHourMinute() ?: "",
+                                    walkingMinutes = detail.walkingMinutes ?: 0,
+                                    products = detail.products.map { product ->
+                                        StoreProduct(
+                                            id = product.id.toString(),
+                                            imageUrl = product.photoUrl,
+                                            discountRate = product.discountRate,
+                                            productName = product.name,
+                                            price = product.salePrice,
+                                        )
+                                    },
+                                ),
+                                storePins = state.storePins.map { pin ->
+                                    if (pin.storeId == storeId) {
+                                        pin.copy(pinState = storePinStateOf(count = pin.pinState.count, name = detail.name, isSelected = true))
+                                    } else {
+                                        pin.copy(pinState = storePinStateOf(count = pin.pinState.count, name = "", isSelected = false))
+                                    }
+                                },
+                            )
+                        }
+                    }
+                    .onFailure {
+                        // TODO: 상점 상세 조회 실패 처리
+                    }
+            }
         }
     }
 
     fun updateLocationPermission(isGranted: Boolean) {
         _uiState.update { it.copy(isLocationPermissionGranted = isGranted) }
+        if (isGranted) {
+            resolveLocationViaGps()
+        }
     }
+}
+
+private fun HomeSortOption.toRemoteSort(): ProductSortOption = when (this) {
+    HomeSortOption.DISTANCE -> ProductSortOption.DISTANCE
+    HomeSortOption.DEADLINE -> ProductSortOption.PICKUP_DEADLINE
 }
 
 private fun MutableStateFlow<HomeUiState>.update(block: (HomeUiState) -> HomeUiState) {
     value = block(value)
 }
+
+private fun String.toHourMinute(): String = takeIf { it.isNotBlank() }
+    ?.split(":")
+    ?.take(2)
+    ?.joinToString(":")
+    ?: this

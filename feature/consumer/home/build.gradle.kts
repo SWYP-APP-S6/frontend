@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":core:utils"))
     implementation(project(":core:model"))
     implementation(project(":feature:consumer:store"))
+    implementation(project(":data:consumer:home"))
 
     implementation(libs.kotlinx.collections.immutable)
     implementation(libs.androidx.navigation.compose)

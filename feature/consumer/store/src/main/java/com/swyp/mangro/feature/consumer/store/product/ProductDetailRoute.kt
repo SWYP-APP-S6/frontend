@@ -21,7 +21,7 @@ fun ProductDetailRoute(
         viewModel.uiEvent.collect { event ->
             when (event) {
                 is ProductDetailUiEvent.NavigateToStoreDetail -> onNavigateToStoreDetail()
-                is ProductDetailUiEvent.WishConfirmed -> onNavigateToHold("1")
+                is ProductDetailUiEvent.WishConfirmed -> onNavigateToHold(event.holdId)
             }
         }
     }

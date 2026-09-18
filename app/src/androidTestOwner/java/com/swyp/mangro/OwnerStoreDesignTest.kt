@@ -22,6 +22,7 @@ import com.swyp.mangro.core.designsystem.component.card.owner.OwnerPickupRequest
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerPickupRequestStatus
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.designsystem.theme.OwnerMangroTypography
+import com.swyp.mangro.data.owner.product.model.ProductSummary
 import com.swyp.mangro.feature.owner.product.model.OwnerPickupModel
 import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import com.swyp.mangro.feature.owner.product.screen.list.ProductListAction
@@ -44,8 +45,26 @@ class OwnerStoreDesignTest {
     private fun show(state: ProductListState) {
         compose.setContent {
             var current by remember { mutableStateOf(state) }
-            val paging = remember(current.filter) {
+            val pickupPaging = remember(current.filter) {
                 flowOf(PagingData.from(current.filteredPickups, LoadStates(LoadState.NotLoading(false), LoadState.NotLoading(true), LoadState.NotLoading(true))))
+            }.collectAsLazyPagingItems()
+            val productPaging = remember(current.products) {
+                flowOf(
+                    PagingData.from(
+                        current.products.map { product ->
+                            ProductSummary(
+                                id = product.id.toLong(),
+                                name = product.name,
+                                photoUrl = product.photos.firstOrNull().orEmpty(),
+                                salePrice = product.salePrice,
+                                availableQuantity = product.availableQuantity,
+                                activeHoldQuantity = product.reservedQuantity,
+                                shortfallQuantity = product.shortageQuantity,
+                            )
+                        },
+                        LoadStates(LoadState.NotLoading(false), LoadState.NotLoading(true), LoadState.NotLoading(true)),
+                    ),
+                )
             }.collectAsLazyPagingItems()
             MangroTheme(typography = OwnerMangroTypography) {
                 ProductListScreen(current.copy(filteredTotal = current.filteredPickups.size.toLong()), { action ->
@@ -55,7 +74,7 @@ class OwnerStoreDesignTest {
                         is ProductListAction.FilterSelected -> current.copy(filter = action.filter)
                         else -> current
                     }
-                }, pickups = paging)
+                }, pickups = pickupPaging, products = productPaging)
             }
         }
     }

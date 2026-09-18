@@ -20,7 +20,6 @@ class AuthorizationInterceptor(
         }
 
         val token = accessToken()?.takeIf { it.isNotBlank() }
-        android.util.Log.e("TempTokenDebug", "token=$token") // TODO: 확인 후 반드시 삭제
 
         return chain.proceed(
             if (token != null && request.header("Authorization") == null) {

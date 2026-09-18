@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -71,6 +72,7 @@ fun RecipeCard(
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Column(
+            modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Row(
@@ -87,6 +89,8 @@ fun RecipeCard(
                     text = recipeName,
                     color = MangroTheme.colors.textTitle,
                     style = MangroTheme.typography.body.bodyM,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
 
@@ -94,6 +98,8 @@ fun RecipeCard(
                 text = ingredients.joinToString(separator = " · "),
                 color = MangroTheme.colors.textBody,
                 style = MangroTheme.typography.body.body03,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
 

@@ -68,3 +68,4 @@ include(":data:consumer:product")
 include(":data:consumer:hold")
 
 include(":data:owner:notification")
+include(":data:consumer:notification")

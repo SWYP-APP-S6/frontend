@@ -32,7 +32,6 @@ import com.swyp.mangro.core.designsystem.component.appbar.ConsumerBottomAppBar
 import com.swyp.mangro.core.designsystem.component.appbar.ConsumerMenu
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
 import com.swyp.mangro.core.designsystem.component.card.purchase.PurchaseInfoCard
-import com.swyp.mangro.core.designsystem.component.card.recipe.RecipeCard
 import com.swyp.mangro.core.designsystem.theme.Gray900
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.consumer.hold.R
@@ -126,34 +125,6 @@ fun PickupCompleteScreen(
                 PurchaseInfoCard(
                     receipt = info.purchaseInfo,
                 )
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        top = 0.dp,
-                        bottom = 40.dp,
-                        start = 20.dp,
-                        end = 20.dp,
-                    ),
-            ) {
-                Text(
-                    text = stringResource(R.string.pickup_complete_recipe_section_title),
-                    style = MangroTheme.typography.title.titleM,
-                    color = MangroTheme.colors.textTitle,
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                info.recommendedRecipes.forEach { recipe ->
-                    RecipeCard(
-                        recipeName = recipe.name,
-                        ingredients = recipe.ingredients,
-                        difficulty = recipe.difficulty,
-                        onClick = { onAction(PickupCompleteUiAction.OnRecipeClick(recipe.id)) },
-                    )
-                }
             }
         }
     }

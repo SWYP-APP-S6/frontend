@@ -6,7 +6,7 @@ Auth·User·Consumer·Owner Android library에서 OpenAPI Generator 7.24.0으로
 
 명세·매핑·체크섬·서버 전달사항은 비공개 자료로 Git에서 제외한다. 새로 클론한 개발자와 CI는 빌드 전에 팀의 비공개 전달 경로로 다음 파일을 받아 저장소 루트에 배치해야 한다.
 
-- `openapi/mangro-app-openapi-2026-09-17-v3.json`
+- `openapi/mangro-app-openapi-2026-09-18-v3-merged.json`
 - `openapi/endpoint-map.json`
 - `openapi/model-map.json`
 - `openapi/spec.sha256`
@@ -72,3 +72,11 @@ Owner HoldService에 재고 부족 취소 후보 조회·취소를 추가하고,
 - 상품 상세·미리보기의 `ingredientTags`는 ID 배열에서 `id`, `name`, nullable `category` 객체 목록으로 변경되었다. 등록·미리보기 요청의 태그 ID 목록 계약은 유지된다.
 - 현재 상품 관리 도메인은 응답 객체에서 태그 ID 집합만 보존한다. 태그 이름 표시와 검색·추천 UI 연결은 후속 범위다.
 - v3 SHA-256: `881bcb323add6059d6e75e50ad706193eddd6c55c5e80a6097d16e6bdc73febf`. 명세·endpoint-map·model-map·spec.sha256을 같은 비공개 묶음으로 전달한다. 실서버 동일성은 이번 갱신에서 검증하지 않았다.
+
+## 2026-09-18 상품 목록 API 반영
+
+- 9월 18일 부분 명세의 `GET /owner/products`와 상품 목록 응답 4개 schema를 9월 17일 v3 전체 명세에 병합했다.
+- 기존 v3의 소비자 15개·식자재 2개 operation과 상품 상세·미리보기의 식자재 객체 계약은 유지한다.
+- 병합 후 전체 49개 operation: Auth 10, Consumer 15, Owner 17, User 7.
+- 병합 명세 SHA-256: `5f1682d2cc0c4e39e7cb4824157d161cf5314e129f300a9c22bdf6e7c59a616c`.
+- 9월 18일 원본은 부분 명세이므로 전체 입력 파일을 대체하지 않는다.

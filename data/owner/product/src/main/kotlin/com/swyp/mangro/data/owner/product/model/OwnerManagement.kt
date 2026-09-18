@@ -15,7 +15,6 @@ data class ManagedProduct(
     val pickupEndAt: Long,
     val ingredientTags: Set<Int>,
     val stockEditable: Boolean,
-    val minAdjustableQuantity: Int,
 )
 
 enum class HoldStatus { HOLDING, COMPLETED, EXPIRED, CANCELED_BY_OWNER, CANCELED_BY_USER }

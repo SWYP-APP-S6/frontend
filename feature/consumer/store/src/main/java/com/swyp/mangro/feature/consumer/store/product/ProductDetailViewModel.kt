@@ -62,7 +62,7 @@ class ProductDetailViewModel @Inject constructor(
                                 _uiEvent.send(ProductDetailUiEvent.WishConfirmed(holdId.toString()))
                             }
                             .onFailure {
-                                // TODO: 실패 처리
+                                android.util.Log.e("ProductDetailViewModel", "registerHold failed", it)
                             }
                     }
                 }
@@ -74,7 +74,9 @@ class ProductDetailViewModel @Inject constructor(
 
             is ProductDetailUiAction.OnStoreInfoClick -> {
                 viewModelScope.launch {
-                    _uiEvent.send(ProductDetailUiEvent.NavigateToStoreDetail)
+                    _uiState.value.productInfo?.store?.let { store ->
+                        _uiEvent.send(ProductDetailUiEvent.OpenMapDirections(store))
+                    }
                 }
             }
         }
@@ -116,6 +118,8 @@ private fun ProductDetail.toProductInfo(): ProductInfo = ProductInfo(
         distanceMeters = store.distanceMeters ?: 0,
         travelInfo = store.walkingMinutes?.let { "도보 ${it}분" } ?: "",
         closingTime = store.businessCloseTime.toHourMinuteOrEmpty(),
+        latitude = store.latitude,
+        longitude = store.longitude,
     ),
     recipes = recipes.map { recipe ->
         Recipe(

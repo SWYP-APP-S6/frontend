@@ -141,7 +141,6 @@ fun HoldScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 StoreLocationCard(
-                    imageUrl = "",
                     onDirectionsClick = { onAction(HoldUiAction.OnDirectionsClick) },
                 )
 

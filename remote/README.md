@@ -6,7 +6,7 @@ Auth·User·Consumer·Owner Android library에서 OpenAPI Generator 7.24.0으로
 
 명세·매핑·체크섬·서버 전달사항은 비공개 자료로 Git에서 제외한다. 새로 클론한 개발자와 CI는 빌드 전에 팀의 비공개 전달 경로로 다음 파일을 받아 저장소 루트에 배치해야 한다.
 
-- `openapi/mangro-app-openapi-2026-09-18-v3-merged.json`
+- `openapi/mangro-app-openapi-2026-09-19-v2-merged.json`
 - `openapi/endpoint-map.json`
 - `openapi/model-map.json`
 - `openapi/spec.sha256`
@@ -50,7 +50,7 @@ python3 scripts/openapi/check_generated.py
 
 ## 2026-09-17 점주 명세 반영
 
-현재 입력은 09-17 v3 전체 명세에 09-18 상품 목록 API를 병합한 스냅샷이다. 09-18 전달본은 점주·공통 일부 명세이므로 전체 입력으로 대체하지 않는다. 소비자 전용 경로와 기존 v3 식자재·상품 상세 계약은 유지한다. 비공개 입력·매핑·체크섬은 같은 묶음으로 전달한다.
+현재 입력은 09-18 전체 병합 명세에 09-19-v2 점주·공통 부분 명세를 덮어쓴 스냅샷이다. 09-19-v2 전달본은 Consumer API와 점주 식자재 API가 빠진 부분 명세이므로 전체 입력으로 직접 대체하지 않는다. 비공개 입력·매핑·체크섬은 같은 묶음으로 전달한다.
 
 알림 조회·읽음 처리·FCM 등록/삭제는 양쪽 역할의 공통 API이므로 `:remote:user`에서 생성하고 Hilt로 제공한다. 기존 `ConsumerServices.notification` 접근은 공통 생성 타입을 참조하도록 유지한다. `DELETE /users/me`도 공통 UserService에 포함한다.
 
@@ -79,3 +79,13 @@ Owner HoldService에 재고 부족 취소 후보 조회·취소를 추가하고,
 - 기존 소비자 15개, Owner 식자재 검색·추천 2개, 객체형 `ingredientTags`와 상품 등록·상세 계약을 보존한다. 전체 49개 operation은 Auth 10, Consumer 15, Owner 17, User 7이다.
 - 병합 스냅샷 SHA-256: `5f1682d2cc0c4e39e7cb4824157d161cf5314e129f300a9c22bdf6e7c59a616c`.
 - `mangro-app-openapi-2026-09-18.json` 자체는 전체 명세가 아니므로 생성 입력으로 직접 사용하지 않는다.
+
+## 2026-09-19 v2 점주·공통 명세 반영
+
+- 09-19-v2 전달본의 27개 경로·30개 operation·67개 스키마를 09-18 전체 병합 명세에 덮어썼다. 전달본에 없는 Consumer 15개 operation과 Owner 식자재 검색·추천 2개 operation은 보존하여 전체 49개 operation을 유지한다.
+- 09-19-v2 전달본은 이전 09-19 전달본과 JSON 의미 구조가 동일하다. 원본 키 순서만 달라 생성되는 API·DTO 계약 변경은 없다.
+- `GET /owner/products`의 `filter`는 기본값 `ALL`과 `ALL`, `ON_SALE`, `RUNNING_LOW`, `SOLD_OUT`, `CLOSED` 값을 사용한다.
+- 상품 상세·미리보기의 `ingredientTags`는 다시 정수 ID 집합으로 변경되었고 `minAdjustableQty`가 제거되었다. 식자재 검색·추천 응답의 `IngredientTagResponse` 객체 계약은 유지한다.
+- Owner 홈 요약의 `onSaleQty`는 `onSaleProductCount`로 변경되었다. 홈·상품 목록 응답에 `shortfallCustomerCount`, 찜 집계에 `canceled`, 알림 타입에 `STORE_APPROVED`·`STORE_REJECTED`가 추가되었다.
+- 09-19-v2 전달본 SHA-256은 `96f7e4b6a04b075befdea0061a91691697d8810c2705ba9908194f3bd8ed6ea1`, 병합 스냅샷 SHA-256은 `6e461ed4f8fd3228ac12625c8d622c3787cb6bb2b63ee489489808dae6e657fd`이다.
+- `mangro-app-openapi-2026-09-19-v2.json` 자체는 전체 명세가 아니므로 생성 입력으로 직접 사용하지 않는다.

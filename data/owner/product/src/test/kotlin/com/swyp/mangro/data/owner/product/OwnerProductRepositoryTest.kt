@@ -63,13 +63,22 @@ class OwnerProductRepositoryTest {
     }
 
     @Test fun productDetailUsesProductIdEndpoint() = runTest {
-        enqueue(product.dropLast(1) + """, "ingredientTags":[{"id":12,"name":"당근"}]}""")
+        enqueue(product.dropLast(1) + """, "ingredientTags":[12]}""")
         val result = repository.fetchProduct(7).single().getOrThrow()
         assertEquals(7L, result.id)
         assertEquals(setOf(12), result.ingredientTags)
         val request = server.takeRequest()
         assertEquals("GET", request.method)
         assertEquals("/owner/products/7", request.path)
+    }
+
+    @Test fun productListPreservesShortfallCustomerCount() = runTest {
+        enqueue(
+            """{"products":{"content":[{"id":7,"name":"복숭아","shortfallCustomerCount":3}],"totalElements":1,"last":true}}""",
+        )
+        val result = repository.fetchProducts(0).single().getOrThrow()
+        assertEquals(3L, result.products.single().shortfallCustomerCount)
+        assertEquals("/owner/products?filter=ALL&page=0&size=20", server.takeRequest().path)
     }
 
     @Test fun cancellationCandidatesUseDedicatedEndpoint() = runTest {

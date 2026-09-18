@@ -32,19 +32,20 @@ class OwnerHomeRepositoryTest {
         enqueue(
             """{
             "store":{"id":9,"status":"APPROVED"},"hasRegisteredProduct":true,
-            "summary":{"upcomingVisitCount":2,"completedTodayCount":3000000000,"onSaleQty":7},
+            "summary":{"upcomingVisitCount":2,"completedTodayCount":3000000000,"onSaleProductCount":7},
             "unreadNotificationCount":5,"reconfirmPendingCount":4,
             "issues":{"expiredTodayCount":3,"productsShortOfStock":1,"shortfallQty":2},
             "upcomingVisits":[{"holdId":17,"nickname":"손님","summary":"채소","totalQty":3,"expiresAt":"2026-09-17T18:30:00+09:00"}],
-            "products":[{"id":20,"name":"채소","availableQty":6,"activeHoldQty":3000000000,"shortfallQty":2}]
+            "products":[{"id":20,"name":"채소","availableQty":6,"activeHoldQty":3000000000,"shortfallQty":2,"shortfallCustomerCount":3}]
         }""",
         )
         val home = repository.fetchHome().single().getOrThrow()
         assertEquals("/owner/home", server.takeRequest().path)
         assertTrue(home.hasRegisteredProduct)
         assertEquals(3000000000L, home.completedTodayCount)
-        assertEquals(7, home.onSaleQty)
+        assertEquals(7, home.onSaleProductCount)
         assertEquals(2, home.products.single().shortfallQty)
+        assertEquals(3L, home.products.single().shortfallCustomerCount)
         assertEquals(3000000000L, home.products.single().activeHoldQty)
         assertEquals(Instant.parse("2026-09-17T09:30:00Z").toEpochMilli(), home.upcomingVisits.single().expiresAtMillis)
         enqueue("""{"store":{"id":9},"hasRegisteredProduct":true,"products":[]}""")

@@ -30,7 +30,7 @@ internal class OwnerHomeRepositoryImpl @Inject constructor(
             hasRegisteredProduct = body.hasRegisteredProduct,
             upcomingVisitCount = body.summary.upcomingVisitCount,
             completedTodayCount = body.summary.completedTodayCount,
-            onSaleQty = body.summary.onSaleQty,
+            onSaleProductCount = body.summary.onSaleProductCount,
             unreadNotificationCount = body.unreadNotificationCount,
             expiredTodayCount = body.issues.expiredTodayCount,
             productsShortOfStock = body.issues.productsShortOfStock,
@@ -42,7 +42,19 @@ internal class OwnerHomeRepositoryImpl @Inject constructor(
             },
             products = body.products.map {
                 require(it.id > 0)
-                OwnerHomeProduct(it.id, it.name, it.photoUrl, it.salePrice, it.availableQty, it.activeHoldQty, it.shortfallQty, it.category, it.status, it.reconfirmPending)
+                OwnerHomeProduct(
+                    id = it.id,
+                    name = it.name,
+                    photoUrl = it.photoUrl,
+                    salePrice = it.salePrice,
+                    availableQty = it.availableQty,
+                    activeHoldQty = it.activeHoldQty,
+                    shortfallQty = it.shortfallQty,
+                    category = it.category,
+                    status = it.status,
+                    reconfirmPending = it.reconfirmPending,
+                    shortfallCustomerCount = it.shortfallCustomerCount,
+                )
             },
         )
     }

@@ -37,6 +37,7 @@ data class SelectedStoreDetail(
 )
 
 data class ActiveWishSummary(
+    val holdId: String,
     val storeName: String,
     val productSummary: String,
     val requestTimeMillis: Long,

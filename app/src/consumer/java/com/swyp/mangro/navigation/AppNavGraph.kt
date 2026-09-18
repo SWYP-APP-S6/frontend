@@ -12,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.swyp.mangro.core.designsystem.component.appbar.ConsumerMenu
 import com.swyp.mangro.core.utils.HideNavigationBarWhileVisible
 import com.swyp.mangro.feature.auth.navigation.Login
+import com.swyp.mangro.feature.auth.navigation.TermsDetail
 import com.swyp.mangro.feature.auth.navigation.authNavGraph
 import com.swyp.mangro.feature.consumer.hold.navigation.HoldHistoryDestination
 import com.swyp.mangro.feature.consumer.hold.navigation.holdDetailScreen
@@ -21,6 +22,8 @@ import com.swyp.mangro.feature.consumer.hold.navigation.navigateToHold
 import com.swyp.mangro.feature.consumer.hold.navigation.pickupCompleteScreen
 import com.swyp.mangro.feature.consumer.home.navigation.Home
 import com.swyp.mangro.feature.consumer.home.navigation.homeNavGraph
+import com.swyp.mangro.feature.consumer.myinfo.navigation.MyInfoDestination
+import com.swyp.mangro.feature.consumer.myinfo.navigation.myInfoScreen
 import com.swyp.mangro.feature.consumer.recipe.navigation.navigateToRecipeDetail
 import com.swyp.mangro.feature.consumer.recipe.navigation.recipeDetailScreen
 import com.swyp.mangro.feature.consumer.store.navigation.navigateToProductDetail
@@ -43,12 +46,12 @@ fun AppNavGraph(
         val destination = when (menu) {
             ConsumerMenu.HOME -> Home
             ConsumerMenu.WISH_LIST -> HoldHistoryDestination
-            ConsumerMenu.MY -> null
+            ConsumerMenu.MY -> MyInfoDestination
         }
 
-        val isSameDestination = currentRoute == destination?.let { it::class.qualifiedName }
+        val isSameDestination = currentRoute == destination::class.qualifiedName
 
-        if (destination != null && !isSameDestination) {
+        if (!isSameDestination) {
             navController.navigate(destination) {
                 popUpTo(navController.graph.findStartDestination().id) {
                     saveState = true
@@ -80,6 +83,19 @@ fun AppNavGraph(
         homeNavGraph(
             navController = navController,
             onNavigateToMenu = onNavigateToMenu,
+        )
+        myInfoScreen(
+            onNavigateToMenu = onNavigateToMenu,
+            onNavigateToLogin = {
+                navController.clearBackStack(Home)
+                navController.clearBackStack(HoldHistoryDestination)
+                navController.clearBackStack(MyInfoDestination)
+                navController.navigate(Login) {
+                    popUpTo(navController.graph.id) { inclusive = true }
+                    launchSingleTop = true
+                }
+            },
+            onNavigateToPolicy = { kind -> navController.navigate(TermsDetail(kind)) },
         )
         productDetailScreen(
             navController = navController,

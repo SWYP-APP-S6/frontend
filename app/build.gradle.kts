@@ -85,6 +85,7 @@ dependencies {
     add("consumerImplementation", project(":feature:consumer:home"))
     add("consumerImplementation", project(":feature:consumer:hold"))
     add("consumerImplementation", project(":feature:consumer:recipe"))
+    add("consumerImplementation", project(":feature:consumer:myinfo"))
 
     add("ownerImplementation", project(":feature:splash"))
     add("ownerImplementation", project(":feature:auth"))

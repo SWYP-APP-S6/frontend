@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 METHODS = {'get', 'post', 'put', 'patch', 'delete', 'head', 'options'}
-SOURCE_FILE = 'mangro-app-openapi-2026-09-17-v2.json'
+SOURCE_FILE = 'mangro-app-openapi-2026-09-18-v2-merged.json'
 INPUT_FILES = (
     SOURCE_FILE,
     'endpoint-map.json',

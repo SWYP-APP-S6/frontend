@@ -1,9 +1,6 @@
 package com.swyp.mangro
 
 import android.graphics.Bitmap
-import android.view.View
-import android.view.ViewGroup
-import android.webkit.WebView
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasText
@@ -15,8 +12,6 @@ import androidx.compose.ui.test.performClick
 import androidx.test.espresso.Espresso.pressBack
 import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Rule
 import org.junit.Test
 
@@ -28,8 +23,6 @@ class OwnerSettingFlowTest {
     fun settingsCanBeOpenedFromBothTabsAndReselectedWithoutDuplicatingBackStack() {
         tab("설정").performClick()
         compose.onNodeWithText("상점 정보").assertIsDisplayed()
-        compose.onNodeWithText("청과마을").assertIsDisplayed()
-        compose.onNodeWithText("02-1234-5678").assertIsDisplayed()
         tab("설정").assertIsSelected()
         capture("owner-setting-main")
         tab("설정").performClick()
@@ -45,7 +38,7 @@ class OwnerSettingFlowTest {
     }
 
     @Test
-    fun eachPolicyOpensWebViewAndRestoresItsTitleAfterRecreation() {
+    fun eachPolicyRestoresItsTitleAfterRecreation() {
         tab("설정").performClick()
         compose.onNodeWithText("서비스 이용약관").performClick()
         assertPolicy("서비스 이용약관")
@@ -65,22 +58,6 @@ class OwnerSettingFlowTest {
 
     private fun assertPolicy(title: String) {
         compose.onNodeWithText(title).assertIsDisplayed()
-        compose.onNodeWithText("약관 페이지를 준비하고 있어요").assertIsDisplayed()
-        compose.runOnIdle {
-            val webView = findWebView(compose.activity.window.decorView)
-            assertNotNull(webView)
-            assertEquals("about:blank", webView?.url)
-        }
-    }
-
-    private fun findWebView(view: View): WebView? {
-        if (view is WebView) return view
-        if (view is ViewGroup) {
-            for (index in 0 until view.childCount) {
-                findWebView(view.getChildAt(index))?.let { return it }
-            }
-        }
-        return null
     }
 
     private fun capture(name: String) {

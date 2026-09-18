@@ -67,9 +67,10 @@ Owner HoldService에 재고 부족 취소 후보 조회·취소를 추가하고,
 ## 2026-09-17 v3 변경
 
 - 전체 48개 operation: Auth 10, Consumer 15, Owner 16, User 7.
-- Owner IngredientService에 식자재 검색(`query`, `size`)과 추천(`name`) GET API를 추가하고 Hilt로 제공한다. BaseResponse의 객체 배열을 `List<IngredientTagResponse>`로 해제한다.
+- Owner `IngredientService`에 식자재 검색(`query`, `size`)과 추천(`name`) API를 추가하고 Hilt로 제공한다.
+- BaseResponse의 객체 배열을 `List<IngredientTagResponse>`로 해제한다.
 - 상품 상세·미리보기의 `ingredientTags`는 ID 배열에서 `id`, `name`, nullable `category` 객체 목록으로 변경되었다. 등록·미리보기 요청의 태그 ID 목록 계약은 유지된다.
-- 기존 상품 관리 도메인은 태그 ID 집합을 유지한다. 태그 이름 표시와 검색·추천 UI, 등록 시 태그 선택 연결은 후속 범위다.
+- 현재 상품 관리 도메인은 응답 객체에서 태그 ID 집합만 보존한다. 태그 이름 표시와 검색·추천 UI 연결은 후속 범위다.
 - v3 SHA-256: `881bcb323add6059d6e75e50ad706193eddd6c55c5e80a6097d16e6bdc73febf`. 명세·endpoint-map·model-map·spec.sha256을 같은 비공개 묶음으로 전달한다. 실서버 동일성은 이번 갱신에서 검증하지 않았다.
 
 ## 2026-09-18 상품 목록 API 반영

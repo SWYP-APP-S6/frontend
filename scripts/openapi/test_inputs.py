@@ -33,7 +33,7 @@ class InputFilesTest(unittest.TestCase):
                 (root / name).touch()
             check_inputs(root)
 
-    def test_documented_bundle_generates_all_modules_without_merged_snapshot(self):
+    def test_documented_bundle_generates_all_modules(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             inputs = root / 'openapi'

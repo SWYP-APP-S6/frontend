@@ -8,9 +8,14 @@ plugins {
 
 android {
     namespace = "com.swyp.mangro.feature.owner.setting"
+    defaultConfig { missingDimensionStrategy("role", "owner") }
 }
 
 dependencies {
+    implementation(libs.markdown.renderer)
+    implementation(project(":data:auth"))
+    implementation(project(":data:owner:store"))
+    testImplementation(libs.kotlinx.coroutines.test)
     implementation(project(":core:designsystem"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
@@ -20,4 +25,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     ksp(libs.hilt.compiler)
     testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

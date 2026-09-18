@@ -28,6 +28,7 @@ class SplashViewModelTest {
     @After fun tearDown() = Dispatchers.resetMain()
 
     private fun repository(session: Flow<Boolean>) = object : AuthRepository {
+        override fun logout(): kotlinx.coroutines.flow.Flow<com.swyp.mangro.data.auth.model.AuthResult<Unit>> = error("unused")
         override fun hasSession() = session
         override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = error("unused")
         override fun signup(consents: SignupConsents): Flow<AuthResult<Unit>> = error("unused")

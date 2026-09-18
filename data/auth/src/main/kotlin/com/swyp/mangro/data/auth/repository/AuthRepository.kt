@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.Flow
 
 /** 화면에서 로그인/가입 요청을 하나씩 실행한다. 가입 토큰은 프로세스 메모리에만 보관한다. */
 interface AuthRepository {
+    fun logout(): Flow<AuthResult<Unit>>
+
     fun hasSession(): Flow<Boolean>
 
     /** 수집할 때마다 검증 API를 한 번 호출하고 토큰 저장 후 결과를 한 번 내보낸다. */

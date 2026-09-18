@@ -54,7 +54,7 @@ class HomeViewModel @Inject constructor(
                         applyLocation(location.regionName, location.latitude, location.longitude)
                     }
                     .onFailure {
-                        // TODO: 실패 처리
+                        android.util.Log.e("HomeViewModel", "fetchMyLocation failed", it)
                     }
             }
         }
@@ -68,6 +68,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val deviceLocation = locationProvider.fetchCurrentLocation()
             if (deviceLocation == null) {
+                android.util.Log.e("HomeViewModel", "GPS location unavailable")
                 return@launch
             }
             val regionName = locationProvider.fetchRegionName(deviceLocation.latitude, deviceLocation.longitude)
@@ -80,9 +81,7 @@ class HomeViewModel @Inject constructor(
             ).collect { result ->
                 result
                     .onSuccess { saved -> applyLocation(saved.regionName, saved.latitude, saved.longitude) }
-                    .onFailure {
-                        // TODO: 실패 처리
-                    }
+                    .onFailure { android.util.Log.e("HomeViewModel", "setMyLocation failed", it) }
             }
         }
     }
@@ -130,7 +129,7 @@ class HomeViewModel @Inject constructor(
                         }
                     }
                     .onFailure {
-                        // TODO: 실패 처리
+                        android.util.Log.e("HomeViewModel", "fetchNearbyStores failed", it)
                     }
             }
         }
@@ -186,6 +185,7 @@ class HomeViewModel @Inject constructor(
                             state.copy(
                                 activeWish = hold?.let {
                                     ActiveWishSummary(
+                                        holdId = it.holdId.toString(),
                                         storeName = it.storeName,
                                         productSummary = "${it.firstItemName} · ${it.totalQty}개",
                                         requestTimeMillis = it.heldAtMillis,
@@ -222,6 +222,7 @@ class HomeViewModel @Inject constructor(
                 _uiState.update { it.copy(selectedStore = null) }
             }
             is HomeUiAction.ProductClicked -> {
+                _uiState.update { it.copy(selectedStore = null) }
                 viewModelScope.launch {
                     _event.send(HomeUiEvent.NavigateToProductDetail(action.product.id))
                 }
@@ -256,13 +257,18 @@ class HomeViewModel @Inject constructor(
             is HomeUiAction.MapBoundsChanged -> {
                 loadNearbyStores(action.minLat, action.maxLat, action.minLng, action.maxLng)
             }
+            is HomeUiAction.ActiveWishClicked -> {
+                viewModelScope.launch {
+                    _event.send(HomeUiEvent.NavigateToHold(action.holdId))
+                }
+            }
         }
     }
 
     private fun selectStore(storeId: String) {
         val id = storeId.toLongOrNull() ?: return
         viewModelScope.launch {
-            repository.fetchStoreProducts(id, lastLat, lastLng).collect { result ->
+            repository.fetchStoreProducts(id).collect { result ->
                 result
                     .onSuccess { detail ->
                         _uiState.update { state ->
@@ -270,7 +276,7 @@ class HomeViewModel @Inject constructor(
                                 selectedStore = SelectedStoreDetail(
                                     storeId = storeId,
                                     storeName = detail.name,
-                                    closingTime = detail.businessCloseTime?.toHourMinute() ?: "",
+                                    closingTime = (detail.businessCloseTime ?: "").toHourMinuteOrEmpty(),
                                     walkingMinutes = detail.walkingMinutes ?: 0,
                                     products = detail.products.map { product ->
                                         StoreProduct(
@@ -284,9 +290,21 @@ class HomeViewModel @Inject constructor(
                                 ),
                                 storePins = state.storePins.map { pin ->
                                     if (pin.storeId == storeId) {
-                                        pin.copy(pinState = storePinStateOf(count = pin.pinState.count, name = detail.name, isSelected = true))
+                                        pin.copy(
+                                            pinState = storePinStateOf(
+                                                count = pin.pinState.count,
+                                                name = detail.name,
+                                                isSelected = true,
+                                            ),
+                                        )
                                     } else {
-                                        pin.copy(pinState = storePinStateOf(count = pin.pinState.count, name = "", isSelected = false))
+                                        pin.copy(
+                                            pinState = storePinStateOf(
+                                                count = pin.pinState.count,
+                                                name = "",
+                                                isSelected = false,
+                                            ),
+                                        )
                                     }
                                 },
                             )
@@ -316,7 +334,7 @@ private fun MutableStateFlow<HomeUiState>.update(block: (HomeUiState) -> HomeUiS
     value = block(value)
 }
 
-private fun String.toHourMinute(): String = takeIf { it.isNotBlank() }
+private fun String.toHourMinuteOrEmpty(): String = takeIf { it.isNotBlank() }
     ?.split(":")
     ?.take(2)
     ?.joinToString(":")

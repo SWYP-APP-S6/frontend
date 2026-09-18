@@ -53,6 +53,8 @@ internal class ProductDetailRepositoryImpl @Inject constructor(
                 distanceMeters = body.store.distanceMeters,
                 walkingMinutes = body.store.walkingMinutes,
                 businessCloseTime = body.store.businessCloseTime,
+                latitude = body.store.latitude,
+                longitude = body.store.longitude,
             ),
             recipes = body.recipes.map {
                 ProductRecipe(
@@ -71,6 +73,7 @@ internal class ProductDetailRepositoryImpl @Inject constructor(
         )
         if (!response.isSuccessful) {
             val errorBody = response.errorBody()?.string()
+            android.util.Log.e("ProductDetailRepo", "registerHold HTTP ${response.code()}: $errorBody")
             throw HttpException(response)
         }
         requireNotNull(response.body()).id

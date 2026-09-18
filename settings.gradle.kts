@@ -65,5 +65,6 @@ include(":data:owner:product")
 include(":data:owner:product")
 include(":data:consumer:home")
 include(":data:consumer:product")
+include(":data:consumer:hold")
 
 include(":data:owner:notification")

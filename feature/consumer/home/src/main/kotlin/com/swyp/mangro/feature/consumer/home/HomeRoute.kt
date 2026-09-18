@@ -14,10 +14,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun HomeRoute(
-    navigateToLocationSelector: () -> Unit,
     navigateToProductDetail: (String) -> Unit,
     navigateToWishList: () -> Unit,
     navigateToMy: () -> Unit,
+    navigateToHold: (String) -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -46,6 +46,7 @@ fun HomeRoute(
                 is HomeUiEvent.NavigateToProductDetail -> navigateToProductDetail(event.productId)
                 HomeUiEvent.NavigateToWishList -> navigateToWishList()
                 HomeUiEvent.NavigateToMy -> navigateToMy()
+                is HomeUiEvent.NavigateToHold -> navigateToHold(event.holdId)
             }
         }
     }

@@ -26,6 +26,8 @@ data class ProductStore(
     val distanceMeters: Int?,
     val walkingMinutes: Int?,
     val businessCloseTime: String,
+    val latitude: Double,
+    val longitude: Double,
 )
 
 data class ProductRecipe(

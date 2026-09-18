@@ -57,6 +57,7 @@ import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProduct
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProductCard
 import com.swyp.mangro.core.designsystem.component.chip.MangroChip
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
+import com.swyp.mangro.data.owner.product.model.OwnerProductFilter
 import com.swyp.mangro.data.owner.product.model.ProductSummary
 import com.swyp.mangro.feature.owner.product.R
 import com.swyp.mangro.feature.owner.product.component.ManagementLoadStatus
@@ -132,6 +133,7 @@ fun ProductListScreen(
     val productRefresh = products.loadState.refresh
     val productListState = rememberLazyListState()
     val pickupListState = rememberLazyListState()
+    LaunchedEffect(uiState.productFilter) { productListState.scrollToItem(0) }
     LaunchedEffect(uiState.filter) { pickupListState.scrollToItem(0) }
     Scaffold(
         modifier = modifier,
@@ -163,14 +165,24 @@ fun ProductListScreen(
                 .padding(padding)
                 .background(MangroTheme.colors.surfaceAlter),
         ) {
-            if (uiState.tab == ProductListTab.PICKUPS) {
-                LazyRow(
-                    modifier = Modifier
-                        .padding(top = 20.dp)
-                        .selectableGroup(),
-                    contentPadding = PaddingValues(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
+            LazyRow(
+                modifier = Modifier
+                    .padding(top = 20.dp)
+                    .selectableGroup(),
+                contentPadding = PaddingValues(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                if (uiState.tab == ProductListTab.PRODUCTS) {
+                    items(items = OwnerProductFilter.entries) { filter ->
+                        MangroChip(
+                            isOwner = true,
+                            modifier = Modifier.heightIn(min = 34.dp),
+                            content = stringResource(filter.labelRes()),
+                            isSelected = uiState.productFilter == filter,
+                            onClick = { onAction(ProductListAction.ProductFilterSelected(filter)) },
+                        )
+                    }
+                } else {
                     items(items = ProductListFilter.entries) { filter ->
                         MangroChip(
                             isOwner = true,
@@ -181,6 +193,15 @@ fun ProductListScreen(
                         )
                     }
                 }
+            }
+
+            if (uiState.tab == ProductListTab.PRODUCTS && productRefresh is LoadState.NotLoading) {
+                Text(
+                    text = stringResource(R.string.owner_product_filtered_count, uiState.filteredProductTotal),
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp),
+                    style = MangroTheme.typography.body.bodyM,
+                    color = MangroTheme.colors.textSubtitle,
+                )
             }
 
             if (uiState.tab == ProductListTab.PICKUPS && refresh is LoadState.NotLoading && !uiState.hasPickupError) {
@@ -427,6 +448,7 @@ private fun StoreTabs(
                         }
                         Text(
                             text = when {
+                                tab == ProductListTab.PRODUCTS && state.totalProducts != null -> stringResource(R.string.owner_product_registered_count, state.totalProducts)
                                 tab == ProductListTab.PRODUCTS -> stringResource(R.string.owner_product_registered_title)
                                 state.totalHolds == null -> stringResource(R.string.owner_product_pickup_title)
                                 else -> stringResource(R.string.owner_product_pickup_count, state.totalHolds)
@@ -443,6 +465,14 @@ private fun StoreTabs(
             }
         }
     }
+}
+
+private fun OwnerProductFilter.labelRes(): Int = when (this) {
+    OwnerProductFilter.ALL -> R.string.owner_product_filter_all
+    OwnerProductFilter.ON_SALE -> R.string.owner_product_filter_on_sale
+    OwnerProductFilter.RUNNING_LOW -> R.string.owner_product_filter_running_low
+    OwnerProductFilter.SOLD_OUT -> R.string.owner_product_filter_sold_out
+    OwnerProductFilter.CLOSED -> R.string.owner_product_filter_closed
 }
 
 private fun ProductListFilter.labelRes(): Int = when (this) {

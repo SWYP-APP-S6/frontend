@@ -1,11 +1,13 @@
 package com.swyp.mangro.feature.owner.product.screen.list
 
 import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
+import com.swyp.mangro.data.owner.product.model.OwnerProductFilter
 import com.swyp.mangro.feature.owner.product.model.OwnerPickupModel
 
 sealed interface ProductListAction {
     data object Refresh : ProductListAction
     data class TabSelected(val tab: ProductListTab) : ProductListAction
+    data class ProductFilterSelected(val filter: OwnerProductFilter) : ProductListAction
     data class FilterSelected(val filter: ProductListFilter) : ProductListAction
     data class ProductClicked(val id: String) : ProductListAction
     data class PickupClicked(val id: String) : ProductListAction

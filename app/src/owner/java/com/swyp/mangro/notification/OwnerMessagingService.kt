@@ -26,12 +26,15 @@ class OwnerMessagingService : FirebaseMessagingService() {
             message.notification?.title ?: message.data["title"],
             message.notification?.body ?: message.data["body"],
             message.data["notificationId"],
+            message.data["deepLink"],
         ) ?: return
         val signedIn = runBlocking(Dispatchers.IO) { runCatching { authStore.authKey.first() != null }.getOrDefault(false) }
         if (!signedIn) return
         val messageId = push.notificationId?.toString() ?: message.messageId ?: UUID.randomUUID().toString()
         if (push.type == OwnerNotificationType.STOCK_RECONFIRM_REQUEST) {
-            OwnerStockReconfirmationRequests.offer("${push.type}:$messageId")
+            push.productId?.let {
+                OwnerStockReconfirmationRequests.offer(OwnerStockReconfirmationRequest("${push.type}:$messageId:$it", it))
+            }
         }
         OwnerNotificationDisplay.show(this, push, messageId)
     }

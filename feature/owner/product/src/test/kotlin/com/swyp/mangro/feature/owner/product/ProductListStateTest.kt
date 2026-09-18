@@ -2,6 +2,7 @@ package com.swyp.mangro.feature.owner.product
 
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerPickupRequestItem
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerPickupRequestStatus
+import com.swyp.mangro.data.owner.product.model.OwnerProductFilter
 import com.swyp.mangro.feature.owner.product.model.OwnerPickupModel
 import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import com.swyp.mangro.feature.owner.product.screen.list.ProductListFilter
@@ -31,19 +32,21 @@ class ProductListStateTest {
     }
 
     @Test
-    fun eachFilterUsesMatchingReservationStatusAndAssociatedProducts() {
+    fun eachPickupFilterUsesMatchingReservationStatus() {
         val pickups = OwnerPickupRequestStatus.entries.map { pickup(it.name, it) }
         ProductListFilter.entries.filter { it != ProductListFilter.ALL }.forEach { filter ->
             val state = ProductListState(products = listOf(peach, peach.copy(id = "other")), pickups = pickups, filter = filter)
             assertEquals(listOf(filter.status), state.filteredPickups.map { it.request.status })
-            assertEquals(listOf(peach), state.filteredProducts)
         }
     }
 
     @Test
-    fun allIncludesProductsWithoutReservationsAndEmptyFilterHasNoProducts() {
-        val state = ProductListState(products = listOf(peach))
-        assertEquals(listOf(peach), state.filteredProducts)
-        assertEquals(emptyList<OwnerProductModel>(), state.copy(filter = ProductListFilter.COMPLETED).filteredProducts)
+    fun productAndPickupFiltersAreStoredIndependently() {
+        val state = ProductListState(
+            productFilter = OwnerProductFilter.SOLD_OUT,
+            filter = ProductListFilter.COMPLETED,
+        )
+        assertEquals(OwnerProductFilter.SOLD_OUT, state.productFilter)
+        assertEquals(ProductListFilter.COMPLETED, state.filter)
     }
 }

@@ -32,10 +32,14 @@ import kotlinx.serialization.Serializable
 @Composable
 internal fun MainScreen(notificationIntent: Intent? = null) {
     val context = LocalContext.current
-    val opened = OwnerNotificationOpen.from(notificationIntent?.getStringExtra("type"), notificationIntent?.getStringExtra("notificationId"))
-    val openKey = opened?.let { "${it.type}:${it.notificationId}" }
+    val opened = OwnerNotificationOpen.from(
+        notificationIntent?.getStringExtra("type"),
+        notificationIntent?.getStringExtra("notificationId"),
+        notificationIntent?.getStringExtra("deepLink") ?: notificationIntent?.dataString,
+    )
+    val openKey = opened?.key
     var consumedKey by rememberSaveable { mutableStateOf<String?>(null) }
-    val pendingOpen = openKey?.takeIf { it != consumedKey }
+    val pendingOpen = opened?.takeIf { openKey != consumedKey }
 
     val navController = rememberNavController()
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
@@ -76,7 +80,7 @@ internal fun MainScreen(notificationIntent: Intent? = null) {
         }
         composable<OwnerMain> {
             OwnerMainContent(
-                notificationKey = pendingOpen,
+                notificationOpen = pendingOpen,
                 onNotificationOpened = {
                     opened?.notificationId?.let { OwnerNotificationReadWorker.enqueue(context, it) }
                     consumedKey = openKey
@@ -100,12 +104,16 @@ private data object OwnerMain
 private data class OwnerOnboarding(val service: Boolean, val privacy: Boolean, val location: Boolean, val thirdParty: Boolean, val marketing: Boolean)
 
 @Composable
-internal fun OwnerMainContent(notificationKey: String? = null, onNotificationOpened: () -> Unit = {}, onLogout: () -> Unit = {}) {
+internal fun OwnerMainContent(
+    notificationOpen: OwnerNotificationOpen? = null,
+    onNotificationOpened: () -> Unit = {},
+    onLogout: () -> Unit = {},
+) {
     OwnerNotificationPermission()
     var products by rememberSaveable { mutableStateOf(emptyList<OwnerProductModel>()) }
     MangroTheme {
         OwnerNavHost(
-            notificationKey = notificationKey,
+            notificationOpen = notificationOpen,
             onNotificationOpened = onNotificationOpened,
             onLogout = onLogout,
             products = products,

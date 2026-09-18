@@ -1,5 +1,13 @@
 package com.swyp.mangro.data.owner.product.model
 
+enum class OwnerProductFilter {
+    ALL,
+    ON_SALE,
+    RUNNING_LOW,
+    SOLD_OUT,
+    CLOSED,
+}
+
 data class ProductSummary(
     val id: Long,
     val name: String,

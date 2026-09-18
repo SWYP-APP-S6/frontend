@@ -29,12 +29,13 @@ import com.swyp.mangro.feature.owner.setting.navigation.OwnerPolicyDestination
 import com.swyp.mangro.feature.owner.setting.navigation.OwnerSettingDestination
 import com.swyp.mangro.feature.owner.setting.navigation.ownerSettingNavGraph
 import com.swyp.mangro.notification.OwnerStockReconfirmationRequests
+import com.swyp.mangro.notification.model.OwnerNotificationOpen
 import com.swyp.mangro.notification.model.OwnerNotificationType
 import kotlinx.coroutines.flow.filterNotNull
 
 @Composable
 internal fun OwnerNavHost(
-    notificationKey: String? = null,
+    notificationOpen: OwnerNotificationOpen? = null,
     products: List<OwnerProductModel>,
     onSaveProducts: (List<OwnerProductModel>) -> Unit,
     onNotificationOpened: () -> Unit = {},
@@ -42,12 +43,14 @@ internal fun OwnerNavHost(
 ) {
     val navController = rememberNavController()
     var stockRequestKey by rememberSaveable { mutableStateOf<String?>(null) }
+    var stockProductId by rememberSaveable { mutableStateOf<Long?>(null) }
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            OwnerStockReconfirmationRequests.pending.filterNotNull().collect { key ->
-                stockRequestKey = key
-                OwnerStockReconfirmationRequests.consume(key)
+            OwnerStockReconfirmationRequests.pending.filterNotNull().collect { request ->
+                stockRequestKey = request.key
+                stockProductId = request.productId
+                OwnerStockReconfirmationRequests.consume(request)
             }
         }
     }
@@ -120,12 +123,16 @@ internal fun OwnerNavHost(
             navigateToHome = { navController.popBackStack<OwnerHomeDestination>(inclusive = false) },
         )
     }
-    LaunchedEffect(notificationKey) {
-        if (notificationKey != null) {
-            when (notificationKey.substringBefore(':')) {
-                OwnerNotificationType.STOCK_RECONFIRM_REQUEST.name -> stockRequestKey = notificationKey
+    LaunchedEffect(notificationOpen) {
+        if (notificationOpen != null) {
+            when (notificationOpen.type) {
+                OwnerNotificationType.STOCK_RECONFIRM_REQUEST -> notificationOpen.productId?.let { productId ->
+                    stockRequestKey = notificationOpen.key
+                    stockProductId = productId
+                }
+
                 else -> navController.navigateToOwnerPickups(
-                    if (notificationKey.substringBefore(':') == OwnerNotificationType.HOLD_EXPIRED.name) ProductListFilter.EXPIRED else ProductListFilter.ALL,
+                    if (notificationOpen.type == OwnerNotificationType.HOLD_EXPIRED) ProductListFilter.EXPIRED else ProductListFilter.ALL,
                 ) {
                     popUpTo<OwnerHomeDestination> { saveState = true }
                     launchSingleTop = true
@@ -135,5 +142,9 @@ internal fun OwnerNavHost(
             onNotificationOpened()
         }
     }
-    StockReconfirmationHost(stockRequestKey, onEditProduct = { navController.navigate(OwnerProductDetailDestination(it)) })
+    StockReconfirmationHost(
+        requestKey = stockRequestKey,
+        productId = stockProductId,
+        onEditProduct = { navController.navigate(OwnerProductDetailDestination(it)) },
+    )
 }

@@ -5,6 +5,7 @@ import androidx.paging.testing.asSnapshot
 import com.swyp.mangro.core.network.di.NetworkModule
 import com.swyp.mangro.data.owner.product.impl.OwnerProductRepositoryImpl
 import com.swyp.mangro.data.owner.product.model.HoldStatus
+import com.swyp.mangro.data.owner.product.model.OwnerProductFilter
 import com.swyp.mangro.remote.owner.service.HoldService
 import com.swyp.mangro.remote.owner.service.ProductService
 import kotlinx.coroutines.flow.single
@@ -60,6 +61,24 @@ class OwnerProductRepositoryTest {
         pages.asSnapshot()
         assertEquals(2, server.requestCount)
         repeat(2) { assertEquals("/owner/holds?page=0&size=100", server.takeRequest().path) }
+    }
+
+    @Test fun eachProductFilterIsSentToServer() = runTest {
+        OwnerProductFilter.entries.forEach { filter ->
+            enqueue("""{"products":{"content":[],"last":true,"totalElements":0}}""")
+            repository.fetchProducts(0, filter).single().getOrThrow()
+            assertEquals("/owner/products?filter=${filter.name}&page=0&size=20", server.takeRequest().path)
+        }
+    }
+
+    @Test fun productPagerUsesSelectedFilterAndPublishesServerTotal() = runTest {
+        enqueue("""{"products":{"content":[],"last":true,"totalElements":2}}""")
+        var total = -1L
+        val pages = repository.pagedProducts(OwnerProductFilter.SOLD_OUT) { total = it.total }.cachedIn(backgroundScope)
+
+        assertTrue(pages.asSnapshot().isEmpty())
+        assertEquals("/owner/products?filter=SOLD_OUT&page=0&size=20", server.takeRequest().path)
+        assertEquals(2L, total)
     }
 
     @Test fun productDetailUsesProductIdEndpoint() = runTest {

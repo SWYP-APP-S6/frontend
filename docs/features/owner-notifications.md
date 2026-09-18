@@ -18,7 +18,7 @@
 
 ## 확인된 서버 payload
 
-서버는 `notification.title/body` 및 문자열 `data.type`, `data.notificationId`를 전송한다. `deepLink`는 현재 모든 알림에서 생략되며 상품/찜 ID도 없다. 서버의 제목·본문을 그대로 표시한다. 수신 서비스는 data-only의 title/body도 지원하되 누락된 본문을 임의로 만들지 않는다.
+서버는 `notification.title/body` 및 문자열 `data.type`, `data.notificationId`를 전송한다. `STOCK_RECONFIRM_REQUEST`는 `data.deepLink=mangro://owner/products/{productId}`를 함께 전송한다. 서버의 제목·본문을 그대로 표시한다. 수신 서비스는 data-only의 title/body도 지원하되 누락된 본문을 임의로 만들지 않는다.
 
 Firebase 표준에 따라 notification 메시지는 백그라운드에서 SDK가 표시한다. 포그라운드와 data-only 메시지는 수신 서비스가 표시한다. 백그라운드 notification 메시지는 앱의 타입/세션 필터를 거치지 않으므로 서버의 올바른 사용자·기기 대상 지정이 필요하다.
 
@@ -37,9 +37,9 @@ Firebase 표준에 따라 notification 메시지는 백그라운드에서 SDK가
 
 ## 재고 재확인 모달 및 알림 이동 (2026-09-18)
 
-- `HOLD_EXPIRED`도 점주 수신 타입에 포함한다. 새 찜·픽업 여부 확인은 찜 현황 전체로, 만료 알림은 만료 필터로 이동한다. 현재 payload에 상품/찜 ID가 없으므로 개별 상세를 추정하지 않는다.
-- 재고 재확인 알림 클릭 및 앱 활성 상태에서의 수신은 Figma `1172:20301` 모달을 표시한다. 대상 ID가 없어 홈 응답의 `reconfirmPending` 상품을 순서대로 처리한다. 홈 응답에 포함되지 않은 상품까지 조회할 수 있다는 보장은 없다.
+- `HOLD_EXPIRED`도 점주 수신 타입에 포함한다. 새 찜·픽업 여부 확인은 찜 현황 전체로, 만료 알림은 만료 필터로 이동한다.
+- 재고 재확인 알림 클릭 및 앱 활성 상태에서의 수신은 Figma `1172:20301` 모달을 표시한다. `mangro://owner/products/{productId}` 형식을 검증하고 대상 상품을 직접 조회하며, 누락되거나 잘못된 링크로 임의의 상품을 추정하지 않는다.
 - 표시 직전에 상품 상세를 재조회하고 `reconfirmPending && stockEditable`인 상품만 표시한다. 수량은 실제 재고 `stockQty`이며 `availableQty`로 대체하지 않는다.
 - 네/아니요는 `/owner/products/{id}/stock-reconfirm`에 각각 `confirmed=true/false`를 전송한다. 아니요 응답 성공 후 해당 상품의 재고 수정 상세로 이동한다. 나중에하기·외부 닫기는 서버에 응답하지 않는다.
-- 저장 중 중복 응답을 막고, 오류 후 재시도는 최신 대기 목록 조회부터 수행한다. 서버 변경 요청을 자동 재전송하지 않는다.
+- 저장 중 중복 응답을 막고, 오류 후 재시도는 알림에 지정된 상품을 다시 조회한다. 서버 변경 요청을 자동 재전송하지 않는다.
 - 실제 FCM 발송 및 역할별 발송 조건은 서버 책임이다. 클라이언트 타입 추가만으로 서버의 점주 만료 알림 발송이 활성화되지는 않는다.

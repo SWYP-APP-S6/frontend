@@ -6,6 +6,8 @@ import androidx.paging.PagingState
 import com.swyp.mangro.data.owner.product.model.HoldPage
 import com.swyp.mangro.data.owner.product.model.HoldStatus
 import com.swyp.mangro.data.owner.product.model.ManagedHold
+import com.swyp.mangro.data.owner.product.model.OwnerProductFilter
+import com.swyp.mangro.data.owner.product.model.ProductPage
 import com.swyp.mangro.data.owner.product.paging.OwnerHoldPagingSource
 import com.swyp.mangro.data.owner.product.repository.OwnerProductRepository
 import kotlinx.coroutines.CancellationException
@@ -21,9 +23,9 @@ class OwnerHoldPagingSourceTest {
     private var failure: Exception? = null
     private var empty = false
     private val repository = object : OwnerProductRepository {
-        override fun pagedProducts() = error("unused")
+        override fun pagedProducts(filter: OwnerProductFilter, onPageLoaded: (ProductPage) -> Unit) = error("unused")
         override fun refreshProducts() = Unit
-        override fun fetchProducts(page: Int) = error("unused")
+        override fun fetchProducts(page: Int, filter: OwnerProductFilter) = error("unused")
         override fun pagedHolds(status: HoldStatus?, onPageLoaded: (HoldPage) -> Unit) = error("unused")
         override fun refreshHolds() = Unit
         override fun fetchHolds(page: Int, status: HoldStatus?) = flow {

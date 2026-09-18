@@ -7,14 +7,18 @@ import com.swyp.mangro.data.owner.product.model.HoldPage
 import com.swyp.mangro.data.owner.product.model.HoldStatus
 import com.swyp.mangro.data.owner.product.model.ManagedHold
 import com.swyp.mangro.data.owner.product.model.ManagedProduct
+import com.swyp.mangro.data.owner.product.model.OwnerProductFilter
 import com.swyp.mangro.data.owner.product.model.ProductPage
 import com.swyp.mangro.data.owner.product.model.ProductSummary
 import kotlinx.coroutines.flow.Flow
 
 interface OwnerProductRepository {
-    fun pagedProducts(): Flow<PagingData<ProductSummary>>
+    fun pagedProducts(
+        filter: OwnerProductFilter = OwnerProductFilter.ALL,
+        onPageLoaded: (ProductPage) -> Unit = {},
+    ): Flow<PagingData<ProductSummary>>
     fun refreshProducts()
-    fun fetchProducts(page: Int): Flow<Result<ProductPage>>
+    fun fetchProducts(page: Int, filter: OwnerProductFilter = OwnerProductFilter.ALL): Flow<Result<ProductPage>>
     fun pagedHolds(status: HoldStatus?, onPageLoaded: (HoldPage) -> Unit): Flow<PagingData<ManagedHold>>
     fun refreshHolds()
     fun fetchProduct(id: Long): Flow<Result<ManagedProduct>>

@@ -12,6 +12,7 @@ import com.swyp.mangro.data.owner.product.model.HoldPage
 import com.swyp.mangro.data.owner.product.model.HoldStatus
 import com.swyp.mangro.data.owner.product.model.ManagedHold
 import com.swyp.mangro.data.owner.product.model.ManagedProduct
+import com.swyp.mangro.data.owner.product.model.OwnerProductFilter
 import com.swyp.mangro.data.owner.product.model.ProductPage
 import com.swyp.mangro.data.owner.product.model.ProductSummary
 import com.swyp.mangro.data.owner.product.paging.OwnerHoldPagingSource
@@ -41,7 +42,10 @@ internal class OwnerProductRepositoryImpl @Inject constructor(
     private var holdPagingSource: OwnerHoldPagingSource? = null
     private var productPagingSource: OwnerProductPagingSource? = null
 
-    override fun pagedProducts(): Flow<PagingData<ProductSummary>> = Pager(
+    override fun pagedProducts(
+        filter: OwnerProductFilter,
+        onPageLoaded: (ProductPage) -> Unit,
+    ): Flow<PagingData<ProductSummary>> = Pager(
         config = PagingConfig(
             pageSize = OwnerProductPagingSource.PAGE_SIZE,
             initialLoadSize = OwnerProductPagingSource.PAGE_SIZE,
@@ -49,7 +53,7 @@ internal class OwnerProductRepositoryImpl @Inject constructor(
             enablePlaceholders = false,
         ),
         pagingSourceFactory = {
-            OwnerProductPagingSource(this).also { productPagingSource = it }
+            OwnerProductPagingSource(this, filter, onPageLoaded).also { productPagingSource = it }
         },
     ).flow
 
@@ -57,9 +61,13 @@ internal class OwnerProductRepositoryImpl @Inject constructor(
         productPagingSource?.invalidate()
     }
 
-    override fun fetchProducts(page: Int): Flow<Result<ProductPage>> = request {
+    override fun fetchProducts(page: Int, filter: OwnerProductFilter): Flow<Result<ProductPage>> = request {
         require(page >= 0)
-        val body = products.fetchMyProducts(page = page, size = OwnerProductPagingSource.PAGE_SIZE).bodyOrThrow().products
+        val body = products.fetchMyProducts(
+            filter = ProductService.FilterFetchMyProducts.valueOf(filter.name),
+            page = page,
+            size = OwnerProductPagingSource.PAGE_SIZE,
+        ).bodyOrThrow().products
         ProductPage(
             products = body.content.map {
                 ProductSummary(

@@ -38,6 +38,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
@@ -55,6 +56,7 @@ import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProduct
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProductCard
 import com.swyp.mangro.core.designsystem.component.chip.MangroChip
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
+import com.swyp.mangro.data.owner.product.model.ProductSummary
 import com.swyp.mangro.feature.owner.product.R
 import com.swyp.mangro.feature.owner.product.component.ManagementLoadStatus
 import com.swyp.mangro.feature.owner.product.model.OwnerPickupModel
@@ -77,6 +79,11 @@ internal fun ProductListRoute(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
     val pickups = viewModel.pickups.collectAsLazyPagingItems()
+    val catalog = viewModel.products.collectAsLazyPagingItems()
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        viewModel.refreshProducts()
+    }
 
     LaunchedEffect(
         viewModel,
@@ -102,6 +109,7 @@ internal fun ProductListRoute(
         uiState = state,
         onAction = viewModel::handleAction,
         pickups = pickups,
+        products = catalog,
     )
 }
 
@@ -110,6 +118,7 @@ fun ProductListScreen(
     uiState: ProductListState,
     onAction: (ProductListAction) -> Unit,
     pickups: LazyPagingItems<OwnerPickupModel>,
+    products: LazyPagingItems<ProductSummary>,
     modifier: Modifier = Modifier,
 ) {
     val now by produceState(System.currentTimeMillis()) {
@@ -119,8 +128,10 @@ fun ProductListScreen(
         }
     }
     val refresh = pickups.loadState.refresh
-    val listState = rememberLazyListState()
-    LaunchedEffect(uiState.filter, uiState.tab) { listState.scrollToItem(0) }
+    val productRefresh = products.loadState.refresh
+    val productListState = rememberLazyListState()
+    val pickupListState = rememberLazyListState()
+    LaunchedEffect(uiState.filter) { pickupListState.scrollToItem(0) }
     Scaffold(
         modifier = modifier,
         containerColor = MangroTheme.colors.surfaceNormal,
@@ -151,21 +162,23 @@ fun ProductListScreen(
                 .padding(padding)
                 .background(MangroTheme.colors.surfaceAlter),
         ) {
-            LazyRow(
-                modifier = Modifier
-                    .padding(top = 20.dp)
-                    .selectableGroup(),
-                contentPadding = PaddingValues(horizontal = 20.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                items(items = ProductListFilter.entries) { filter ->
-                    MangroChip(
-                        isOwner = true,
-                        modifier = Modifier.heightIn(min = 34.dp),
-                        content = stringResource(filter.labelRes()),
-                        isSelected = uiState.filter == filter,
-                        onClick = { onAction(ProductListAction.FilterSelected(filter)) },
-                    )
+            if (uiState.tab == ProductListTab.PICKUPS) {
+                LazyRow(
+                    modifier = Modifier
+                        .padding(top = 20.dp)
+                        .selectableGroup(),
+                    contentPadding = PaddingValues(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    items(items = ProductListFilter.entries) { filter ->
+                        MangroChip(
+                            isOwner = true,
+                            modifier = Modifier.heightIn(min = 34.dp),
+                            content = stringResource(filter.labelRes()),
+                            isSelected = uiState.filter == filter,
+                            onClick = { onAction(ProductListAction.FilterSelected(filter)) },
+                        )
+                    }
                 }
             }
 
@@ -183,14 +196,20 @@ fun ProductListScreen(
                 ManagementLoadStatus(false, uiState.hasPickupError) { onAction(ProductListAction.Refresh) }
             }
 
+            if (uiState.tab == ProductListTab.PRODUCTS) {
+                ManagementLoadStatus(productRefresh is LoadState.Loading, productRefresh is LoadState.Error, products::retry)
+            }
+
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 val empty = if (uiState.tab == ProductListTab.PRODUCTS) {
-                    uiState.filteredProducts.isEmpty()
+                    products.itemCount == 0
                 } else {
                     pickups.itemCount == 0
                 }
 
-                if (uiState.tab == ProductListTab.PICKUPS && empty && (refresh is LoadState.Loading || refresh is LoadState.Error || uiState.hasPickupError)) {
+                if (uiState.tab == ProductListTab.PRODUCTS && empty && productRefresh !is LoadState.NotLoading) {
+                    // 로딩과 실패를 빈 목록으로 표시하지 않는다.
+                } else if (uiState.tab == ProductListTab.PICKUPS && empty && (refresh is LoadState.Loading || refresh is LoadState.Error || uiState.hasPickupError)) {
                     // 오류를 빈 목록으로 표시하지 않는다.
                 } else if (empty) {
                     Column(
@@ -205,22 +224,29 @@ fun ProductListScreen(
                             tint = MangroTheme.colors.textCanceled,
                         )
                         Text(
-                            text = stringResource(if (uiState.tab == ProductListTab.PRODUCTS) R.string.owner_product_catalog_unavailable else R.string.owner_product_empty_filter_title),
+                            text = stringResource(R.string.owner_product_empty_filter_title),
                             color = MangroTheme.colors.textSubtitle,
                             style = MangroTheme.typography.body.bodyL,
                         )
                     }
                 } else {
                     LazyColumn(
-                        state = listState,
+                        state = if (uiState.tab == ProductListTab.PRODUCTS) productListState else pickupListState,
                         modifier = Modifier.fillMaxSize().testTag("owner-holds-list"),
                         contentPadding = PaddingValues(bottom = if (uiState.cancellationCount == 0) 0.dp else 112.dp),
                     ) {
                         if (uiState.tab == ProductListTab.PRODUCTS) {
+                            item {
+                                ManagementLoadStatus(
+                                    products.loadState.prepend is LoadState.Loading,
+                                    products.loadState.prepend is LoadState.Error,
+                                    products::retry,
+                                )
+                            }
                             items(
-                                items = uiState.filteredProducts,
-                                key = { it.id },
-                            ) { product ->
+                                count = products.itemCount,
+                            ) { index ->
+                                val product = products[index] ?: return@items
                                 Column(
                                     modifier = Modifier
                                         .background(MangroTheme.colors.surfaceNormal)
@@ -228,22 +254,29 @@ fun ProductListScreen(
                                 ) {
                                     OwnerProductCard(
                                         product = OwnerProduct(
-                                            id = product.id,
-                                            imageUrl = product.photos.firstOrNull().orEmpty(),
+                                            id = product.id.toString(),
+                                            imageUrl = product.photoUrl,
                                             name = product.name,
                                             price = product.salePrice,
-                                            remainingCount = product.remainingQuantity,
-                                            expectedVisitCount = product.reservedQuantity.toLong(),
-                                            shortfallQty = product.shortageQuantity,
+                                            remainingCount = product.availableQuantity,
+                                            expectedVisitCount = product.activeHoldQuantity,
+                                            shortfallQty = product.shortfallQuantity,
                                         ),
                                         modifier = Modifier
                                             .clickable {
-                                                onAction(ProductListAction.ProductClicked(product.id))
+                                                onAction(ProductListAction.ProductClicked(product.id.toString()))
                                             }
                                             .padding(vertical = 24.dp),
                                     )
                                     HorizontalDivider(color = MangroTheme.colors.borderDefault)
                                 }
+                            }
+                            item {
+                                ManagementLoadStatus(
+                                    products.loadState.append is LoadState.Loading,
+                                    products.loadState.append is LoadState.Error,
+                                    products::retry,
+                                )
                             }
                         } else {
                             if (pickups.loadState.prepend is LoadState.Loading || pickups.loadState.prepend is LoadState.Error) {

@@ -40,6 +40,12 @@ class ProductListViewModel @Inject constructor(
     private val _event = Channel<ProductListEvent>(Channel.BUFFERED)
     val event = _event.receiveAsFlow()
 
+    val products = repository.pagedProducts().cachedIn(viewModelScope)
+
+    fun refreshProducts() {
+        repository.refreshProducts()
+    }
+
     val pickups = uiState.map { it.filter }.distinctUntilChanged().flatMapLatest { filter ->
         val status = when (filter) {
             ProductListFilter.ALL -> null
@@ -74,6 +80,7 @@ class ProductListViewModel @Inject constructor(
     }
 
     fun refresh() {
+        refreshProducts()
         _uiState.update { it.copy(hasPickupError = false) }
         repository.refreshHolds()
     }

@@ -89,6 +89,7 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.okhttp.mockwebserver)
     androidTestImplementation(project(":data:auth"))
+    androidTestImplementation(project(":data:owner:product"))
     androidTestImplementation(libs.androidx.paging.compose)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)

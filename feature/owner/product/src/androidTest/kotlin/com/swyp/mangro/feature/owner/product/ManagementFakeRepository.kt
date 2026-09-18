@@ -11,9 +11,9 @@ import com.swyp.mangro.data.owner.product.model.HoldItem
 import com.swyp.mangro.data.owner.product.model.HoldPage
 import com.swyp.mangro.data.owner.product.model.HoldStatus
 import com.swyp.mangro.data.owner.product.model.ManagedHold
+import com.swyp.mangro.data.owner.product.model.ManagedProduct
 import com.swyp.mangro.data.owner.product.model.ProductPage
 import com.swyp.mangro.data.owner.product.model.ProductSummary
-import com.swyp.mangro.data.owner.product.model.ManagedProduct
 import com.swyp.mangro.data.owner.product.paging.OwnerHoldPagingSource
 import com.swyp.mangro.data.owner.product.repository.OwnerProductRepository
 import kotlinx.coroutines.CompletableDeferred

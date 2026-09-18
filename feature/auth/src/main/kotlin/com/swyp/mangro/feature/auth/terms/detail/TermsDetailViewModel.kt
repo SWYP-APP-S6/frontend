@@ -31,7 +31,7 @@ class TermsDetailViewModel @Inject constructor(
 
     fun fetchTerm() {
         if (_uiState.value.isLoading) return
-        _uiState.update { it.copy(isLoading = true) }
+        _uiState.update { it.copy(isLoading = true, failed = false) }
 
         viewModelScope.launch {
             val documents = repository.fetchTermsDocuments().single()
@@ -50,7 +50,7 @@ class TermsDetailViewModel @Inject constructor(
                         content = document.content,
                     )
                 } else {
-                    it.copy(failed = true)
+                    it.copy(isLoading = false, failed = true)
                 }
             }
         }

@@ -11,14 +11,25 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import retrofit2.HttpException
 
-internal class UserRepositoryImpl @Inject constructor(private val service: UserService) : UserRepository {
+internal class UserRepositoryImpl @Inject constructor(private val userService: UserService) : UserRepository {
     override fun fetchMe(): Flow<Result<UserProfile>> = flow {
         val result = try {
-            val response = service.fetchMe()
+            val response = userService.fetchMe()
             if (!response.isSuccessful) throw HttpException(response)
             val body = requireNotNull(response.body())
             require(body.id > 0)
-            Result.success(UserProfile(body.id, body.role.value, body.nickname, body.phone, body.marketingOptIn, body.termsAgreedAt, body.joinedAt))
+
+            Result.success(
+                UserProfile(
+                    id = body.id,
+                    role = body.role.value,
+                    nickname = body.nickname,
+                    phone = body.phone,
+                    marketingOptIn = body.marketingOptIn,
+                    termsAgreedAt = body.termsAgreedAt,
+                    joinedAt = body.joinedAt,
+                ),
+            )
         } catch (error: CancellationException) {
             throw error
         } catch (error: Exception) {

@@ -1,0 +1,20 @@
+<resources>
+    <string name="myinfo_title">내 정보</string>
+    <string name="myinfo_user_info">회원 정보</string>
+    <string name="myinfo_nickname">닉네임</string>
+    <string name="myinfo_phone">전화번호</string>
+    <string name="myinfo_unregistered">미등록</string>
+    <string name="myinfo_guest">비회원으로 이용 중이에요</string>
+    <string name="myinfo_link_kakao">카카오로 계속 연동하기</string>
+    <string name="myinfo_policy_info">약관 및 정책</string>
+    <string name="myinfo_terms">서비스 이용약관</string>
+    <string name="myinfo_privacy">개인정보 처리방침</string>
+    <string name="myinfo_profile_error">회원 정보를 불러오지 못했어요.</string>
+    <string name="myinfo_retry">다시 시도</string>
+    <string name="myinfo_logout">로그아웃</string>
+    <string name="myinfo_logging_out">로그아웃 중</string>
+    <string name="myinfo_logout_confirmation">로그아웃 하시겠어요?</string>
+    <string name="myinfo_logout_error">로그아웃하지 못했어요. 다시 시도해 주세요.</string>
+    <string name="myinfo_cancel">취소</string>
+    <string name="myinfo_confirm">확인</string>
+</resources>

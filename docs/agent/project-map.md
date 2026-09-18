@@ -21,6 +21,7 @@
 | `:core:designsystem` | Android library 모듈 | Compose 테마와 공통 UI 컴포넌트 |
 | `:core:utils` | Android library 모듈 | 네트워크 상태 관측 등 공통 Android 유틸리티용 모듈 골격 |
 | `:feature:owner:setting` | Android library 모듈 | 점주 상점 정보와 약관 목록·WebView |
+| `:feature:consumer:myinfo` | Android library 모듈 | Consumer 내 정보, 비회원 카카오 로그인 진입, 회원 프로필·로그아웃과 약관 진입 |
 | `:feature:owner:product` | Android library 모듈 | 점포 관리의 상품 등록·상세 및 찜 목록·상세·취소 |
 | `:feature:owner:home` | Android library 모듈 | 점주 홈 UI, 운영 현황과 외부 화면 진입 액션 |
 | `:feature:owner:onboarding` | Android library 모듈 | 점주 최초 매장 등록 2단계 UI와 외부 검색·신청 연결 계약 |

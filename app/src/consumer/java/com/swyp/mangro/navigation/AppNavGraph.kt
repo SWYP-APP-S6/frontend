@@ -30,6 +30,7 @@ import com.swyp.mangro.feature.consumer.store.navigation.navigateToProductDetail
 import com.swyp.mangro.feature.consumer.store.navigation.productDetailScreen
 import com.swyp.mangro.feature.splash.navigation.Splash
 import com.swyp.mangro.feature.splash.navigation.splashNavGraph
+import com.swyp.mangro.notification.ConsumerNotificationPermission
 
 @Composable
 fun AppNavGraph(
@@ -83,6 +84,7 @@ fun AppNavGraph(
         homeNavGraph(
             navController = navController,
             onNavigateToMenu = onNavigateToMenu,
+            onHomeEntered = { ConsumerNotificationPermission() },
         )
         myInfoScreen(
             onNavigateToMenu = onNavigateToMenu,

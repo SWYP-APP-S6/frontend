@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application>
         <meta-data
             android:name="com.naver.maps.map.NCP_KEY_ID"
             android:value="${NCP_MAP_CLIENT_ID}" />
+
+        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_app_icon" />
+        <meta-data android:name="firebase_messaging_auto_init_enabled" android:value="false" />
+
+        <service android:name=".notification.ConsumerMessagingService" android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>

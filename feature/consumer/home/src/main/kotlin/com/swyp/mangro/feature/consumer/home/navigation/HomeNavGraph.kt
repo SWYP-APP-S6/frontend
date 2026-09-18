@@ -1,5 +1,6 @@
 package com.swyp.mangro.feature.consumer.home.navigation
 
+import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -14,10 +15,11 @@ data object Home
 fun NavGraphBuilder.homeNavGraph(
     navController: NavController,
     onNavigateToMenu: (ConsumerMenu) -> Unit,
+    onHomeEntered: @Composable () -> Unit = {},
 ) {
     composable<Home> {
+        onHomeEntered()
         HomeRoute(
-            navigateToLocationSelector = { },
             navigateToProductDetail = { productId ->
                 navController.navigateToProductDetail(productId)
             },

@@ -12,6 +12,7 @@ import com.swyp.mangro.data.owner.product.model.HoldPage
 import com.swyp.mangro.data.owner.product.model.HoldStatus
 import com.swyp.mangro.data.owner.product.model.ManagedHold
 import com.swyp.mangro.data.owner.product.model.ManagedProduct
+import com.swyp.mangro.data.owner.product.model.OwnerProductFilter
 import com.swyp.mangro.data.owner.product.model.ProductPage
 import com.swyp.mangro.data.owner.product.model.ProductSummary
 import com.swyp.mangro.data.owner.product.paging.OwnerHoldPagingSource
@@ -21,9 +22,9 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 
 class ManagementFakeRepository : OwnerProductRepository {
-    override fun pagedProducts() = flowOf(PagingData.empty<ProductSummary>())
+    override fun pagedProducts(filter: OwnerProductFilter, onPageLoaded: (ProductPage) -> Unit) = flowOf(PagingData.empty<ProductSummary>())
     override fun refreshProducts() = Unit
-    override fun fetchProducts(page: Int) = flowOf(Result.success(ProductPage(emptyList(), 0, true)))
+    override fun fetchProducts(page: Int, filter: OwnerProductFilter) = flowOf(Result.success(ProductPage(emptyList(), 0, true)))
     private var source: OwnerHoldPagingSource? = null
     override fun pagedHolds(status: HoldStatus?, onPageLoaded: (HoldPage) -> Unit) = Pager(
         PagingConfig(pageSize = 100, initialLoadSize = 100, prefetchDistance = 5, enablePlaceholders = false),

@@ -21,6 +21,7 @@ dependencies {
 
     implementation(libs.androidx.paging.compose)
     testImplementation(libs.androidx.paging.testing)
+    testImplementation(libs.kotlinx.coroutines.test)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)

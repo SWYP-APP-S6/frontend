@@ -16,9 +16,16 @@ import com.swyp.mangro.feature.owner.product.R
 import com.swyp.mangro.feature.owner.product.component.StockReconfirmationDialog
 
 @Composable
-fun StockReconfirmationHost(requestKey: String?, onEditProduct: (String) -> Unit, viewModel: StockReconfirmationViewModel = hiltViewModel()) {
+fun StockReconfirmationHost(
+    requestKey: String?,
+    productId: Long?,
+    onEditProduct: (String) -> Unit,
+    viewModel: StockReconfirmationViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    LaunchedEffect(requestKey) { requestKey?.let(viewModel::open) }
+    LaunchedEffect(requestKey, productId) {
+        if (requestKey != null && productId != null) viewModel.open(requestKey, productId)
+    }
     LaunchedEffect(viewModel) { viewModel.editProduct.collect { onEditProduct(it.toString()) } }
     state.product?.let {
         StockReconfirmationDialog(it.name, it.quantity, state.isSaving, { viewModel.answer(true) }, { viewModel.answer(false) }, viewModel::dismiss)

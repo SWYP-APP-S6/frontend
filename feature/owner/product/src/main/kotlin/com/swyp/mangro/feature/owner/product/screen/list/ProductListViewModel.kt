@@ -7,6 +7,7 @@ import androidx.paging.cachedIn
 import androidx.paging.map
 import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
 import com.swyp.mangro.data.owner.product.model.HoldStatus
+import com.swyp.mangro.data.owner.product.model.OwnerProductFilter
 import com.swyp.mangro.data.owner.product.repository.OwnerProductRepository
 import com.swyp.mangro.feature.owner.product.model.OwnerPickupModel
 import com.swyp.mangro.feature.owner.product.model.presentation
@@ -33,6 +34,7 @@ class ProductListViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(
         ProductListState(
             tab = savedStateHandle.get<String>("store_tab")?.let(ProductListTab::valueOf) ?: ProductListTab.PRODUCTS,
+            productFilter = savedStateHandle.get<String>("store_product_filter")?.let(OwnerProductFilter::valueOf) ?: OwnerProductFilter.ALL,
             filter = savedStateHandle.get<String>("store_filter")?.let(ProductListFilter::valueOf) ?: ProductListFilter.ALL,
         ),
     )
@@ -40,7 +42,20 @@ class ProductListViewModel @Inject constructor(
     private val _event = Channel<ProductListEvent>(Channel.BUFFERED)
     val event = _event.receiveAsFlow()
 
-    val products = repository.pagedProducts().cachedIn(viewModelScope)
+    val products = uiState.map { it.productFilter }.distinctUntilChanged().flatMapLatest { filter ->
+        repository.pagedProducts(filter) { page ->
+            _uiState.update {
+                if (it.productFilter == filter) {
+                    it.copy(
+                        filteredProductTotal = page.total,
+                        totalProducts = if (filter == OwnerProductFilter.ALL) page.total else it.totalProducts,
+                    )
+                } else {
+                    it
+                }
+            }
+        }
+    }.cachedIn(viewModelScope)
 
     fun refreshProducts() {
         repository.refreshProducts()
@@ -92,6 +107,12 @@ class ProductListViewModel @Inject constructor(
             is ProductListAction.TabSelected -> {
                 savedStateHandle["store_tab"] = action.tab.name
                 _uiState.update { it.copy(tab = action.tab) }
+            }
+
+            is ProductListAction.ProductFilterSelected -> {
+                if (action.filter == uiState.value.productFilter) return
+                savedStateHandle["store_product_filter"] = action.filter.name
+                _uiState.update { it.copy(productFilter = action.filter, filteredProductTotal = 0) }
             }
 
             is ProductListAction.FilterSelected -> {

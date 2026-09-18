@@ -8,12 +8,20 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class OwnerPushMessageTest {
-    @Test fun payloadWithoutDeepLinkKeepsReadIdAndOpensOwnerHome() {
-        val message = OwnerPushMessage.from("NEW_HOLD_RECEIVED", "새 찜이 들어왔어요", "서버 본문", "1024")!!
+    @Test fun stockReconfirmationUsesProductIdFromContractDeepLink() {
+        val message = OwnerPushMessage.from(
+            "STOCK_RECONFIRM_REQUEST",
+            "재고를 확인해주세요",
+            "서버 본문",
+            "1024",
+            "mangro://owner/products/77",
+        )!!
         assertEquals(1024L, message.notificationId)
-        val opened = OwnerNotificationOpen.from(message.type.name, "1024")!!
+        assertEquals(77L, message.productId)
+        val opened = OwnerNotificationOpen.from(message.type.name, "1024", message.deepLink)!!
         assertEquals(message.type, opened.type)
         assertEquals(1024L, opened.notificationId)
+        assertEquals(77L, opened.productId)
     }
 
     @Test fun invalidReadIdsAreNeverUsedAndConsumerTapsAreIgnored() {
@@ -21,6 +29,22 @@ class OwnerPushMessageTest {
             assertNull(OwnerNotificationOpen.from("HOLD_UNCONFIRMED", it)!!.notificationId)
         }
         assertNull(OwnerNotificationOpen.from("NEARBY_PRODUCT_REGISTERED", "1024"))
+    }
+
+    @Test fun malformedOrUnrelatedDeepLinksNeverTargetAStockDialog() {
+        listOf(
+            null,
+            "",
+            "mangro://owner/products/0",
+            "mangro://owner/products/-1",
+            "mangro://owner/products/7?source=push",
+            "https://owner/products/7",
+            "mangro://consumer/products/7",
+        ).forEach { deepLink ->
+            val message = OwnerPushMessage.from("STOCK_RECONFIRM_REQUEST", "제목", "본문", deepLink = deepLink)!!
+            assertNull(message.productId)
+            assertNull(OwnerNotificationOpen.from(message.type.name, null, deepLink)!!.productId)
+        }
     }
 
     @Test fun acceptsEveryOwnerTypeAndPreservesServerText() {

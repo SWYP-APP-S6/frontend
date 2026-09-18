@@ -68,6 +68,10 @@
     <string name="owner_product_photo_count">%1$d / %2$d</string>
     <string name="owner_product_discount_percent">%1$d%%</string>
     <string name="owner_product_filter_all">전체</string>
+    <string name="owner_product_filter_on_sale">판매중</string>
+    <string name="owner_product_filter_running_low">품절 임박</string>
+    <string name="owner_product_filter_sold_out">품절</string>
+    <string name="owner_product_filter_closed">판매 종료</string>
     <string name="owner_product_price">%1$s원</string>
     <string name="owner_product_pickup_title">찜 현황</string>
     <string name="owner_product_pickup_count">찜 현황 %1$d</string>

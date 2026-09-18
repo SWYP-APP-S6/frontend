@@ -11,6 +11,7 @@ import com.swyp.mangro.data.owner.product.model.HoldItem
 import com.swyp.mangro.data.owner.product.model.HoldPage
 import com.swyp.mangro.data.owner.product.model.HoldStatus
 import com.swyp.mangro.data.owner.product.model.ManagedHold
+import com.swyp.mangro.data.owner.product.model.OwnerProductFilter
 import com.swyp.mangro.data.owner.product.model.ProductPage
 import com.swyp.mangro.data.owner.product.model.ProductSummary
 import com.swyp.mangro.data.owner.product.paging.OwnerHoldPagingSource
@@ -22,8 +23,10 @@ import com.swyp.mangro.feature.owner.product.screen.list.ProductListViewModel
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -39,12 +42,20 @@ import org.junit.Test
 class ProductListPagingTest {
     private val store = ViewModelStore()
     private val requests = mutableListOf<Pair<Int, HoldStatus?>>()
+    private val productRequests = mutableListOf<OwnerProductFilter>()
     private var writes = 0
     private val completion = CompletableDeferred<Result<HoldDetail>>()
     private val repository = object : OwnerProductRepository {
-        override fun pagedProducts() = flowOf(PagingData.empty<ProductSummary>())
+        override fun pagedProducts(
+            filter: OwnerProductFilter,
+            onPageLoaded: (ProductPage) -> Unit,
+        ): kotlinx.coroutines.flow.Flow<PagingData<ProductSummary>> {
+            productRequests += filter
+            onPageLoaded(ProductPage(emptyList(), filter.ordinal.toLong() + 1, true))
+            return flowOf(PagingData.empty<ProductSummary>())
+        }
         override fun refreshProducts() = Unit
-        override fun fetchProducts(page: Int) = flowOf(Result.success(ProductPage(emptyList(), 0, true)))
+        override fun fetchProducts(page: Int, filter: OwnerProductFilter) = flowOf(Result.success(ProductPage(emptyList(), 0, true)))
         private var source: OwnerHoldPagingSource? = null
         override fun pagedHolds(status: HoldStatus?, onPageLoaded: (HoldPage) -> Unit) = Pager(
             PagingConfig(pageSize = 100, initialLoadSize = 100, prefetchDistance = 5, enablePlaceholders = false),
@@ -116,6 +127,25 @@ class ProductListPagingTest {
         assertEquals(0 to HoldStatus.COMPLETED, requests.last())
         assertEquals(200L, vm.uiState.value.filteredTotal)
         assertEquals(300L, vm.uiState.value.totalHolds)
+    }
+
+    @Test fun productFilterCreatesNewPagingFlowAndPersistsSelection() = runTest {
+        val handle = SavedStateHandle(mapOf("store_product_filter" to OwnerProductFilter.RUNNING_LOW.name))
+        val vm = ProductListViewModel(handle, repository).also { store.put("list", it) }
+        val collection = backgroundScope.launch { vm.products.collectLatest {} }
+        runCurrent()
+        assertEquals(listOf(OwnerProductFilter.RUNNING_LOW), productRequests)
+        assertEquals(3L, vm.uiState.value.filteredProductTotal)
+        assertEquals(null, vm.uiState.value.totalProducts)
+
+        vm.handleAction(ProductListAction.ProductFilterSelected(OwnerProductFilter.ALL))
+        runCurrent()
+
+        assertEquals(listOf(OwnerProductFilter.RUNNING_LOW, OwnerProductFilter.ALL), productRequests)
+        assertEquals(1L, vm.uiState.value.filteredProductTotal)
+        assertEquals(1L, vm.uiState.value.totalProducts)
+        assertEquals(OwnerProductFilter.ALL.name, handle.get<String>("store_product_filter"))
+        collection.cancel()
     }
 
     @Test fun refreshInvalidatesAndReloadsSource() = runTest {

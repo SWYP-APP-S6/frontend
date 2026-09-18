@@ -2,7 +2,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application>
-        <activity android:name=".MainActivity" android:launchMode="singleTop" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="mangro"
+                    android:host="owner"
+                    android:pathPrefix="/products/" />
+            </intent-filter>
+        </activity>
         <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="owner-store-alerts" />
         <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_owner_notification" />
         <meta-data android:name="firebase_messaging_auto_init_enabled" android:value="false" />

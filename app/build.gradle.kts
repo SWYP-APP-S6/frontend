@@ -10,11 +10,14 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
-// Firebase configuration is supplied privately for the Owner application.
-if (file("src/owner/google-services.json").isFile) {
+val hasOwnerFirebaseConfig = file("src/owner/google-services.json").isFile
+val hasConsumerFirebaseConfig = file("src/consumer/google-services.json").isFile
+
+if (hasOwnerFirebaseConfig || hasConsumerFirebaseConfig) {
     apply(plugin = "com.google.gms.google-services")
     tasks.configureEach {
-        if (name.startsWith("processConsumer") && name.endsWith("GoogleServices")) enabled = false
+        if (!hasOwnerFirebaseConfig && name.startsWith("processOwner") && name.endsWith("GoogleServices")) enabled = false
+        if (!hasConsumerFirebaseConfig && name.startsWith("processConsumer") && name.endsWith("GoogleServices")) enabled = false
     }
 }
 
@@ -56,6 +59,7 @@ dependencies {
     add("ownerImplementation", platform(libs.firebase.bom))
     add("ownerImplementation", libs.firebase.messaging)
     add("ownerImplementation", libs.androidx.work.runtime)
+    add("consumerImplementation", libs.androidx.work.runtime)
     add("ownerImplementation", libs.kotlinx.coroutines.play.services)
     add("ownerImplementation", project(":data:owner:notification"))
     implementation(libs.kakao.user)
@@ -86,6 +90,10 @@ dependencies {
     add("consumerImplementation", project(":feature:consumer:hold"))
     add("consumerImplementation", project(":feature:consumer:recipe"))
     add("consumerImplementation", project(":feature:consumer:myinfo"))
+    add("consumerImplementation", platform(libs.firebase.bom))
+    add("consumerImplementation", libs.firebase.messaging)
+    add("consumerImplementation", libs.kotlinx.coroutines.play.services)
+    add("consumerImplementation", project(":data:consumer:notification"))
 
     add("ownerImplementation", project(":feature:splash"))
     add("ownerImplementation", project(":feature:auth"))

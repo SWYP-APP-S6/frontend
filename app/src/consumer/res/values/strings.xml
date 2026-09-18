@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">맹그로</string>
     <string name="greeting_message">Hello Mangro Consumer!</string>
+    <string name="consumer_notification_channel">맹그로 픽업 알림</string>
 </resources>

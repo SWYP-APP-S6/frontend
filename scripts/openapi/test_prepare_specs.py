@@ -24,9 +24,29 @@ class PrepareSpecsTest(unittest.TestCase):
     def test_partition_is_complete_and_disjoint(self):
         result = self.generate()
         counts = {k: len(list(operations(v))) for k, v in result.items()}
-        self.assertEqual(counts, {'owner': 16, 'consumer': 15, 'user': 7, 'auth': 10})
+        self.assertEqual(counts, {'owner': 17, 'consumer': 15, 'user': 7, 'auth': 10})
         endpoints = [f'{m} {p}' for v in result.values() for m, p, _ in operations(v)]
-        self.assertEqual(len(set(endpoints)), 48)
+        self.assertEqual(len(set(endpoints)), 49)
+
+    def test_0918_owner_product_list_contract(self):
+        owner = self.generate()['owner']
+        operation = owner['paths']['/owner/products']['get']
+        self.assertEqual('fetchMyProducts', operation['operationId'])
+        self.assertEqual(
+            'com.swyp.mangro.remote.owner.model.OwnerProductListResponse',
+            operation['x-response-data-type'],
+        )
+        parameters = {parameter['name']: parameter['schema'] for parameter in operation['parameters']}
+        self.assertEqual({'filter', 'page', 'size'}, set(parameters))
+        self.assertEqual(['RUNNING_LOW', 'SOLD_OUT'], parameters['filter']['enum'])
+        self.assertEqual(0, parameters['page']['default'])
+        self.assertEqual(20, parameters['size']['default'])
+        self.assertEqual(100, parameters['size']['maximum'])
+        schemas = owner['components']['schemas']
+        self.assertEqual(
+            '#/components/schemas/PageResponseOwnerProductSummaryResponse',
+            schemas['OwnerProductListResponse']['properties']['products']['$ref'],
+        )
 
     def test_deterministic_and_does_not_mutate_source(self):
         before = copy.deepcopy(self.source)

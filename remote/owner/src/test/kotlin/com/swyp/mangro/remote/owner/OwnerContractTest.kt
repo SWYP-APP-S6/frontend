@@ -159,4 +159,24 @@ class OwnerContractTest {
             json.decodeFromString<RegisterProductRequest>("""{"category":"FUTURE"}""")
         }
     }
+
+    @Test
+    fun productListSendsFilterAndPagingParameters() = runTest {
+        MockWebServer().use { server ->
+            server.enqueue(
+                MockResponse().setBody(
+                    """{"status":200,"code":"OK","message":"ok","data":{"serverTime":"2026-09-18T12:00:00Z","products":{"content":[],"page":1,"size":10,"totalElements":0,"totalPages":0,"last":true}}}""",
+                ),
+            )
+
+            val response = OwnerServices(createRetrofit(server.url("/").toString())).product
+                .fetchMyProducts(ProductService.FilterFetchMyProducts.RUNNING_LOW, page = 1, size = 10)
+                .body()!!
+            assertEquals(1, response.products.page)
+            assertEquals(10, response.products.propertySize)
+            val request = checkNotNull(server.takeRequest(5, TimeUnit.SECONDS))
+            assertEquals("GET", request.method)
+            assertEquals("/owner/products?filter=RUNNING_LOW&page=1&size=10", request.path)
+        }
+    }
 }

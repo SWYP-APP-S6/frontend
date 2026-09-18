@@ -48,6 +48,9 @@ def client_mapping(mapping):
     result = copy.deepcopy(mapping)
     if 'GET /users/me' in result:
         result['GET /users/me']['module'] = 'user'
+    for endpoint, config in result.items():
+        if endpoint.split(' ', 1)[1].startswith('/notifications'):
+            config['module'] = 'user'
     return result
 
 

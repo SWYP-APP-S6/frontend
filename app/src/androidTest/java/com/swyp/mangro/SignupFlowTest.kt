@@ -57,7 +57,7 @@ class SignupFlowTest {
         lateinit var model: TermsViewModel
         compose.runOnUiThread { model = TermsViewModel(repository, terms) }
         compose.setContent {
-            MangroTheme { TermsRoute({ completed = true }, {}, {}, {}, model) }
+            MangroTheme { TermsRoute(onBackClick = {}, onSignupCompleted = { completed = true }, navigateToLogin = {}, navigateToTermsDetail = {}, viewModel = model) }
         }
         compose.onNodeWithText("확인하기").assertIsNotEnabled()
         compose.onNodeWithText("전체동의").performClick()
@@ -83,7 +83,7 @@ class SignupFlowTest {
         }
         lateinit var model: TermsViewModel
         compose.runOnUiThread { model = TermsViewModel(repository, terms) }
-        compose.setContent { MangroTheme { TermsRoute({ completed = true }, {}, {}, { login = true }, model) } }
+        compose.setContent { MangroTheme { TermsRoute(onBackClick = {}, onSignupCompleted = { completed = true }, navigateToLogin = { login = true }, navigateToTermsDetail = {}, viewModel = model) } }
         compose.onNodeWithText("전체동의").performClick()
         compose.onNodeWithText("확인하기").performClick()
         compose.waitUntil(5_000) { login }
@@ -103,7 +103,7 @@ class SignupFlowTest {
         lateinit var model: TermsViewModel
         compose.runOnUiThread { model = TermsViewModel(repository, terms) }
         compose.setContent {
-            MangroTheme { TermsRoute({ completed = true }, {}, {}, {}, model, onOwnerOnboarding = { received = it }) }
+            MangroTheme { TermsRoute(onBackClick = {}, onSignupCompleted = { completed = true }, navigateToLogin = {}, navigateToTermsDetail = {}, viewModel = model, onOwnerOnboarding = { received = it }) }
         }
         compose.onNodeWithText("확인하기").assertIsNotEnabled()
         compose.onNodeWithText("전체동의").performClick()

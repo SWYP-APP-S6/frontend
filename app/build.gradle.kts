@@ -4,9 +4,18 @@ import java.util.Properties
 plugins {
     id("mangro.android.application")
     id("mangro.android.compose")
+    alias(libs.plugins.google.services) apply false
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
+}
+
+// Firebase configuration is supplied privately for the Owner application.
+if (file("src/owner/google-services.json").isFile) {
+    apply(plugin = "com.google.gms.google-services")
+    tasks.configureEach {
+        if (name.startsWith("processConsumer") && name.endsWith("GoogleServices")) enabled = false
+    }
 }
 
 android {
@@ -44,6 +53,11 @@ android {
 }
 
 dependencies {
+    add("ownerImplementation", platform(libs.firebase.bom))
+    add("ownerImplementation", libs.firebase.messaging)
+    add("ownerImplementation", libs.androidx.work.runtime)
+    add("ownerImplementation", libs.kotlinx.coroutines.play.services)
+    add("ownerImplementation", project(":data:owner:notification"))
     implementation(libs.kakao.user)
     add("ownerImplementation", project(":feature:owner:onboarding"))
     add("ownerImplementation", project(":data:auth"))

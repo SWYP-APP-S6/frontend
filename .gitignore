@@ -20,3 +20,6 @@ CLAUDE.local.md
 /docs/plans/remote-api-codegen.md
 /docs/reports/remote-api-*.md
 /docs/reports/remote-api-*.json
+
+# Firebase app configuration
+**/google-services.json

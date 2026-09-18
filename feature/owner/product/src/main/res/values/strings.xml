@@ -88,4 +88,10 @@
     <string name="owner_product_registered_title">등록된 상품</string>
     <string name="product_registration_failed">상품을 등록하지 못했어요. 입력 내용과 픽업 시간을 확인한 뒤 다시 시도해 주세요.</string>
     <string name="product_registration_confirm">확인</string>
+    <string name="owner_stock_reconfirm_title">지금 남아있는 수량이</string>
+    <string name="owner_stock_reconfirm_quantity">개 맞나요?</string>
+    <string name="owner_stock_reconfirm_yes">네, 맞아요</string>
+    <string name="owner_stock_reconfirm_no">아니요</string>
+    <string name="owner_stock_reconfirm_later">나중에하기</string>
+    <string name="owner_stock_reconfirm_error">재고 확인을 처리하지 못했어요. 최신 재고를 다시 확인해 주세요.</string>
 </resources>

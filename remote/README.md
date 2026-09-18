@@ -50,7 +50,7 @@ python3 scripts/openapi/check_generated.py
 
 ## 2026-09-17 점주 명세 반영
 
-현재 입력은 09-17 v3 전체 명세다. 이전에는 09-15 전체 명세에 09-17 점주 부분 명세를 병합했으나 전체 전달본으로 대체했다. 점주 부분 명세만으로 전체 입력을 대체하지 않는다. 소비자 전용 경로는 유지한다. 비공개 입력·매핑·체크섬은 같은 묶음으로 전달한다.
+현재 입력은 09-17 v3 전체 명세에 09-18 상품 목록 API를 병합한 스냅샷이다. 09-18 전달본은 점주·공통 일부 명세이므로 전체 입력으로 대체하지 않는다. 소비자 전용 경로와 기존 v3 식자재·상품 상세 계약은 유지한다. 비공개 입력·매핑·체크섬은 같은 묶음으로 전달한다.
 
 알림 조회·읽음 처리·FCM 등록/삭제는 양쪽 역할의 공통 API이므로 `:remote:user`에서 생성하고 Hilt로 제공한다. 기존 `ConsumerServices.notification` 접근은 공통 생성 타입을 참조하도록 유지한다. `DELETE /users/me`도 공통 UserService에 포함한다.
 
@@ -75,8 +75,7 @@ Owner HoldService에 재고 부족 취소 후보 조회·취소를 추가하고,
 
 ## 2026-09-18 상품 목록 API 반영
 
-- 9월 18일 부분 명세의 `GET /owner/products`와 상품 목록 응답 4개 schema를 9월 17일 v3 전체 명세에 병합했다.
-- 기존 v3의 소비자 15개·식자재 2개 operation과 상품 상세·미리보기의 식자재 객체 계약은 유지한다.
-- 병합 후 전체 49개 operation: Auth 10, Consumer 15, Owner 17, User 7.
-- 병합 명세 SHA-256: `5f1682d2cc0c4e39e7cb4824157d161cf5314e129f300a9c22bdf6e7c59a616c`.
-- 9월 18일 원본은 부분 명세이므로 전체 입력 파일을 대체하지 않는다.
+- `GET /owner/products`를 기존 v3 전체 명세에 병합하고 `OwnerProductListResponse`, `OwnerProductSummaryResponse`, `PageResponseOwnerProductSummaryResponse`, 응답 envelope 모델을 추가했다.
+- 기존 소비자 15개, Owner 식자재 검색·추천 2개, 객체형 `ingredientTags`와 상품 등록·상세 계약을 보존한다. 전체 49개 operation은 Auth 10, Consumer 15, Owner 17, User 7이다.
+- 병합 스냅샷 SHA-256: `5f1682d2cc0c4e39e7cb4824157d161cf5314e129f300a9c22bdf6e7c59a616c`.
+- `mangro-app-openapi-2026-09-18.json` 자체는 전체 명세가 아니므로 생성 입력으로 직접 사용하지 않는다.

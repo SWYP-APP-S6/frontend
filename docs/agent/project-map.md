@@ -17,7 +17,7 @@
 | `:data:user` | Android library 모듈 | 사용자 프로필 조회 Flow Repository |
 | `:data:owner:product` | Android library 모듈 | 상품 상세·재고 수정·찜 목록/상세/완료·취소 후보 및 취소 Flow Repository |
 | `:data:owner:home` | Android library 모듈 | Owner 홈 조회·픽업 완료 Flow Repository |
-| `:remote:owner` | Android library 모듈 | Owner 17 API 생성 (v3 식자재 검색·추천·상품 목록 포함) |
+| `:remote:owner` | Android library 모듈 | Owner 17 API 생성 (v3 식자재 검색·추천 및 상품 목록 포함) |
 | `:core:designsystem` | Android library 모듈 | Compose 테마와 공통 UI 컴포넌트 |
 | `:core:utils` | Android library 모듈 | 네트워크 상태 관측 등 공통 Android 유틸리티용 모듈 골격 |
 | `:feature:owner:setting` | Android library 모듈 | 점주 상점 정보와 약관 목록·WebView |
@@ -117,6 +117,6 @@ Owner·Consumer의 `:data:auth`는 Flow 기반 SDK 토큰 검증·가입·저장
 `:data:owner:store`는 Owner 상점 등록·내 상점 조회 Flow Repository, 승인 상태와 서버 요청 매핑을 소유한다. `:feature:owner:onboarding`은 이를 수집하며, Owner 신규 회원은 기본 정보 → 운영 정보 입력을 마친 뒤 signup → 상점 등록 → 접수 안내로 연결된다. Consumer에는 이 모듈을 연결하지 않는다.
 
 - 2026-09-17 API 갱신: 공통 알림·FCM 및 회원 탈퇴는 `:remote:user`, 재고 부족 찜 취소는 `:remote:owner`에서 생성한다. 입력은 소비자 경로를 보존한 병합 명세이며 상세는 `remote/README.md`를 참고한다.
-- 2026-09-18 API 갱신: `GET /owner/products` 상품 목록과 목록 응답 schema를 추가하고, 기존 v3 소비자·식자재 계약은 유지한다. 상세는 `remote/README.md`를 참고한다.
+- 2026-09-18 API 갱신: `GET /owner/products` 상품 목록과 페이지 응답 모델을 기존 v3 명세에 병합했다. 기존 식자재 검색·추천과 객체형 `ingredientTags` 계약은 유지한다.
 
 - `:data:owner:product`: 상품 등록과 첫 사진 multipart 업로드를 담당하며 생성된 `:remote:owner` 서비스를 사용한다.

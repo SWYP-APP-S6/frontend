@@ -12,7 +12,10 @@ import com.swyp.mangro.data.owner.product.model.HoldPage
 import com.swyp.mangro.data.owner.product.model.HoldStatus
 import com.swyp.mangro.data.owner.product.model.ManagedHold
 import com.swyp.mangro.data.owner.product.model.ManagedProduct
+import com.swyp.mangro.data.owner.product.model.ProductPage
+import com.swyp.mangro.data.owner.product.model.ProductSummary
 import com.swyp.mangro.data.owner.product.paging.OwnerHoldPagingSource
+import com.swyp.mangro.data.owner.product.paging.OwnerProductPagingSource
 import com.swyp.mangro.data.owner.product.repository.OwnerProductRepository
 import com.swyp.mangro.remote.owner.model.CancelHoldsForShortageRequest
 import com.swyp.mangro.remote.owner.model.OwnerHoldCancelCandidatesResponse
@@ -36,6 +39,43 @@ internal class OwnerProductRepositoryImpl @Inject constructor(
     private val holds: HoldService,
 ) : OwnerProductRepository {
     private var holdPagingSource: OwnerHoldPagingSource? = null
+    private var productPagingSource: OwnerProductPagingSource? = null
+
+    override fun pagedProducts(): Flow<PagingData<ProductSummary>> = Pager(
+        config = PagingConfig(
+            pageSize = OwnerProductPagingSource.PAGE_SIZE,
+            initialLoadSize = OwnerProductPagingSource.PAGE_SIZE,
+            prefetchDistance = 5,
+            enablePlaceholders = false,
+        ),
+        pagingSourceFactory = {
+            OwnerProductPagingSource(this).also { productPagingSource = it }
+        },
+    ).flow
+
+    override fun refreshProducts() {
+        productPagingSource?.invalidate()
+    }
+
+    override fun fetchProducts(page: Int): Flow<Result<ProductPage>> = request {
+        require(page >= 0)
+        val body = products.fetchMyProducts(page = page, size = OwnerProductPagingSource.PAGE_SIZE).bodyOrThrow().products
+        ProductPage(
+            products = body.content.map {
+                ProductSummary(
+                    id = it.id,
+                    name = it.name,
+                    photoUrl = it.photoUrl,
+                    salePrice = it.salePrice,
+                    availableQuantity = it.availableQty,
+                    activeHoldQuantity = it.activeHoldQty,
+                    shortfallQuantity = it.shortfallQty,
+                )
+            },
+            total = body.totalElements,
+            last = body.last,
+        )
+    }
 
     override fun pagedHolds(status: HoldStatus?, onPageLoaded: (HoldPage) -> Unit): Flow<PagingData<ManagedHold>> = Pager(
         config = PagingConfig(

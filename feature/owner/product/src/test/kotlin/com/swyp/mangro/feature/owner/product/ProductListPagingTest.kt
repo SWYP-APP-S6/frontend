@@ -4,12 +4,15 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelStore
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import androidx.paging.testing.asSnapshot
 import com.swyp.mangro.data.owner.product.model.HoldDetail
 import com.swyp.mangro.data.owner.product.model.HoldItem
 import com.swyp.mangro.data.owner.product.model.HoldPage
 import com.swyp.mangro.data.owner.product.model.HoldStatus
 import com.swyp.mangro.data.owner.product.model.ManagedHold
+import com.swyp.mangro.data.owner.product.model.ProductPage
+import com.swyp.mangro.data.owner.product.model.ProductSummary
 import com.swyp.mangro.data.owner.product.paging.OwnerHoldPagingSource
 import com.swyp.mangro.data.owner.product.repository.OwnerProductRepository
 import com.swyp.mangro.feature.owner.product.screen.list.ProductListAction
@@ -20,6 +23,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -38,6 +42,9 @@ class ProductListPagingTest {
     private var writes = 0
     private val completion = CompletableDeferred<Result<HoldDetail>>()
     private val repository = object : OwnerProductRepository {
+        override fun pagedProducts() = flowOf(PagingData.empty<ProductSummary>())
+        override fun refreshProducts() = Unit
+        override fun fetchProducts(page: Int) = flowOf(Result.success(ProductPage(emptyList(), 0, true)))
         private var source: OwnerHoldPagingSource? = null
         override fun pagedHolds(status: HoldStatus?, onPageLoaded: (HoldPage) -> Unit) = Pager(
             PagingConfig(pageSize = 100, initialLoadSize = 100, prefetchDistance = 5, enablePlaceholders = false),

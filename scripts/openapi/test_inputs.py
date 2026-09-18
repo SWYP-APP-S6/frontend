@@ -21,7 +21,7 @@ class InputFilesTest(unittest.TestCase):
             root = Path(directory)
             for name in INPUT_FILES[1:]:
                 (root / name).touch()
-            (root / 'mangro-app-openapi-2026-09-17.json').touch()
+            (root / 'mangro-app-openapi-2026-09-17-v3.json').touch()
             (root / 'mangro-app-openapi-2026-09-17-v2.json').touch()
             with self.assertRaisesRegex(ValueError, 'v3-merged.json'):
                 check_inputs(root)

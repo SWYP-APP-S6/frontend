@@ -22,6 +22,7 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -197,7 +198,15 @@ fun ProductListScreen(
             }
 
             if (uiState.tab == ProductListTab.PRODUCTS) {
-                ManagementLoadStatus(productRefresh is LoadState.Loading, productRefresh is LoadState.Error, products::retry)
+                if (productRefresh is LoadState.Loading) {
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MangroTheme.colors.primaryNormal,
+                        trackColor = MangroTheme.colors.surfaceAlter,
+                    )
+                } else {
+                    ManagementLoadStatus(false, productRefresh is LoadState.Error, products::retry)
+                }
             }
 
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {

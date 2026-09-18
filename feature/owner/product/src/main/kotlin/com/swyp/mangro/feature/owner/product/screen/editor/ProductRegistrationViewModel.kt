@@ -93,8 +93,8 @@ class ProductRegistrationViewModel internal constructor(
                             salePrice = saved.salePrice,
                             initialQuantity = saved.initialQuantity,
                             remainingQuantity = saved.stockQuantity,
-                            reservedQuantity = saved.heldQuantity,
-                            pickedUpQuantity = saved.completedQuantity,
+                            reservedQuantity = saved.heldQuantity.toLong(),
+                            pickedUpQuantity = saved.completedQuantity.toLong(),
                             pickupEndTime = OffsetDateTime.parse(saved.pickupEndAt).atZoneSameInstant(zone).toLocalTime().toString().take(5),
                             tags = emptyList(),
                         )

@@ -2,14 +2,18 @@ package com.swyp.mangro.feature.owner.product.screen.detail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -17,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -37,7 +42,6 @@ import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.designsystem.theme.PretendardFont
 import com.swyp.mangro.feature.owner.product.R
 import com.swyp.mangro.feature.owner.product.component.OwnerProductScaffold
-import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import com.swyp.mangro.feature.owner.product.util.formatAmount
 import kotlinx.serialization.Serializable
 
@@ -46,23 +50,17 @@ data class OwnerProductDetailDestination(val productId: String)
 
 @Composable
 internal fun ProductDetailRoute(
-    products: List<OwnerProductModel>,
     onBack: () -> Unit,
-    onSave: (OwnerProductModel) -> Unit,
     onCancelReservations: (String) -> Unit,
     viewModel: ProductDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    LaunchedEffect(products) {
-        viewModel.updateProducts(products)
-    }
     LaunchedEffect(viewModel, lifecycleOwner) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             viewModel.event.collect { event ->
                 when (event) {
-                    is ProductDetailEvent.SaveProduct -> onSave(event.product)
                     ProductDetailEvent.NavigateBack -> onBack()
                     is ProductDetailEvent.NavigateToCancellations -> onCancelReservations(event.productId)
                 }
@@ -81,21 +79,6 @@ internal fun ProductDetailScreen(
     uiState: ProductDetailState,
     onAction: (ProductDetailAction) -> Unit,
 ) {
-    val product = uiState.product
-    if (product == null) {
-        OwnerProductScaffold(
-            title = stringResource(R.string.owner_product_management_title),
-            onBack = { onAction(ProductDetailAction.NavigationBackClicked) },
-        ) {
-            Text(
-                text = stringResource(R.string.owner_product_product_missing),
-                style = MangroTheme.typography.caption.captionS,
-                color = MangroTheme.colors.textSubtitle,
-            )
-        }
-        return
-    }
-
     OwnerProductScaffold(
         title = stringResource(R.string.owner_product_detail_title),
         onBack = { onAction(ProductDetailAction.NavigationBackClicked) },
@@ -113,187 +96,235 @@ internal fun ProductDetailScreen(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(top = 12.dp, bottom = 20.dp),
         ) {
-            Column(
-                modifier = Modifier.padding(bottom = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-            ) {
-                Text(
-                    text = product.name,
-                    style = MangroTheme.typography.heading.headingS.copy(fontFamily = PretendardFont.Bold),
-                    color = MangroTheme.colors.textTitle,
-                )
+            when {
+                uiState.isSaving || uiState.isLoading || (!uiState.hasError && uiState.product == null) -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator(color = MangroTheme.colors.primaryNormal)
+                    }
+                }
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            color = MangroTheme.colors.surfaceDisabled,
-                            shape = RoundedCornerShape(16.dp),
-                        )
-                        .padding(horizontal = 10.dp, vertical = 18.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
+                uiState.hasError || uiState.product == null -> {
                     Column(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.pickup_empty),
+                            contentDescription = null,
+                        )
+                        Text(
+                            text = stringResource(R.string.pickup_error),
+                            color = MangroTheme.colors.textTitle,
+                            style = MangroTheme.typography.title.titleM,
+                        )
+                        MangroButton(
+                            text = stringResource(R.string.owner_management_retry),
+                            onClick = { onAction(ProductDetailAction.RetryClicked) },
+                            style = MangroButtonStyle.OUTLINED,
+                        )
+                    }
+                }
+
+                else -> {
+                    Column(
+                        modifier = Modifier.padding(bottom = 24.dp),
+                        verticalArrangement = Arrangement.spacedBy(20.dp),
                     ) {
                         Text(
-                            text = stringResource(R.string.owner_product_initial_quantity),
-                            style = MangroTheme.typography.caption.captionS,
-                            color = MangroTheme.colors.textSubtitle,
-                        )
-                        Text(
-                            text = product.initialQuantity.toString(),
-                            style = MangroTheme.typography.heading.headingL,
+                            text = uiState.product.name,
+                            style = MangroTheme.typography.heading.headingS.copy(fontFamily = PretendardFont.Bold),
                             color = MangroTheme.colors.textTitle,
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    color = MangroTheme.colors.surfaceDisabled,
+                                    shape = RoundedCornerShape(16.dp),
+                                )
+                                .padding(horizontal = 10.dp, vertical = 18.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.owner_product_initial_quantity),
+                                    style = MangroTheme.typography.caption.captionS,
+                                    color = MangroTheme.colors.textSubtitle,
+                                )
+                                Text(
+                                    text = uiState.product.initialQuantity.toString(),
+                                    style = MangroTheme.typography.heading.headingL,
+                                    color = MangroTheme.colors.textTitle,
+                                )
+                            }
+
+                            VerticalDivider(
+                                modifier = Modifier.height(24.dp),
+                                thickness = 1.dp,
+                                color = MangroTheme.colors.borderDefault,
+                            )
+
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.owner_product_reserved_quantity),
+                                    style = MangroTheme.typography.caption.captionS,
+                                    color = MangroTheme.colors.textSubtitle,
+                                )
+                                Text(
+                                    text = uiState.product.reservedQuantity.toString(),
+                                    style = MangroTheme.typography.heading.headingL,
+                                    color = MangroTheme.colors.primaryNormal,
+                                )
+                            }
+
+                            VerticalDivider(
+                                modifier = Modifier.height(24.dp),
+                                thickness = 1.dp,
+                                color = MangroTheme.colors.borderDefault,
+                            )
+
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.owner_product_picked_up_quantity),
+                                    style = MangroTheme.typography.caption.captionS,
+                                    color = MangroTheme.colors.textSubtitle,
+                                )
+                                Text(
+                                    text = uiState.product.pickedUpQuantity.toString(),
+                                    style = MangroTheme.typography.heading.headingL,
+                                    color = MangroTheme.colors.textTitle,
+                                )
+                            }
+                        }
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        ProductInfoRow(
+                            label = stringResource(R.string.owner_product_original_price),
+                            value = stringResource(R.string.owner_product_price, uiState.product.originalPrice.formatAmount()),
+                        )
+                        ProductInfoRow(
+                            label = stringResource(R.string.owner_product_sale_price),
+                            value = stringResource(R.string.owner_product_price, uiState.product.salePrice.formatAmount()),
+                        )
+                        ProductInfoRow(
+                            label = stringResource(R.string.owner_product_pickup_end),
+                            value = uiState.product.pickupEndTime,
+                        )
+                        ProductInfoRow(
+                            label = stringResource(R.string.owner_product_tags_label),
+                            value = if (!uiState.product.tagsResolved) {
+                                "—"
+                            } else {
+                                uiState.product
+                                    .tags
+                                    .mapIndexed { index, tag ->
+                                        if (index == 0) {
+                                            stringResource(R.string.owner_product_primary_tag, tag)
+                                        } else {
+                                            tag
+                                        }
+                                    }
+                                    .joinToString(" · ")
+                                    .ifEmpty { stringResource(R.string.owner_product_none) }
+                            },
                         )
                     }
 
-                    VerticalDivider(
-                        modifier = Modifier.height(24.dp),
-                        thickness = 1.dp,
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 32.dp),
                         color = MangroTheme.colors.borderDefault,
                     )
 
                     Column(
-                        modifier = Modifier.weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Text(
-                            text = stringResource(R.string.owner_product_reserved_quantity),
-                            style = MangroTheme.typography.caption.captionS,
-                            color = MangroTheme.colors.textSubtitle,
-                        )
-                        Text(
-                            text = product.reservedQuantity.toString(),
-                            style = MangroTheme.typography.heading.headingL,
-                            color = MangroTheme.colors.primaryNormal,
-                        )
-                    }
-
-                    VerticalDivider(
-                        modifier = Modifier.height(24.dp),
-                        thickness = 1.dp,
-                        color = MangroTheme.colors.borderDefault,
-                    )
-
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Text(
-                            text = stringResource(R.string.owner_product_picked_up_quantity),
-                            style = MangroTheme.typography.caption.captionS,
-                            color = MangroTheme.colors.textSubtitle,
-                        )
-                        Text(
-                            text = product.pickedUpQuantity.toString(),
-                            style = MangroTheme.typography.heading.headingL,
-                            color = MangroTheme.colors.textTitle,
-                        )
-                    }
-                }
-            }
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                ProductInfoRow(
-                    label = stringResource(R.string.owner_product_original_price),
-                    value = stringResource(R.string.owner_product_price, product.originalPrice.formatAmount()),
-                )
-                ProductInfoRow(
-                    label = stringResource(R.string.owner_product_sale_price),
-                    value = stringResource(R.string.owner_product_price, product.salePrice.formatAmount()),
-                )
-                ProductInfoRow(
-                    label = stringResource(R.string.owner_product_pickup_end),
-                    value = stringResource(R.string.owner_product_pickup_today, product.pickupEndTime),
-                )
-                ProductInfoRow(
-                    label = stringResource(R.string.owner_product_tags_label),
-                    value = product.tags.mapIndexed { index, tag -> if (index == 0) stringResource(R.string.owner_product_primary_tag, tag) else tag }.joinToString(" · ").ifEmpty { stringResource(R.string.owner_product_none) },
-                )
-            }
-
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 32.dp),
-                color = MangroTheme.colors.borderDefault,
-            )
-
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(40.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Text(
-                        text = stringResource(R.string.owner_product_remaining_quantity),
-                        style = MangroTheme.typography.heading.headingXXS,
-                        color = MangroTheme.colors.textTitle,
-                    )
-                    Text(
-                        text = stringResource(R.string.owner_product_remaining_quantity_hint),
-                        style = MangroTheme.typography.caption.captionS,
-                        color = MangroTheme.colors.textSubtitle,
-                    )
-                }
-                MangroStepper(
-                    value = uiState.quantity,
-                    onValueChange = { onAction(ProductDetailAction.QuantityChanged(it)) },
-                    size = MangroStepperSize.LARGE,
-                    minValue = 0,
-                )
-                NoticeBanner(
-                    text = stringResource(R.string.owner_product_zero_quantity_hint),
-                    containerColor = MangroTheme.colors.primaryLight,
-                    contentColor = MangroTheme.colors.primaryNormal,
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                )
-            }
-        }
-    }
-
-    if (uiState.showSaveConfirmation) {
-        OwnerProductQuantityConfirmationBottomSheet(
-            quantity = uiState.quantity,
-            description = if (uiState.quantity == 0) {
-                stringResource(R.string.owner_product_zero_quantity_confirm)
-            } else {
-                stringResource(R.string.owner_product_shortage_confirm)
-            },
-            onDismiss = { onAction(ProductDetailAction.SaveConfirmationDismissed) },
-            onConfirm = { onAction(ProductDetailAction.SaveConfirmClicked) },
-        )
-    }
-
-    if (uiState.showSaved) {
-        if (uiState.savedShortage > 0) {
-            OwnerProductShortageBottomSheet(
-                shortage = uiState.savedShortage,
-                onDismiss = { onAction(ProductDetailAction.SaveResultDismissed) },
-                onCancelReservations = { onAction(ProductDetailAction.ReservationsCancelClicked) },
-            )
-        } else {
-            MangroDialogContainer(
-                show = true,
-                onDismissRequest = { onAction(ProductDetailAction.SaveResultDismissed) },
-                title = { Text(text = stringResource(R.string.owner_product_saved)) },
-                actions = {
-                    MangroButton(
-                        text = stringResource(R.string.owner_product_confirm),
-                        onClick = { onAction(ProductDetailAction.SaveResultConfirmClicked) },
-                        style = MangroButtonStyle.ACTIVE,
                         modifier = Modifier.fillMaxWidth(),
-                    )
-                },
-            )
+                        verticalArrangement = Arrangement.spacedBy(40.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.owner_product_remaining_quantity),
+                                style = MangroTheme.typography.heading.headingXXS,
+                                color = MangroTheme.colors.textTitle,
+                            )
+                            Text(
+                                text = stringResource(R.string.owner_product_remaining_quantity_hint),
+                                style = MangroTheme.typography.caption.captionS,
+                                color = MangroTheme.colors.textSubtitle,
+                            )
+                        }
+                        MangroStepper(
+                            value = uiState.quantity,
+                            onValueChange = { onAction(ProductDetailAction.QuantityChanged(it)) },
+                            size = MangroStepperSize.LARGE,
+                            minValue = minOf(uiState.product.minAdjustableQuantity, uiState.quantity),
+                            maxValue = maxOf(9999, uiState.quantity),
+                            enabled = uiState.product.stockEditable,
+                        )
+                        NoticeBanner(
+                            text = stringResource(R.string.owner_product_zero_quantity_hint),
+                            containerColor = MangroTheme.colors.primaryLight,
+                            contentColor = MangroTheme.colors.primaryNormal,
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                        )
+                    }
+                }
+            }
         }
     }
+
+    OwnerProductQuantityConfirmationBottomSheet(
+        show = uiState.showSaveConfirmation,
+        quantity = uiState.quantity,
+        description = if (uiState.quantity == 0) {
+            stringResource(R.string.owner_product_zero_quantity_confirm)
+        } else {
+            stringResource(R.string.owner_product_shortage_confirm)
+        },
+        onDismiss = { onAction(ProductDetailAction.SaveConfirmationDismissed) },
+        onConfirm = { onAction(ProductDetailAction.SaveConfirmClicked) },
+    )
+
+    OwnerProductShortageBottomSheet(
+        show = uiState.showSaved && uiState.savedShortage > 0,
+        shortage = uiState.savedShortage,
+        onDismiss = { onAction(ProductDetailAction.SaveResultDismissed) },
+        onCancelReservations = { onAction(ProductDetailAction.ReservationsCancelClicked) },
+    )
+
+    MangroDialogContainer(
+        show = uiState.showSaved && uiState.savedShortage <= 0,
+        onDismissRequest = { onAction(ProductDetailAction.SaveResultDismissed) },
+        title = { Text(text = stringResource(R.string.owner_product_saved)) },
+        actions = {
+            MangroButton(
+                text = stringResource(R.string.owner_product_confirm),
+                onClick = { onAction(ProductDetailAction.SaveResultConfirmClicked) },
+                style = MangroButtonStyle.ACTIVE,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+    )
 }
 
 @Composable

@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.swyp.mangro.core.designsystem.R as DesignR
 import com.swyp.mangro.core.designsystem.component.MangroButton
@@ -43,6 +44,7 @@ import com.swyp.mangro.core.designsystem.component.MangroCheckbox
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.owner.product.R
+import com.swyp.mangro.feature.owner.product.component.OwnerDetailLoadStatus
 import com.swyp.mangro.feature.owner.product.component.PickupCancellationSheet
 import com.swyp.mangro.feature.owner.product.model.pickupDate
 import kotlinx.serialization.Serializable
@@ -54,14 +56,20 @@ data object OwnerPickupCancellationDestination
 internal fun PickupCancellationRoute(
     navigateBack: () -> Unit,
     viewModel: PickupCancellationViewModel = hiltViewModel(),
+    onHoldsChanged: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
+    LifecycleResumeEffect(viewModel) {
+        viewModel.refresh()
+        onPauseOrDispose {}
+    }
     BackHandler { viewModel.handleAction(PickupCancellationAction.NavigationBackClicked) }
 
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
             when (event) {
+                PickupCancellationEvent.HoldsChanged -> onHoldsChanged()
                 PickupCancellationEvent.NavigateBack -> navigateBack()
             }
         }
@@ -109,26 +117,25 @@ internal fun PickupCancellationScreen(
                     .navigationBarsPadding()
                     .padding(20.dp),
             ) {
-                if (uiState.hasError) {
-                    Text(
-                        text = stringResource(R.string.pickup_error),
-                        color = MangroTheme.colors.dangerNormal,
-                    )
-                }
-
                 MangroButton(
                     text = stringResource(R.string.pickup_cancel_count_action, uiState.selectedIds.size),
                     onClick = { onAction(PickupCancellationAction.CancelClicked) },
                     style = MangroButtonStyle.ACTIVE,
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = uiState.selectedIds.isNotEmpty(),
+                    enabled = uiState.selectedIds.size in 1..100 && !uiState.isLoading && !uiState.isSaving && !uiState.hasError,
                     contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
                 )
             }
         },
         containerColor = MangroTheme.colors.surfaceAlter,
     ) { padding ->
-        if (uiState.shortages.isEmpty()) {
+        if (uiState.isLoading || uiState.isSaving || uiState.hasError) {
+            OwnerDetailLoadStatus(
+                isLoading = uiState.isLoading || uiState.isSaving,
+                modifier = Modifier.padding(padding).padding(horizontal = 20.dp).padding(top = 12.dp, bottom = 20.dp),
+                onRetry = { onAction(PickupCancellationAction.Refresh) },
+            )
+        } else if (uiState.shortages.isEmpty()) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -187,7 +194,7 @@ internal fun PickupCancellationScreen(
                             modifier = Modifier.size(48.dp),
                         )
                         Text(
-                            text = stringResource(R.string.pickup_shortage_summary, uiState.shortages.size, uiState.targets.size),
+                            text = stringResource(R.string.pickup_shortage_summary, uiState.shortages.size, uiState.suggestedCount),
                             style = MangroTheme.typography.body.bodyM,
                             textAlign = TextAlign.Center,
                             color = MangroTheme.colors.dangerNormal,

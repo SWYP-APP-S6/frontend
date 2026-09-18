@@ -13,11 +13,16 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.paging.LoadState
+import androidx.paging.LoadStates
+import androidx.paging.PagingData
+import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.test.platform.app.InstrumentationRegistry
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerPickupRequestItem
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerPickupRequestStatus
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.designsystem.theme.OwnerMangroTypography
+import com.swyp.mangro.data.owner.product.model.ProductSummary
 import com.swyp.mangro.feature.owner.product.model.OwnerPickupModel
 import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import com.swyp.mangro.feature.owner.product.screen.list.ProductListAction
@@ -26,6 +31,7 @@ import com.swyp.mangro.feature.owner.product.screen.list.ProductListScreen
 import com.swyp.mangro.feature.owner.product.screen.list.ProductListState
 import com.swyp.mangro.feature.owner.product.screen.list.ProductListTab
 import java.io.File
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -39,15 +45,36 @@ class OwnerStoreDesignTest {
     private fun show(state: ProductListState) {
         compose.setContent {
             var current by remember { mutableStateOf(state) }
+            val pickupPaging = remember(current.filter) {
+                flowOf(PagingData.from(current.filteredPickups, LoadStates(LoadState.NotLoading(false), LoadState.NotLoading(true), LoadState.NotLoading(true))))
+            }.collectAsLazyPagingItems()
+            val productPaging = remember(current.products) {
+                flowOf(
+                    PagingData.from(
+                        current.products.map { product ->
+                            ProductSummary(
+                                id = product.id.toLong(),
+                                name = product.name,
+                                photoUrl = product.photos.firstOrNull().orEmpty(),
+                                salePrice = product.salePrice,
+                                availableQuantity = product.availableQuantity,
+                                activeHoldQuantity = product.reservedQuantity,
+                                shortfallQuantity = product.shortageQuantity,
+                            )
+                        },
+                        LoadStates(LoadState.NotLoading(false), LoadState.NotLoading(true), LoadState.NotLoading(true)),
+                    ),
+                )
+            }.collectAsLazyPagingItems()
             MangroTheme(typography = OwnerMangroTypography) {
-                ProductListScreen(current, { action ->
+                ProductListScreen(current.copy(filteredTotal = current.filteredPickups.size.toLong()), { action ->
                     actions += action
                     current = when (action) {
                         is ProductListAction.TabSelected -> current.copy(tab = action.tab)
                         is ProductListAction.FilterSelected -> current.copy(filter = action.filter)
                         else -> current
                     }
-                })
+                }, pickups = pickupPaging, products = productPaging)
             }
         }
     }
@@ -69,7 +96,7 @@ class OwnerStoreDesignTest {
         show(fixture().copy(tab = ProductListTab.PICKUPS))
         compose.onNodeWithText("찜 현황 6").assertIsDisplayed()
         compose.onNodeWithText("픽업 완료했어요").performClick()
-        compose.runOnIdle { assertEquals(ProductListAction.PickupCompleteClicked("new"), actions.last()) }
+        compose.runOnIdle { assertEquals("new", (actions.last() as ProductListAction.PickupCompleteClicked).pickup.request.id) }
         compose.onNodeWithText("찜 만료").assertIsNotEnabled()
         screenshot("store-pickups")
         compose.onNodeWithText("픽업완료").performClick()
@@ -98,7 +125,7 @@ class OwnerStoreDesignTest {
         val products = listOf("복숭아 4입", "애호박", "콩나물 한 바구니").mapIndexed { index, name ->
             val file = File(compose.activity.cacheDir, "store_product_${index + 1}.png")
             InstrumentationRegistry.getInstrumentation().context.assets.open("figma/${file.name}").use { input -> file.outputStream().use { input.copyTo(it) } }
-            OwnerProductModel("${index + 1}", name, listOf(file.toURI().toString()), 10000, 4000, 10, listOf(6, 2, 4)[index], listOf(4, 3, 3)[index], 0, "20:00")
+            OwnerProductModel("${index + 1}", name, listOf(file.toURI().toString()), 10000, 4000, 10, listOf(6, 2, 4)[index], listOf(4L, 3L, 3L)[index], 0, "20:00")
         }
         val now = System.currentTimeMillis()
         fun pickup(id: String, status: OwnerPickupRequestStatus, name: String, productId: String = "1", isNew: Boolean = false, timer: Boolean = false) = OwnerPickupModel(

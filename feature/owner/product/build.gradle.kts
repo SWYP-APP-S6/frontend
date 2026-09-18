@@ -11,6 +11,9 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.paging.compose)
+    testImplementation(libs.androidx.paging.testing)
+    implementation(project(":data:owner:product"))
     implementation(project(":data:owner:store"))
     implementation(project(":data:owner:product"))
     implementation(project(":data:owner:store"))
@@ -30,4 +33,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.test.runner)
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }

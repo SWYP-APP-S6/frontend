@@ -69,6 +69,7 @@
     <string name="owner_product_discount_percent">%1$d%%</string>
     <string name="owner_product_filter_all">전체</string>
     <string name="owner_product_price">%1$s원</string>
+    <string name="owner_product_pickup_title">찜 현황</string>
     <string name="owner_product_pickup_count">찜 현황 %1$d</string>
     <string name="owner_product_filter_completed">픽업완료</string>
     <string name="owner_product_filter_unavailable">픽업불가</string>
@@ -82,6 +83,9 @@
     <string name="product_registration_check_failed">상점 승인 상태를 확인하지 못했어요. 다시 시도해주세요.</string>
     <string name="product_registration_retry">다시 확인</string>
     <string name="product_registration_back">돌아가기</string>
+    <string name="owner_product_catalog_unavailable">등록 상품 목록은 준비 중이에요.</string>
+    <string name="owner_management_retry">다시 시도</string>
+    <string name="owner_product_registered_title">등록된 상품</string>
     <string name="product_registration_failed">상품을 등록하지 못했어요. 입력 내용과 픽업 시간을 확인한 뒤 다시 시도해 주세요.</string>
     <string name="product_registration_confirm">확인</string>
 </resources>

@@ -73,6 +73,21 @@ class OwnerHomeViewModelTest {
 
     @After fun tearDown() = Dispatchers.resetMain()
 
+    @Test fun visitorCardOpensMatchingPickupWithoutCompletingIt() = runTest {
+        val vm = viewModel()
+        vm.handleAction(OwnerHomeAction.ViewPickup("42"))
+        assertEquals(OwnerHomeEvent.NavigateToPickup("42"), vm.event.first())
+        assertEquals(0, completeCalls)
+    }
+
+    @Test fun homePickupShortcutsRequestAllOrCompleted() = runTest {
+        val vm = viewModel()
+        vm.handleAction(OwnerHomeAction.ViewPickups)
+        assertEquals(OwnerHomeEvent.NavigateToPickups(completedOnly = false), vm.event.first())
+        vm.handleAction(OwnerHomeAction.ViewCompletedPickups)
+        assertEquals(OwnerHomeEvent.NavigateToPickups(completedOnly = true), vm.event.first())
+    }
+
     @Test fun fetchesAllThreeResourcesAndKeepsServerEmptyInventoryRegistrationFlag() = runTest {
         val vm = viewModel()
         assertTrue(vm.uiState.value.isLoading)

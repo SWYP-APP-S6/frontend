@@ -1,3 +1,40 @@
+# 점주 상품 관리 API 연동 (2026-09-17)
+
+- 기준 브랜치: `feat/owner-home-logic` (`0222b63`), 작업 브랜치: `feat/owner-products-management`.
+- 기존 Figma 상품 관리 상세·찜 현황·찜 상세·찜 취소 UI를 재사용한다.
+- `:data:owner:product`가 생성된 Owner 서비스를 호출하고 화면용 데이터와 분리된 model 및 `Flow<Result<...>>`를 제공한다. 각 ViewModel은 `StateFlow`와 Action/Event를 사용한다.
+- 상품 상세는 경로의 ID로 조회하고 재고 수정 성공 응답을 반영한다. `stockQty`, `availableQty`, `activeHoldQty`, `shortfallQty`를 서로 대체하지 않으며 `stockEditable`·최소/최대 수량을 검사한다.
+- 취소 후보 조회는 찜 취소 화면에서만 수행한다. 일반 목록·상세는 추천 취소 여부로 완료를 제한하지 않는다. 목록의 취소 필요 건수 안내는 별도 집계 계약이 없어 활성화하지 않는다.
+- 점포 관리 진입 시 첫 찜 페이지를 조회해 건수를 표시한다. 조회 전에는 숫자를 생략하고, 상단 탭 전환 시 Paging 데이터를 유지한다. 필터 변경·명시적 갱신·완료/취소 성공 시에만 새로 조회하며 화면 복귀만으로 갱신하지 않는다.
+- 찜 현황은 Repository가 생성하는 `OwnerHoldPagingSource`·`Pager`와 화면의 `LazyPagingItems`로 스크롤에 따라 페이지를 추가 조회하고 `status` 쿼리로 서버에서 필터링한다. ViewModel은 Repository의 `Flow<PagingData<ManagedHold>>`를 화면 모델로 변환하고 `cachedIn(viewModelScope)`로 유지한다. 최초/추가 요청 모두 `size=100`이며 `last=true`에서 중단한다. 추가 로딩 실패 시 기존 항목을 유지하고 실패한 페이지를 재시도한다. 화면의 필터 건수는 `holds.totalElements`, 전체 찜 건수는 `counts.all`을 사용한다. 필터 변경 시 이전 조회를 취소하고 0페이지부터 다시 조회한다. `serverTime`과 만료 시각으로 타이머를 보정한다.
+- 찜 상세는 여러 상품 항목과 서버 합계 금액을 표시한다. 완료는 중복 요청을 차단하고 성공 응답으로 갱신한다.
+- 취소 화면은 서버 후보·순번·`suggested` 선택과 `noticeMessage`를 사용한다. 최종 확인한 ID만 전송하며 오류 시 후보를 재조회하고 자동 재시도하지 않는다.
+- 화면 복귀 시 서버를 재조회한다. 서버 오류는 빈 목록이나 저장 성공으로 표시하지 않는다.
+
+## 등록 상품 목록 (2026-09-18)
+
+- `GET /owner/products?page=0&size=20`를 `OwnerProductRepository.fetchProducts` → `ProductListViewModel` → `ProductListScreen`으로 연결한다. 기존 생성 서비스와 Hilt 바인딩을 재사용한다.
+- 등록 상품도 `OwnerProductPagingSource` → Repository의 `Pager` → ViewModel의 `cachedIn(viewModelScope)` → 화면의 `LazyPagingItems`를 사용한다. 첫 요청과 후속 요청 모두 `size=20`이며, 항목 접근에 따라 다음 페이지를 조회하고 `last=true`에서 중단한다.
+- 화면 복귀·명시적 갱신·찜 처리 성공 시 상품 PagingSource를 무효화한다. 갱신 키는 현재 보이는 항목의 페이지를 기준으로 계산하며 이전/다음 페이지를 모두 조회할 수 있다. 상품/찜 탭의 스크롤 상태는 분리해서 유지한다.
+- 최초·갱신·이전/다음 페이지 오류는 Paging의 LoadState로 표시하고 retry로 실패한 요청을 재시도한다. 추가 로딩 실패 시 기존 항목을 유지한다. 수동 페이지 번호와 목록 크기에 의존하는 추가 요청은 사용하지 않는다.
+- 목록 전용 모델은 `availableQty`, `activeHoldQty`, `shortfallQty`를 각각 보존한다. 가용 수량을 상세의 실재고 `stockQty`로 대체하지 않는다. 카드 선택 시 상품 ID로 기존 상세 화면을 연다.
+- 찜 상태 필터는 찜 탭에만 표시하고 상품 탭은 등록 상품 전체 목록을 표시한다.
+- 자동 검증 시작 후 사용자가 직접 앱에서 검증하도록 요청했으므로, 최종 구현의 테스트·빌드·기기 검증은 실행하지 않았다.
+
+## 서버 계약 대기
+
+- 상품 `ingredientTags`는 숫자 ID만 내려오며 태그 이름/대표 태그 매핑 계약이 없다. 실제 이름을 임의로 생성하지 않는다.
+- 원격 `/v3/api-docs`는 401을 반환했다. 로컬 9월 17일 전달 명세의 점주 경로가 병합 입력과 동일하고 체크섬이 일치함을 확인했다. 배포 서버와의 실시간 동일성은 확인하지 못했다.
+- 상품 신규 등록은 별도 작업 브랜치의 범위다.
+
+## 검증
+
+생성 DTO/Retrofit과 BaseResponse 해제를 포함한 MockWebServer 테스트, ViewModel의 재고 확인·중복 저장·실패·수정 권한 테스트, Compose의 찜 상세·취소 확인·목록 필터 테스트를 제공한다. 실행 결과는 작업 완료 보고를 따른다. 실제 계정의 재고·찜 변경은 테스트하지 않는다.
+
+---
+
+아래는 API 연동 이전 UI 구현 기록이다. 현재 동작은 위 설명을 따른다.
+
 # 점주 상품 UI (#65)
 
 `ownerProductNavGraph`는 등록 3단계, 사진 선택·삭제, 등록 미리보기·입력 재수정, 점포 관리·상세을 제공한다. `app`의 Owner `OwnerNavHost`에서 홈과 연결하며 Consumer에는 의존하지 않는다.

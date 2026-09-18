@@ -5,4 +5,5 @@ sealed interface HomeUiEvent {
     data class NavigateToProductDetail(val productId: String) : HomeUiEvent
     data object NavigateToWishList : HomeUiEvent
     data object NavigateToMy : HomeUiEvent
+    data class NavigateToHold(val holdId: String) : HomeUiEvent
 }

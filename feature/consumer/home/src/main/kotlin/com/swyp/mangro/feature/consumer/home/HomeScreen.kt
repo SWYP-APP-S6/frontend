@@ -5,9 +5,7 @@ import android.graphics.Paint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
@@ -55,6 +54,9 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
+import androidx.compose.ui.zIndex
 import androidx.core.graphics.createBitmap
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraPosition
@@ -93,7 +95,6 @@ import com.swyp.mangro.feature.consumer.home.component.CountdownCard
 import com.swyp.mangro.feature.consumer.home.component.HomeCategoryChip
 import com.swyp.mangro.feature.consumer.home.component.SortDropdown
 import com.swyp.mangro.feature.consumer.home.component.StoreGroupHeader
-import kotlin.collections.filter
 import kotlin.math.roundToInt
 import kotlinx.collections.immutable.toPersistentList
 
@@ -140,7 +141,7 @@ internal fun HomeScreen(
             SelectedStoreCard(
                 selectedStore = uiState.selectedStore,
                 onAction = onAction,
-                modifier = Modifier.align(Alignment.BottomCenter),
+                modifier = Modifier.align(Alignment.BottomCenter).zIndex(10f),
             )
         }
     }
@@ -202,13 +203,13 @@ private fun HomeMapContent(
     onAction: (HomeUiAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-//    if (uiState.storePins.isEmpty()) {
-//        LocationPermissionRequiredContent(
-//            onExpandRadiusClick = { onAction(HomeUiAction.ExpandRadiusClicked) },
-//            modifier = Modifier.fillMaxSize(),
-//        )
-//        return
-//    }
+    //    if (uiState.storePins.isEmpty()) {
+    //        LocationPermissionRequiredContent(
+    //            onExpandRadiusClick = { onAction(HomeUiAction.ExpandRadiusClicked) },
+    //            modifier = Modifier.fillMaxSize(),
+    //        )
+    //        return
+    //    }
 
     val cameraPositionState = rememberCameraPositionState()
     var selectedPinScreenOffset by remember { mutableStateOf<Offset?>(null) }
@@ -345,17 +346,11 @@ private fun HomeListContent(
         modifier = modifier
             .fillMaxSize()
             .background(Gray50)
-            .padding(
-                top = 12.dp,
-            ),
+            .padding(top = 12.dp),
     ) {
         LazyRow(
-            modifier = Modifier
-                .background(White),
-            contentPadding = PaddingValues(
-                horizontal = 20.dp,
-                vertical = 12.dp,
-            ),
+            modifier = Modifier.background(White),
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(9.dp),
         ) {
             item {
@@ -390,10 +385,7 @@ private fun HomeListContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(White)
-                .padding(
-                    horizontal = 20.dp,
-                    vertical = 12.dp,
-                ),
+                .padding(horizontal = 20.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             SortDropdown(
@@ -408,7 +400,25 @@ private fun HomeListContent(
             )
         }
 
+        val listState = rememberLazyListState()
+
+        LaunchedEffect(uiState.scrollToProductId, filteredGroups) {
+            val targetId = uiState.scrollToProductId ?: return@LaunchedEffect
+            var index = 0
+            for (group in filteredGroups) {
+                index++ // 그룹 헤더
+                val productIndex = group.products.indexOfFirst { it.id == targetId }
+                if (productIndex != -1) {
+                    listState.animateScrollToItem(index + productIndex)
+                    onAction(HomeUiAction.ScrollToProductHandled)
+                    return@LaunchedEffect
+                }
+                index += group.products.size
+            }
+        }
+
         LazyColumn(
+            state = listState,
             contentPadding = PaddingValues(bottom = 50.dp),
         ) {
             filteredGroups.forEach { group ->
@@ -427,10 +437,7 @@ private fun HomeListContent(
                             .fillMaxWidth()
                             .background(White)
                             .clickable { onAction(HomeUiAction.ListProductClicked(product.id)) }
-                            .padding(
-                                vertical = 16.dp,
-                                horizontal = 20.dp,
-                            ),
+                            .padding(vertical = 16.dp, horizontal = 20.dp),
                     )
                 }
             }
@@ -469,7 +476,7 @@ private fun HomeTopOverlay(
                     productSummary = wish.productSummary,
                     requestTimeMillis = wish.requestTimeMillis,
                     endTimeMillis = wish.endTimeMillis,
-                    onClick = { /* TODO */ },
+                    onClick = { onAction(HomeUiAction.ActiveWishClicked(wish.holdId)) },
                     modifier = Modifier.padding(16.dp),
                 )
             }
@@ -483,23 +490,23 @@ private fun SelectedStoreCard(
     onAction: (HomeUiAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    AnimatedVisibility(
-        visible = selectedStore != null,
-        enter = slideInVertically(
-            initialOffsetY = { it },
-            animationSpec = tween(300),
-        ) + fadeIn(animationSpec = tween(300)),
-        exit = slideOutVertically(
-            targetOffsetY = { it },
-            animationSpec = tween(250),
-        ) + fadeOut(animationSpec = tween(250)),
-        modifier = modifier,
+    if (selectedStore == null) return
+
+    Popup(
+        alignment = Alignment.BottomCenter,
+        properties = PopupProperties(focusable = false),
     ) {
-        selectedStore?.let { store ->
+        AnimatedVisibility(
+            visible = true,
+            enter = slideInVertically(
+                initialOffsetY = { it },
+                animationSpec = tween(300),
+            ) + fadeIn(animationSpec = tween(300)),
+        ) {
             MapStoreCard(
-                storeName = store.storeName,
-                closingTime = store.closingTime,
-                products = store.products,
+                storeName = selectedStore.storeName,
+                closingTime = selectedStore.closingTime,
+                products = selectedStore.products,
                 onProductClick = { onAction(HomeUiAction.ProductClicked(it)) },
                 modifier = Modifier.padding(16.dp),
                 travelInfo = {
@@ -510,7 +517,7 @@ private fun SelectedStoreCard(
                             tint = Gray900,
                         )
                         Text(
-                            text = stringResource(homeR.string.home_walking_minutes, store.walkingMinutes),
+                            text = stringResource(homeR.string.home_walking_minutes, selectedStore.walkingMinutes),
                             style = MangroTheme.typography.caption.captionS,
                             color = MangroTheme.colors.textBody,
                         )

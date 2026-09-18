@@ -17,6 +17,7 @@ data class HomeUiState(
     val selectedCategory: ProductCategory? = null,
     val storeGroups: List<StoreProductGroup> = emptyList(),
     val sortOption: HomeSortOption = HomeSortOption.DISTANCE,
+    val scrollToProductId: String? = null,
 )
 
 enum class HomeViewMode { MAP, LIST }
@@ -37,6 +38,7 @@ data class SelectedStoreDetail(
 )
 
 data class ActiveWishSummary(
+    val holdId: String,
     val storeName: String,
     val productSummary: String,
     val requestTimeMillis: Long,

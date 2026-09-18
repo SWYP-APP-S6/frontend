@@ -1,5 +1,6 @@
 package com.swyp.mangro.core.designsystem.component.card.store
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,13 +27,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import com.swyp.mangro.core.designsystem.R
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
+import com.swyp.mangro.core.designsystem.theme.White
 
 @Composable
 fun StoreLocationCard(
-    imageUrl: String,
     onDirectionsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -46,7 +46,8 @@ fun StoreLocationCard(
                 width = 0.6.dp,
                 color = MangroTheme.colors.borderDefault,
                 shape = shape,
-            ),
+            )
+            .clickable(onClick = onDirectionsClick),
     ) {
         Box(
             modifier = Modifier
@@ -54,13 +55,19 @@ fun StoreLocationCard(
                 .aspectRatio(16f / 9f),
             contentAlignment = Alignment.Center,
         ) {
-            AsyncImage(
-                model = imageUrl,
+            Image(
+                painter = painterResource(R.drawable.img_map_default),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MangroTheme.colors.surfaceAlter),
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(White.copy(alpha = 0.7f)),
             )
 
             Icon(
@@ -74,7 +81,6 @@ fun StoreLocationCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(MangroTheme.colors.surfaceNormal)
-                .clickable(onClick = onDirectionsClick)
                 .padding(vertical = 16.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
@@ -105,7 +111,6 @@ private fun StoreDirectionsCardPreview() {
                 .padding(20.dp),
         ) {
             StoreLocationCard(
-                imageUrl = "",
                 onDirectionsClick = {},
             )
         }

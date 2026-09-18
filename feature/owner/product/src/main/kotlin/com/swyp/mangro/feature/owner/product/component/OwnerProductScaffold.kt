@@ -42,9 +42,7 @@ internal fun OwnerProductScaffold(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(
-        modifier = modifier
-            .fillMaxSize()
-            .imePadding(),
+        modifier = modifier.fillMaxSize().imePadding(),
         topBar = {
             MangroDefaultStartAlignedTopAppBar(
                 title = {

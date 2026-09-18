@@ -40,7 +40,9 @@ fun ProductCategory.toLabelColors(): Pair<Color, Color> = when (this) {
     ProductCategory.MEAT -> MangroTheme.colors.meatBg to MangroTheme.colors.meatNormal
     ProductCategory.SEAFOOD -> MangroTheme.colors.seafoodBg to MangroTheme.colors.seafoodShadow
     ProductCategory.NUTS -> MangroTheme.colors.nutsBg to MangroTheme.colors.nutsNormal
-    ProductCategory.ETC -> MangroTheme.colors.surfaceDisabled to MangroTheme.colors.textSubtitle
+    ProductCategory.FRUIT, ProductCategory.DAIRY_EGG, ProductCategory.BAKERY, ProductCategory.PREPARED_FOOD,
+    ProductCategory.ETC,
+    -> MangroTheme.colors.surfaceDisabled to MangroTheme.colors.textSubtitle
 }
 
 fun ProductCategory.toLabelTextRes(): Int = when (this) {
@@ -49,6 +51,10 @@ fun ProductCategory.toLabelTextRes(): Int = when (this) {
     ProductCategory.MEAT -> R.string.product_category_meat
     ProductCategory.SEAFOOD -> R.string.product_category_seafood
     ProductCategory.NUTS -> R.string.product_category_nuts
+    ProductCategory.FRUIT -> R.string.product_category_fruit
+    ProductCategory.DAIRY_EGG -> R.string.product_category_dairy_egg
+    ProductCategory.BAKERY -> R.string.product_category_bakery
+    ProductCategory.PREPARED_FOOD -> R.string.product_category_prepared_food
     ProductCategory.ETC -> R.string.product_category_etc
 }
 

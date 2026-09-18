@@ -5,5 +5,7 @@ import com.swyp.mangro.data.owner.store.model.OwnerStore
 data class ProductRegistrationState(
     val store: OwnerStore? = null,
     val isChecking: Boolean = true,
+    val isSubmitting: Boolean = false,
+    val registrationFailed: Boolean = false,
     val checkFailed: Boolean = false,
 )

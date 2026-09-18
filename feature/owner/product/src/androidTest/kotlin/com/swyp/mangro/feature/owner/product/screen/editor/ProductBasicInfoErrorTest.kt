@@ -3,10 +3,12 @@ package com.swyp.mangro.feature.owner.product.screen.editor
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextReplacement
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
@@ -41,6 +43,34 @@ class ProductBasicInfoErrorTest {
             message = "품목명은 공백을 제외한 내용이 있어야 하며 최대 25자예요.",
         )
         assertFalse(viewModel.uiState.value.canContinue)
+    }
+
+    @Test
+    fun deletingNameOrLeavingWhitespaceDoesNotShowLengthAlert() {
+        val viewModel = ProductBasicInfoViewModel(SavedStateHandle())
+        viewModel.initialize()
+        viewModel.handleAction(ProductBasicInfoAction.PhotosSelected(listOf("file://photo")))
+        compose.setContent {
+            val state by viewModel.uiState.collectAsStateWithLifecycle()
+            MangroTheme { ProductBasicInfoScreen(state, viewModel::handleAction) }
+        }
+        compose.onNode(hasSetTextAction()).performTextReplacement("복숭아")
+        compose.waitForIdle()
+        compose.onNode(hasSetTextAction()).performTextReplacement("")
+        compose.waitForIdle()
+        compose.onNode(isDialog()).assertDoesNotExist()
+        compose.runOnIdle {
+            assertEquals("", viewModel.uiState.value.name)
+            assertNull(viewModel.uiState.value.error)
+            assertFalse(viewModel.uiState.value.canContinue)
+        }
+        compose.onNode(hasSetTextAction()).performTextReplacement("   ")
+        compose.waitForIdle()
+        compose.onNode(isDialog()).assertDoesNotExist()
+        compose.runOnIdle {
+            assertNull(viewModel.uiState.value.error)
+            assertFalse(viewModel.uiState.value.canContinue)
+        }
     }
 
     private fun verifyError(name: String, action: ProductBasicInfoAction, message: String): ProductBasicInfoViewModel {

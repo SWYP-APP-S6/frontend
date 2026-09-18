@@ -22,6 +22,7 @@ internal fun ProductEditorNavHost(
     storeOpeningTime: String,
     onBack: () -> Unit,
     onSave: (OwnerProductModel) -> Unit,
+    storeCategory: String? = null,
 ) {
     val navController = rememberNavController()
     NavHost(navController, startDestination = ProductBasicInfoDestination) {
@@ -57,6 +58,7 @@ internal fun ProductEditorNavHost(
             val draft by priceEntry.savedStateHandle.getStateFlow<ProductDraftModel?>(DRAFT, null).collectAsStateWithLifecycle()
             ProductPickupInfoRoute(
                 draft = draft,
+                storeCategory = storeCategory,
                 storeClosingTime = storeClosingTime,
                 storeOpeningTime = storeOpeningTime,
                 onBack = { navController.popBackStack<ProductPickupInfoDestination>(inclusive = true, saveState = true) },

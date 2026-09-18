@@ -99,11 +99,9 @@ internal fun ProductBasicInfoScreen(
 
     val context = LocalContext.current
     val picker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickMultipleVisualMedia(
-            maxItems = OwnerProductLimits.PHOTO_COUNT,
-        ),
-    ) { uris ->
-        val selected = uris.mapNotNull { uri ->
+        contract = ActivityResultContracts.PickVisualMedia(),
+    ) { selectedUri ->
+        val selected = listOfNotNull(selectedUri).mapNotNull { uri ->
             try {
                 context.contentResolver.takePersistableUriPermission(
                     uri,

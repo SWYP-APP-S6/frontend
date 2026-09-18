@@ -52,15 +52,30 @@ class ConsumerContractTest {
     }
 
     @Test
-    fun pageableUsesSeparateQueriesAndRepeatedSort() = runTest {
+    fun paginationUsesPageAndSizeWithoutSort() = runTest {
         MockWebServer().use { server ->
             server.enqueue(MockResponse().setBody("""{"status":200,"code":"OK","message":"ok","data":{}}"""))
             ConsumerServices(createRetrofit(server.url("/").toString())).hold
-                .fetchHolds(page = 0, size = 20, sort = listOf("id,desc", "heldAt,asc"))
+                .fetchHolds(page = 0, size = 20)
             val request = checkNotNull(server.takeRequest(5, TimeUnit.SECONDS))
             assertEquals("0", request.requestUrl?.queryParameter("page"))
             assertEquals("20", request.requestUrl?.queryParameter("size"))
-            assertEquals(listOf("id,desc", "heldAt,asc"), request.requestUrl?.queryParameterValues("sort"))
+            assertNull(request.requestUrl?.queryParameter("sort"))
+            assertNull(request.requestUrl?.queryParameter("pageable"))
+        }
+    }
+
+    @Test
+    fun recipesKeepCategoryAndUseV2PaginationDefaults() = runTest {
+        MockWebServer().use { server ->
+            server.enqueue(MockResponse().setBody("""{"status":200,"code":"OK","data":{}}"""))
+            ConsumerServices(createRetrofit(server.url("/").toString())).recipe.fetchRecipes(category = "SOUP")
+            val request = checkNotNull(server.takeRequest(5, TimeUnit.SECONDS))
+            assertEquals("/recipes", request.requestUrl?.encodedPath)
+            assertEquals("SOUP", request.requestUrl?.queryParameter("category"))
+            assertEquals("0", request.requestUrl?.queryParameter("page"))
+            assertEquals("20", request.requestUrl?.queryParameter("size"))
+            assertNull(request.requestUrl?.queryParameter("sort"))
             assertNull(request.requestUrl?.queryParameter("pageable"))
         }
     }

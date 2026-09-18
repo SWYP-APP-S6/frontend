@@ -6,7 +6,7 @@ data class OwnerHome(
     val hasRegisteredProduct: Boolean,
     val upcomingVisitCount: Int,
     val completedTodayCount: Long,
-    val onSaleQty: Int,
+    val onSaleProductCount: Int,
     val unreadNotificationCount: Long,
     val expiredTodayCount: Int,
     val productsShortOfStock: Int,
@@ -35,4 +35,5 @@ data class OwnerHomeProduct(
     val category: String,
     val status: String,
     val reconfirmPending: Boolean,
+    val shortfallCustomerCount: Long = 0,
 )

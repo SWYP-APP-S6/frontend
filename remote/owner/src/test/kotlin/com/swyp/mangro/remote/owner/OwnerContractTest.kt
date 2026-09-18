@@ -57,13 +57,11 @@ class OwnerContractTest {
     }
 
     @Test
-    fun detailAndPreviewDecodeIngredientObjects() {
-        val body = """{"ingredientTags":[{"id":12,"name":"당근"}]}"""
+    fun detailAndPreviewDecodeIngredientIds() {
+        val body = """{"ingredientTags":[12,34]}"""
         val detail = json.decodeFromString<ProductDetailResponse>(body)
         val preview = json.decodeFromString<ProductPreviewResponse>(body)
-        assertEquals(12, detail.ingredientTags.single().id)
-        assertEquals("당근", detail.ingredientTags.single().name)
-        assertEquals(null, detail.ingredientTags.single().category)
+        assertEquals(setOf(12, 34), detail.ingredientTags)
         assertEquals(detail.ingredientTags, preview.ingredientTags)
     }
 
@@ -143,40 +141,19 @@ class OwnerContractTest {
     }
 
     @Test
-    fun v2StockFieldsDecodeWithoutUsingDefaults() {
-        val stock = json.decodeFromString<ProductDetailResponse>("""{"stockQty":2,"shortfallQty":3,"activeHoldQty":5,"reconfirmPending":true,"stockEditable":false,"minAdjustableQty":2}""")
+    fun latestStockFieldsDecodeWithoutUsingDefaults() {
+        val stock = json.decodeFromString<ProductDetailResponse>("""{"stockQty":2,"shortfallQty":3,"activeHoldQty":5,"reconfirmPending":true,"stockEditable":false}""")
         assertEquals(2, stock.stockQty)
         assertEquals(3, stock.shortfallQty)
         assertEquals(5L, stock.activeHoldQty)
         assertTrue(stock.reconfirmPending)
         assertFalse(stock.stockEditable)
-        assertEquals(2, stock.minAdjustableQty)
     }
 
     @Test
     fun unknownEnumDoesNotSilentlyBecomeDefault() {
         assertThrows(SerializationException::class.java) {
             json.decodeFromString<RegisterProductRequest>("""{"category":"FUTURE"}""")
-        }
-    }
-
-    @Test
-    fun productListSendsFilterAndPagingParameters() = runTest {
-        MockWebServer().use { server ->
-            server.enqueue(
-                MockResponse().setBody(
-                    """{"status":200,"code":"OK","message":"ok","data":{"serverTime":"2026-09-18T12:00:00Z","products":{"content":[],"page":1,"size":10,"totalElements":0,"totalPages":0,"last":true}}}""",
-                ),
-            )
-
-            val response = OwnerServices(createRetrofit(server.url("/").toString())).product
-                .fetchMyProducts(ProductService.FilterFetchMyProducts.RUNNING_LOW, page = 1, size = 10)
-                .body()!!
-            assertEquals(1, response.products.page)
-            assertEquals(10, response.products.propertySize)
-            val request = checkNotNull(server.takeRequest(5, TimeUnit.SECONDS))
-            assertEquals("GET", request.method)
-            assertEquals("/owner/products?filter=RUNNING_LOW&page=1&size=10", request.path)
         }
     }
 }

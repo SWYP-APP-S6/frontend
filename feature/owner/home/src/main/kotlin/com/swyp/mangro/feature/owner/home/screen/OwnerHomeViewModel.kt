@@ -67,7 +67,7 @@ class OwnerHomeViewModel @Inject constructor(
                         storeCategory = store.categories.joinToString(" · ") { categoryLabel(it) },
                         expectedVisitCount = validHome.upcomingVisitCount,
                         completedPickupCount = validHome.completedTodayCount,
-                        sellingCount = validHome.onSaleQty,
+                        sellingCount = validHome.onSaleProductCount,
                         unreadNotificationCount = validHome.unreadNotificationCount,
                         attentionAvailable = false,
                         hasNewPickup = false,

@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 METHODS = {'get', 'post', 'put', 'patch', 'delete', 'head', 'options'}
 INPUT_FILES = (
-    'mangro-app-openapi-2026-09-18-v3-merged.json',
+    'mangro-app-openapi-2026-09-19-v2-merged.json',
     'endpoint-map.json',
     'model-map.json',
     'spec.sha256',

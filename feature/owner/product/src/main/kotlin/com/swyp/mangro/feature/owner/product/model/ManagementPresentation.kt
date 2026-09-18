@@ -13,7 +13,7 @@ internal fun ManagedProduct.presentation() = OwnerProductModel(
     pickupEndTime = pickupDate(pickupEndAt, "M월 d일 HH:mm"),
     tagsResolved = ingredientTags.isEmpty(),
     serverShortfall = shortfallQuantity, serverAvailable = availableQuantity,
-    stockEditable = stockEditable, minAdjustableQuantity = minAdjustableQuantity,
+    stockEditable = stockEditable, minAdjustableQuantity = 0,
 )
 internal fun HoldStatus.presentation() = when (this) {
     HoldStatus.HOLDING -> PickupStatus.WAITING

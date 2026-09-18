@@ -28,7 +28,7 @@ class PrepareSpecsTest(unittest.TestCase):
         endpoints = [f'{m} {p}' for v in result.values() for m, p, _ in operations(v)]
         self.assertEqual(len(set(endpoints)), 49)
 
-    def test_0918_owner_product_list_contract(self):
+    def test_0919_v2_owner_product_list_contract(self):
         owner = self.generate()['owner']
         operation = owner['paths']['/owner/products']['get']
         self.assertEqual('fetchMyProducts', operation['operationId'])
@@ -38,7 +38,8 @@ class PrepareSpecsTest(unittest.TestCase):
         )
         parameters = {parameter['name']: parameter['schema'] for parameter in operation['parameters']}
         self.assertEqual({'filter', 'page', 'size'}, set(parameters))
-        self.assertEqual(['RUNNING_LOW', 'SOLD_OUT'], parameters['filter']['enum'])
+        self.assertEqual(['ALL', 'ON_SALE', 'RUNNING_LOW', 'SOLD_OUT', 'CLOSED'], parameters['filter']['enum'])
+        self.assertEqual('ALL', parameters['filter']['default'])
         self.assertEqual(0, parameters['page']['default'])
         self.assertEqual(20, parameters['size']['default'])
         self.assertEqual(100, parameters['size']['maximum'])
@@ -48,7 +49,7 @@ class PrepareSpecsTest(unittest.TestCase):
             schemas['OwnerProductListResponse']['properties']['products']['$ref'],
         )
 
-    def test_v3_owner_ingredient_contracts(self):
+    def test_0919_v2_owner_ingredient_contracts(self):
         owner = self.generate()['owner']
         self.assertIn('/owner/ingredients', owner['paths'])
         self.assertIn('/owner/ingredients/recommendations', owner['paths'])
@@ -60,10 +61,23 @@ class PrepareSpecsTest(unittest.TestCase):
         schemas = owner['components']['schemas']
         for name in ('ProductDetailResponse', 'ProductPreviewResponse'):
             ingredient_tags = schemas[name]['properties']['ingredientTags']
-            self.assertEqual(
-                '#/components/schemas/IngredientTagResponse',
-                ingredient_tags['items']['$ref'],
-            )
+            self.assertEqual({'type': 'integer', 'format': 'int32'}, ingredient_tags['items'])
+            self.assertTrue(ingredient_tags['uniqueItems'])
+
+    def test_0919_v2_owner_response_contracts(self):
+        schemas = self.generate()['owner']['components']['schemas']
+        self.assertIn('onSaleProductCount', schemas['OwnerHomeSummaryResponse']['properties'])
+        self.assertNotIn('onSaleQty', schemas['OwnerHomeSummaryResponse']['properties'])
+        self.assertIn('canceled', schemas['OwnerHoldCountsResponse']['required'])
+        for name in ('OwnerHomeProductCardResponse', 'OwnerProductSummaryResponse'):
+            self.assertIn('shortfallCustomerCount', schemas[name]['required'])
+        self.assertNotIn('minAdjustableQty', schemas['ProductDetailResponse']['properties'])
+
+    def test_0919_v2_user_notification_contract(self):
+        schemas = self.generate()['user']['components']['schemas']
+        notification_types = schemas['NotificationResponse']['properties']['type']['enum']
+        self.assertIn('STORE_APPROVED', notification_types)
+        self.assertIn('STORE_REJECTED', notification_types)
 
     def test_owner_update_contracts(self):
         result = self.generate()

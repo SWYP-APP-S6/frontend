@@ -44,7 +44,7 @@ class ManagementFakeRepository : OwnerProductRepository {
     var failNextPage: Int? = null
     val requestedPages = mutableListOf<Int>()
     val requestedStatuses = mutableListOf<HoldStatus?>()
-    var product = ManagedProduct(7, "복숭아 4입", "", 10000, 4000, 10, 5, 2, 3, 2, 0, now + 600000, emptySet(), true, 0)
+    var product = ManagedProduct(7, "복숭아 4입", "", 10000, 4000, 10, 5, 2, 3, 2, 0, now + 600000, emptySet(), true)
     var detail = HoldDetail(
         1, "방문손님", "청과 마을", HoldStatus.HOLDING, now - 60000, now + 600000, now, null, 12000,
         listOf(HoldItem(8, 7, "복숭아 4입", 1, 4000, 4000), HoldItem(9, 6, "사과", 2, 4000, 8000)),

@@ -70,6 +70,7 @@ internal class OwnerProductRepositoryImpl @Inject constructor(
                     availableQuantity = it.availableQty,
                     activeHoldQuantity = it.activeHoldQty,
                     shortfallQuantity = it.shortfallQty,
+                    shortfallCustomerCount = it.shortfallCustomerCount,
                 )
             },
             total = body.totalElements,
@@ -134,8 +135,8 @@ internal class OwnerProductRepositoryImpl @Inject constructor(
 
 private fun ProductDetailResponse.domain(): ManagedProduct {
     require(id > 0 && initialQty > 0 && stockQty >= 0 && originalPrice > 0 && salePrice in 1..originalPrice)
-    require(activeHoldQty >= 0 && completedQty >= 0 && shortfallQty >= 0 && minAdjustableQty in 0..9999)
-    return ManagedProduct(id, name, photoUrl, originalPrice, salePrice, initialQty, stockQty, availableQty, activeHoldQty, completedQty, shortfallQty, pickupEndAt.epoch(), ingredientTags.map { it.id }.toSet(), stockEditable, minAdjustableQty)
+    require(activeHoldQty >= 0 && completedQty >= 0 && shortfallQty >= 0)
+    return ManagedProduct(id, name, photoUrl, originalPrice, salePrice, initialQty, stockQty, availableQty, activeHoldQty, completedQty, shortfallQty, pickupEndAt.epoch(), ingredientTags, stockEditable)
 }
 private fun OwnerHoldDetailResponse.domain() = HoldDetail(
     groupId, nickname, storeName, HoldStatus.valueOf(status.value), heldAt.epoch(), expiresAt.epoch(), serverTime.epoch(), completedAt?.epoch(), totalPrice,

@@ -87,5 +87,7 @@ fun NavController.navigateToHoldDetail(holdId: String) {
 }
 
 fun NavController.navigateToPickupComplete(holdId: String) {
-    navigate(PickupCompleteDestination(holdId = holdId))
+    navigate(PickupCompleteDestination(holdId = holdId)) {
+        popUpTo(HoldDestination(holdId = holdId)) { inclusive = true }
+    }
 }

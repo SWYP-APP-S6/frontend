@@ -402,21 +402,6 @@ private fun HomeListContent(
 
         val listState = rememberLazyListState()
 
-        LaunchedEffect(uiState.scrollToProductId, filteredGroups) {
-            val targetId = uiState.scrollToProductId ?: return@LaunchedEffect
-            var index = 0
-            for (group in filteredGroups) {
-                index++ // 그룹 헤더
-                val productIndex = group.products.indexOfFirst { it.id == targetId }
-                if (productIndex != -1) {
-                    listState.animateScrollToItem(index + productIndex)
-                    onAction(HomeUiAction.ScrollToProductHandled)
-                    return@LaunchedEffect
-                }
-                index += group.products.size
-            }
-        }
-
         LazyColumn(
             state = listState,
             contentPadding = PaddingValues(bottom = 50.dp),

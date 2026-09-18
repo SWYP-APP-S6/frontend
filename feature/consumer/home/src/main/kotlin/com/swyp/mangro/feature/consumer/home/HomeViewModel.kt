@@ -222,13 +222,9 @@ class HomeViewModel @Inject constructor(
                 _uiState.update { it.copy(selectedStore = null) }
             }
             is HomeUiAction.ProductClicked -> {
-                android.util.Log.e("HomeViewModel", "ProductClicked: ${action.product.id}")
-                _uiState.update {
-                    it.copy(
-                        viewMode = HomeViewMode.LIST,
-                        scrollToProductId = action.product.id,
-                        selectedStore = null,
-                    )
+                _uiState.update { it.copy(selectedStore = null) }
+                viewModelScope.launch {
+                    _event.send(HomeUiEvent.NavigateToProductDetail(action.product.id))
                 }
             }
             is HomeUiAction.ListProductClicked -> {
@@ -265,9 +261,6 @@ class HomeViewModel @Inject constructor(
                 viewModelScope.launch {
                     _event.send(HomeUiEvent.NavigateToHold(action.holdId))
                 }
-            }
-            HomeUiAction.ScrollToProductHandled -> {
-                _uiState.update { it.copy(scrollToProductId = null) }
             }
         }
     }

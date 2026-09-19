@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -61,6 +62,7 @@ fun MangroTextField(
                 performDefaultAction()
             }
         },
+        cursorBrush = SolidColor(Orange600),
         inputTransformation = inputTransformation,
         outputTransformation = outputTransformation,
         modifier = modifier,

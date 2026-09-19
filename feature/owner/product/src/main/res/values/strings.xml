@@ -29,7 +29,7 @@
     <string name="owner_product_sale_price_placeholder">10,000</string>
     <string name="owner_product_final_discount">최종 할인율</string>
     <string name="owner_product_savings">%1$s이 저렴해져요</string>
-    <string name="owner_product_price_error">가격은 1원 이상이며, 할인가는 정가 이하여야 해요.</string>
+    <string name="owner_product_price_error">가격은 1원 이상이며, 할인가는 정가 미만이어야 해요.</string>
     <string name="owner_product_editor_info_heading">판매에 필요한 정보를\n더 알려주세요.</string>
     <string name="owner_product_pickup_end">픽업 종료시간</string>
     <string name="owner_product_pickup_end_hint">기본값은 가게 운영 종료 시간이며, 변경할 수 있어요.</string>

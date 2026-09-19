@@ -68,6 +68,7 @@ internal fun ProductPickupInfoRoute(
             )
         }
     }
+
     LaunchedEffect(viewModel, owner) {
         owner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             while (isActive) {
@@ -76,6 +77,7 @@ internal fun ProductPickupInfoRoute(
             }
         }
     }
+
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
             when (event) {
@@ -99,16 +101,14 @@ internal fun ProductPickupInfoScreen(
     uiState: ProductPickupInfoState,
     onAction: (ProductPickupInfoAction) -> Unit,
 ) {
-    val storeClosingTime = uiState.storeClosingTime
-    val valid = uiState.canPreview
-    val onBack = { onAction(ProductPickupInfoAction.NavigationBackClicked) }
     BackHandler(
         enabled = !uiState.showPreview,
-        onBack = onBack,
+        onBack = { onAction(ProductPickupInfoAction.NavigationBackClicked) },
     )
+
     OwnerProductScaffold(
         title = stringResource(R.string.owner_product_register_title),
-        onBack = onBack,
+        onBack = { onAction(ProductPickupInfoAction.NavigationBackClicked) },
         contentSpacing = 0.dp,
         bottomBarContent = {
             MangroButton(
@@ -118,7 +118,7 @@ internal fun ProductPickupInfoScreen(
                 },
                 style = MangroButtonStyle.ACTIVE,
                 modifier = Modifier.fillMaxWidth(),
-                enabled = valid,
+                enabled = uiState.canPreview,
                 textStyle = MangroTheme.typography.title.titleL.copy(fontFamily = PretendardFont.Bold),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp),
             )
@@ -144,7 +144,7 @@ internal fun ProductPickupInfoScreen(
             )
             MangroDropdownField(
                 options = uiState.pickupTimeOptions,
-                selectedOption = uiState.pickupTime ?: storeClosingTime.takeIf { it in uiState.pickupTimeOptions },
+                selectedOption = uiState.pickupTime ?: uiState.storeClosingTime.takeIf { it in uiState.pickupTimeOptions },
                 isError = uiState.pickupTime != null && uiState.pickupTime !in uiState.pickupTimeOptions,
                 onOptionSelected = { onAction(ProductPickupInfoAction.PickupTimeChanged(it)) },
                 placeholder = stringResource(R.string.owner_product_pickup_time_unavailable),
@@ -157,6 +157,7 @@ internal fun ProductPickupInfoScreen(
         }
     }
     val draft = uiState.draft
+
     if (uiState.showPreview && draft != null) {
         OwnerProductSheetBottomSheet(
             onDismiss = { onAction(ProductPickupInfoAction.PreviewDismissed) },

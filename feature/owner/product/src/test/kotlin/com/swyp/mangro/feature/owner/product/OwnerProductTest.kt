@@ -1,6 +1,7 @@
 package com.swyp.mangro.feature.owner.product
 
 import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
+import com.swyp.mangro.feature.owner.product.screen.editor.price.ProductPriceState
 import com.swyp.mangro.feature.owner.product.util.discountPercent
 import com.swyp.mangro.feature.owner.product.util.isValidPrice
 import com.swyp.mangro.feature.owner.product.util.isValidProductName
@@ -16,11 +17,10 @@ import org.junit.Test
 
 class OwnerProductTest {
     @Test
-    fun `prices reject zero negative overflow and higher sale prices`() {
+    fun `prices reject zero negative overflow and equal or higher sale prices`() {
         assertTrue(isValidPrice("10000", "4000"))
-        assertTrue(isValidPrice("100", "100"))
         assertTrue(isValidPrice("10,000", "5,000"))
-        listOf("0" to "0", "-1" to "1", "100" to "101", "100" to "", "2147483648" to "1", "10,,000" to "5,000").forEach { (original, sale) ->
+        listOf("0" to "0", "-1" to "1", "100" to "100", "100" to "101", "100" to "", "2147483648" to "1", "10,,000" to "5,000").forEach { (original, sale) ->
             assertFalse(isValidPrice(original, sale))
         }
         assertEquals("5000", normalizePriceInput("5,000"))
@@ -29,6 +29,16 @@ class OwnerProductTest {
         assertEquals(60, discountPercent(10000, 4000))
         assertEquals(66, discountPercent(3, 1))
         assertEquals(99, discountPercent(Int.MAX_VALUE, 1))
+    }
+
+    @Test
+    fun `equal original and sale prices cannot continue product registration`() {
+        val state = ProductPriceState(originalPrice = "10,000", salePrice = "10,000")
+
+        assertFalse(state.validPrices)
+        assertFalse(state.canContinue)
+        assertEquals(0, state.discount)
+        assertEquals(0, state.savings)
     }
 
     @Test

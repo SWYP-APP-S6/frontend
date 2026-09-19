@@ -31,7 +31,7 @@ internal fun parsePrice(input: String): Int? {
 internal fun isValidPrice(original: String, sale: String): Boolean {
     val originalValue = parsePrice(original) ?: return false
     val saleValue = parsePrice(sale) ?: return false
-    return originalValue > 0 && saleValue in 1..originalValue
+    return originalValue > 0 && saleValue > 0 && saleValue < originalValue
 }
 
 internal fun mergedProductPhotos(current: List<String>, added: List<String>): List<String> = (current + added).distinct().take(OwnerProductLimits.PHOTO_COUNT)

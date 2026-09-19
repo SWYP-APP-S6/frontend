@@ -11,12 +11,15 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.designsystem.theme.OwnerMangroTypography
 import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
@@ -25,6 +28,7 @@ import com.swyp.mangro.feature.owner.product.screen.editor.basic.ProductBasicInf
 import com.swyp.mangro.feature.owner.product.screen.editor.pickup.ProductPickupInfoAction
 import com.swyp.mangro.feature.owner.product.screen.editor.pickup.ProductPickupInfoScreen
 import com.swyp.mangro.feature.owner.product.screen.editor.pickup.ProductPickupInfoState
+import com.swyp.mangro.feature.owner.product.screen.editor.price.ProductPriceAction
 import com.swyp.mangro.feature.owner.product.screen.editor.price.ProductPriceScreen
 import com.swyp.mangro.feature.owner.product.screen.editor.price.ProductPriceState
 import java.io.File
@@ -74,6 +78,27 @@ class ProductEditorDesignTest {
         compose.onNodeWithText("0원이 저렴해져요").assertIsDisplayed()
         compose.onNodeWithText("다음").assertIsNotEnabled()
         capture("editor-price")
+    }
+
+    @Test fun priceInputDisplaysGroupingSeparatorsAndKeepsDigitsInState() {
+        show {
+            var state by remember { mutableStateOf(ProductPriceState()) }
+            ProductPriceScreen(state) { action ->
+                state = when (action) {
+                    is ProductPriceAction.OriginalPriceChanged -> state.copy(originalPrice = action.value)
+                    is ProductPriceAction.SalePriceChanged -> state.copy(salePrice = action.value)
+                    else -> state
+                }
+            }
+        }
+
+        val priceFields = compose.onAllNodes(hasSetTextAction())
+        priceFields[0].performTextInput("10,000")
+        priceFields[0].assertTextEquals("10,000")
+        priceFields[1].performTextInput("5,000")
+        priceFields[1].assertTextEquals("5,000")
+        compose.onNodeWithText("50%").assertIsDisplayed()
+        compose.onNodeWithText("다음").assertIsEnabled()
     }
 
     @Test fun pickupDefaultsToStoreClosingTimeAndAllowsSelection() {

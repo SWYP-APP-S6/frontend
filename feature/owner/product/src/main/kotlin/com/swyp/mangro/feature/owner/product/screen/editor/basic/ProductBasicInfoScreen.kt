@@ -48,9 +48,9 @@ import com.swyp.mangro.feature.owner.product.R
 import com.swyp.mangro.feature.owner.product.component.OwnerProductConfirmationBottomSheet
 import com.swyp.mangro.feature.owner.product.component.OwnerProductLabel
 import com.swyp.mangro.feature.owner.product.component.OwnerProductScaffold
-import com.swyp.mangro.feature.owner.product.component.rememberProductTextFieldState
 import com.swyp.mangro.feature.owner.product.model.ProductDraftModel
 import com.swyp.mangro.feature.owner.product.util.OwnerProductLimits
+import com.swyp.mangro.feature.owner.product.util.rememberProductTextFieldState
 import kotlinx.serialization.Serializable
 
 @Serializable

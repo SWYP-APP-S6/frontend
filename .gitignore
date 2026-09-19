@@ -1,6 +1,7 @@
 *.iml
 .gradle
 .kotlin/
+/keystore.properties
 /local.properties
 /.idea/
 .DS_Store
@@ -23,3 +24,6 @@ CLAUDE.local.md
 
 # Firebase app configuration
 **/google-services.json
+*.jks
+*.keystore
+keystore.properties

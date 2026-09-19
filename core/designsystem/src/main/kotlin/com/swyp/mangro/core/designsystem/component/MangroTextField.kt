@@ -18,8 +18,11 @@ import androidx.compose.foundation.text.input.KeyboardActionHandler
 import androidx.compose.foundation.text.input.OutputTransformation
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -47,29 +50,38 @@ fun MangroTextField(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
+    val selectionBackgroundColor = LocalTextSelectionColors.current.backgroundColor
+    val selectionColors = remember(selectionBackgroundColor) {
+        TextSelectionColors(
+            handleColor = Orange600,
+            backgroundColor = selectionBackgroundColor,
+        )
+    }
 
-    BasicTextField(
-        state = state,
-        interactionSource = interactionSource,
-        textStyle = MangroTheme.typography.body.bodyM.copy(
-            color = MangroTheme.colors.textTitle,
-        ),
-        lineLimits = lineLimits,
-        keyboardOptions = keyboardOptions,
-        onKeyboardAction = onKeyboardAction?.let { handler ->
-            KeyboardActionHandler { performDefaultAction ->
-                handler(keyboardOptions.imeAction)
-                performDefaultAction()
-            }
-        },
-        cursorBrush = SolidColor(Orange600),
-        inputTransformation = inputTransformation,
-        outputTransformation = outputTransformation,
-        modifier = modifier,
-        decorator = { innerTextField ->
-            MangroTextFieldDecoration(isFocused, state.text.isEmpty(), placeholder, innerTextField, leadingIcon)
-        },
-    )
+    CompositionLocalProvider(LocalTextSelectionColors provides selectionColors) {
+        BasicTextField(
+            state = state,
+            interactionSource = interactionSource,
+            textStyle = MangroTheme.typography.body.bodyM.copy(
+                color = MangroTheme.colors.textTitle,
+            ),
+            lineLimits = lineLimits,
+            keyboardOptions = keyboardOptions,
+            onKeyboardAction = onKeyboardAction?.let { handler ->
+                KeyboardActionHandler { performDefaultAction ->
+                    handler(keyboardOptions.imeAction)
+                    performDefaultAction()
+                }
+            },
+            cursorBrush = SolidColor(Orange600),
+            inputTransformation = inputTransformation,
+            outputTransformation = outputTransformation,
+            modifier = modifier,
+            decorator = { innerTextField ->
+                MangroTextFieldDecoration(isFocused, state.text.isEmpty(), placeholder, innerTextField, leadingIcon)
+            },
+        )
+    }
 }
 
 @Composable
@@ -82,18 +94,28 @@ fun MangroTextField(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
-    BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier,
-        interactionSource = interactionSource,
-        textStyle = MangroTheme.typography.body.bodyM.copy(color = MangroTheme.colors.textTitle),
-        singleLine = true,
-        keyboardOptions = keyboardOptions,
-        decorationBox = { innerTextField ->
-            MangroTextFieldDecoration(isFocused, value.isEmpty(), placeholder, innerTextField)
-        },
-    )
+    val selectionBackgroundColor = LocalTextSelectionColors.current.backgroundColor
+    val selectionColors = remember(selectionBackgroundColor) {
+        TextSelectionColors(
+            handleColor = Orange600,
+            backgroundColor = selectionBackgroundColor,
+        )
+    }
+
+    CompositionLocalProvider(LocalTextSelectionColors provides selectionColors) {
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = modifier,
+            interactionSource = interactionSource,
+            textStyle = MangroTheme.typography.body.bodyM.copy(color = MangroTheme.colors.textTitle),
+            singleLine = true,
+            keyboardOptions = keyboardOptions,
+            decorationBox = { innerTextField ->
+                MangroTextFieldDecoration(isFocused, value.isEmpty(), placeholder, innerTextField)
+            },
+        )
+    }
 }
 
 @Composable

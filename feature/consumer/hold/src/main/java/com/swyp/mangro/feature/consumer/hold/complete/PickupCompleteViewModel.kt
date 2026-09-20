@@ -76,7 +76,7 @@ class PickupCompleteViewModel @Inject constructor(
                         }
                     }
                     .onFailure {
-                        android.util.Log.e("PickupCompleteViewModel", "fetchHold failed", it)
+                        // 실패 처리
                     }
             }
         }

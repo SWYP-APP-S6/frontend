@@ -1,5 +1,6 @@
 package com.swyp.mangro.data.consumer.product.impl
 
+import com.swyp.mangro.core.network.exception.LoginRequiredException
 import com.swyp.mangro.data.consumer.product.model.ProductDetail
 import com.swyp.mangro.data.consumer.product.model.ProductRecipe
 import com.swyp.mangro.data.consumer.product.model.ProductStore
@@ -73,7 +74,14 @@ internal class ProductDetailRepositoryImpl @Inject constructor(
         )
         if (!response.isSuccessful) {
             val errorBody = response.errorBody()?.string()
-            android.util.Log.e("ProductDetailRepo", "registerHold HTTP ${response.code()}: $errorBody")
+            val code = errorBody?.let {
+                runCatching {
+                    (kotlinx.serialization.json.Json.parseToJsonElement(it) as? kotlinx.serialization.json.JsonObject)
+                        ?.get("code")
+                        ?.let { c -> (c as? kotlinx.serialization.json.JsonPrimitive)?.content }
+                }.getOrNull()
+            }
+            if (code == "LOGIN_REQUIRED") throw LoginRequiredException()
             throw HttpException(response)
         }
         requireNotNull(response.body()).id

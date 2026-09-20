@@ -102,6 +102,7 @@ fun AppNavGraph(
         productDetailScreen(
             navController = navController,
             onNavigateToHold = { holdId -> navController.navigateToHold(holdId) },
+            onNavigateToLogin = { navController.navigate(Login) },
         )
         holdScreen(
             navController = navController,

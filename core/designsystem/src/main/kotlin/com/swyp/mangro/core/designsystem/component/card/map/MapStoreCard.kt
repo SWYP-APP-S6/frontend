@@ -128,7 +128,6 @@ fun MapStoreCard(
                     productName = product.productName,
                     price = product.price,
                     modifier = Modifier.clickable {
-                        android.util.Log.e("MapStoreCard", "item clicked: ${product.productName}")
                         onProductClick(product)
                     },
                 )

@@ -74,7 +74,16 @@ class LoginViewModel @Inject constructor(
 
             LoginUiAction.BrowseWithoutLoginClicked -> {
                 if (_uiState.value.isLoading) return
-                viewModelScope.launch { _event.send(LoginUiEvent.NavigateToHome) }
+                _uiState.update { it.copy(isLoading = true) }
+                viewModelScope.launch {
+                    authRepository.guestLogin().collect { result ->
+                        _uiState.update { it.copy(isLoading = false) }
+                        when (result) {
+                            is AuthResult.Success -> _event.send(LoginUiEvent.NavigateToHome)
+                            is AuthResult.Failure -> _event.send(LoginUiEvent.ShowAuthFailure(result.reason))
+                        }
+                    }
+                }
             }
 
             LoginUiAction.PrivacyPolicyClicked -> {

@@ -70,7 +70,6 @@ class HoldHistoryViewModel @Inject constructor(
                         }
                     }
                     .onFailure {
-                        android.util.Log.e("HoldHistoryViewModel", "fetchHolds failed", it)
                         _uiState.update { it.copy(isLoading = false) }
                     }
             }

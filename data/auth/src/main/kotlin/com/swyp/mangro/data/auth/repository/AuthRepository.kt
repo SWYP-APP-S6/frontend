@@ -16,4 +16,7 @@ interface AuthRepository {
 
     /** 수집할 때 가입 API를 호출한다. 가입용 토큰은 성공 후 소모되므로 자동 재수집하지 않는다. */
     fun signup(consents: SignupConsents): Flow<AuthResult<Unit>>
+
+    fun guestLogin(): Flow<AuthResult<Unit>>
+    fun isGuestSession(): Flow<Boolean>
 }

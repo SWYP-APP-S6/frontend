@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:utils"))
     implementation(project(":core:model"))
+    implementation(project(":core:network"))
     implementation(project(":data:consumer:product"))
     implementation(libs.kotlinx.collections.immutable)
 

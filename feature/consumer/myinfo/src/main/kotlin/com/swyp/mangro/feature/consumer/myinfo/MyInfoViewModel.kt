@@ -34,7 +34,8 @@ class MyInfoViewModel @Inject constructor(
         _uiState.update { it.copy(isLoading = true, hasProfileError = false) }
         viewModelScope.launch {
             try {
-                val isGuest = !authRepository.hasSession().first()
+                val hasSession = authRepository.hasSession().first()
+                val isGuest = !hasSession || authRepository.isGuestSession().first()
                 _uiState.update { it.copy(isGuest = isGuest) }
 
                 if (isGuest) {
@@ -46,12 +47,10 @@ class MyInfoViewModel @Inject constructor(
                             when {
                                 result.isSuccess -> {
                                     val profile = result.getOrNull()
-
                                     _uiState.update {
                                         it.copy(isLoading = false, nickname = profile?.nickname ?: "", phone = profile?.phone ?: "")
                                     }
                                 }
-
                                 result.isFailure -> {
                                     _uiState.update { it.copy(isLoading = false, hasProfileError = true) }
                                 }

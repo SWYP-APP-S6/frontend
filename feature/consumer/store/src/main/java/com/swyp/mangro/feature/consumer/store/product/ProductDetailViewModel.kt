@@ -9,6 +9,7 @@ import com.swyp.mangro.core.model.product.ProductCategory
 import com.swyp.mangro.core.model.recipe.Recipe
 import com.swyp.mangro.core.model.recipe.RecipeDifficulty
 import com.swyp.mangro.core.model.store.StoreInfo
+import com.swyp.mangro.core.network.exception.LoginRequiredException
 import com.swyp.mangro.core.utils.LocationProvider
 import com.swyp.mangro.data.consumer.product.model.ProductDetail
 import com.swyp.mangro.data.consumer.product.repository.ProductDetailRepository
@@ -61,8 +62,13 @@ class ProductDetailViewModel @Inject constructor(
                                 _uiState.update { it.copy(isWishBottomSheetVisible = false) }
                                 _uiEvent.send(ProductDetailUiEvent.WishConfirmed(holdId.toString()))
                             }
-                            .onFailure {
-                                android.util.Log.e("ProductDetailViewModel", "registerHold failed", it)
+                            .onFailure { error ->
+                                if (error is LoginRequiredException) {
+                                    _uiState.update { it.copy(isWishBottomSheetVisible = false) }
+                                    _uiEvent.send(ProductDetailUiEvent.ShowLoginRequiredDialog)
+                                } else {
+                                    // 실패 처리
+                                }
                             }
                     }
                 }

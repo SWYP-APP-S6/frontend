@@ -139,6 +139,11 @@ internal class AuthRepositoryImpl @Inject constructor(
         emit(hasSession)
     }.flowOn(Dispatchers.IO)
 
+    override fun isGuestSession(): Flow<Boolean> = flow {
+        val keys = storage { store.authKey.first() }
+        emit(keys?.refreshToken == GUEST_REFRESH_TOKEN)
+    }.flowOn(Dispatchers.IO)
+
     override fun guestLogin(): Flow<AuthResult<Unit>> = flow {
         val result = authRequest {
             val installId = storage { installIdStore.getOrCreate() }

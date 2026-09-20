@@ -18,4 +18,5 @@ interface AuthRepository {
     fun signup(consents: SignupConsents): Flow<AuthResult<Unit>>
 
     fun guestLogin(): Flow<AuthResult<Unit>>
+    fun isGuestSession(): Flow<Boolean>
 }

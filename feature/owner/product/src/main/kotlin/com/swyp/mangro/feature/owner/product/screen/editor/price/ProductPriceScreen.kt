@@ -36,9 +36,11 @@ import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.owner.product.R
 import com.swyp.mangro.feature.owner.product.component.OwnerProductLabel
 import com.swyp.mangro.feature.owner.product.component.OwnerProductScaffold
-import com.swyp.mangro.feature.owner.product.component.rememberProductTextFieldState
 import com.swyp.mangro.feature.owner.product.model.ProductDraftModel
 import com.swyp.mangro.feature.owner.product.util.formatAmount
+import com.swyp.mangro.feature.owner.product.util.priceInputTransformation
+import com.swyp.mangro.feature.owner.product.util.priceOutputTransformation
+import com.swyp.mangro.feature.owner.product.util.rememberProductTextFieldState
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -52,7 +54,11 @@ internal fun ProductPriceRoute(
     viewModel: ProductPriceViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    LaunchedEffect(viewModel, draft) { draft?.let(viewModel::initialize) }
+
+    LaunchedEffect(viewModel, draft) {
+        draft?.let(viewModel::initialize)
+    }
+
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
             when (event) {
@@ -61,7 +67,15 @@ internal fun ProductPriceRoute(
             }
         }
     }
-    if (!state.isLoading) ProductPriceScreen(state, viewModel::handleAction)
+
+    BackHandler {
+        viewModel.handleAction(ProductPriceAction.NavigationBackClicked)
+    }
+
+    ProductPriceScreen(
+        uiState = state,
+        onAction = viewModel::handleAction,
+    )
 }
 
 @Composable
@@ -69,15 +83,17 @@ internal fun ProductPriceScreen(
     uiState: ProductPriceState,
     onAction: (ProductPriceAction) -> Unit,
 ) {
-    val originalPrice = rememberProductTextFieldState(uiState.originalPrice) { onAction(ProductPriceAction.OriginalPriceChanged(it)) }
-    val salePrice = rememberProductTextFieldState(uiState.salePrice) { onAction(ProductPriceAction.SalePriceChanged(it)) }
-    val quantity = uiState.quantity
-    val validPrices = uiState.validPrices
-    val onBack = { onAction(ProductPriceAction.NavigationBackClicked) }
-    BackHandler(onBack = onBack)
+    val originalPrice = rememberProductTextFieldState(uiState.originalPrice) {
+        onAction(ProductPriceAction.OriginalPriceChanged(it))
+    }
+
+    val salePrice = rememberProductTextFieldState(uiState.salePrice) {
+        onAction(ProductPriceAction.SalePriceChanged(it))
+    }
+
     OwnerProductScaffold(
         title = stringResource(R.string.owner_product_register_title),
-        onBack = onBack,
+        onBack = { onAction(ProductPriceAction.NavigationBackClicked) },
         contentSpacing = 0.dp,
         bottomBarContent = {
             MangroButton(
@@ -113,7 +129,7 @@ internal fun ProductPriceScreen(
                     modifier = Modifier.weight(1f),
                 )
                 MangroStepper(
-                    value = quantity,
+                    value = uiState.quantity,
                     onValueChange = { onAction(ProductPriceAction.QuantityChanged(it)) },
                 )
             }
@@ -123,6 +139,8 @@ internal fun ProductPriceScreen(
                 state = originalPrice,
                 placeholder = stringResource(R.string.owner_product_original_price_placeholder),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                inputTransformation = priceInputTransformation,
+                outputTransformation = priceOutputTransformation,
                 leadingIcon = {
                     Icon(
                         painter = painterResource(DesignR.drawable.ic_won),
@@ -139,6 +157,8 @@ internal fun ProductPriceScreen(
                 state = salePrice,
                 placeholder = stringResource(R.string.owner_product_sale_price_placeholder),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                inputTransformation = priceInputTransformation,
+                outputTransformation = priceOutputTransformation,
                 leadingIcon = {
                     Icon(
                         painter = painterResource(DesignR.drawable.ic_won),
@@ -177,7 +197,7 @@ internal fun ProductPriceScreen(
                 )
             }
 
-            if (validPrices || salePrice.text.isEmpty()) {
+            if (uiState.validPrices || salePrice.text.isEmpty()) {
                 Text(
                     text = stringResource(R.string.owner_product_savings, stringResource(R.string.owner_product_price, uiState.savings.formatAmount())),
                     modifier = Modifier.fillMaxWidth(),

@@ -76,6 +76,23 @@ class ProductEditorViewModelTest {
     }
 
     @Test
+    fun groupedPricesAreConvertedToIntegersWhenContinuing() = runTest {
+        val vm = ProductPriceViewModel(SavedStateHandle())
+        vm.initialize(ProductDraftModel(id = "peach"))
+        vm.handleAction(ProductPriceAction.OriginalPriceChanged("10,000"))
+        vm.handleAction(ProductPriceAction.SalePriceChanged("5,000"))
+
+        assertTrue(vm.uiState.value.canContinue)
+        assertEquals(50, vm.uiState.value.discount)
+        assertEquals(5000, vm.uiState.value.savings)
+
+        vm.handleAction(ProductPriceAction.NextClicked)
+        val next = vm.event.first() as ProductPriceEvent.Next
+        assertEquals(10000, next.draft.originalPrice)
+        assertEquals(5000, next.draft.salePrice)
+    }
+
+    @Test
     fun pickupPreviewWithoutCustomTagsAndSaveIsEmittedOnce() = runTest {
         val vm = ProductPickupInfoViewModel(SavedStateHandle(), clock)
         vm.initialize(ProductDraftModel(id = "peach", name = "복숭아", photos = listOf("file://peach"), originalPrice = 10000, salePrice = 4000, quantity = 3), "20:00", "09:00")

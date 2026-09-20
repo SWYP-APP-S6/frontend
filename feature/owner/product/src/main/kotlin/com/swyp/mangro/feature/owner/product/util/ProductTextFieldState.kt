@@ -1,4 +1,4 @@
-package com.swyp.mangro.feature.owner.product.component
+package com.swyp.mangro.feature.owner.product.util
 
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Composable

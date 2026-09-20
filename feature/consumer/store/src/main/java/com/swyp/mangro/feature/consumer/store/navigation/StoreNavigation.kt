@@ -12,12 +12,14 @@ data class ProductDetailRoute(val productId: String)
 fun NavGraphBuilder.productDetailScreen(
     navController: NavController,
     onNavigateToHold: (String) -> Unit,
+    onNavigateToLogin: () -> Unit,
 ) {
     composable<ProductDetailRoute> {
         ProductDetailRoute(
             onBackClick = { navController.popBackStack() },
             onNavigateToStoreDetail = { },
             onNavigateToHold = onNavigateToHold,
+            onNavigateToLogin = onNavigateToLogin,
         )
     }
 }

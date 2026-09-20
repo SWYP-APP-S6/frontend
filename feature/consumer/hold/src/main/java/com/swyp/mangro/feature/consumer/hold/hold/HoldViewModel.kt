@@ -53,7 +53,7 @@ class HoldViewModel @Inject constructor(
                                 _uiEvent.send(HoldUiEvent.NavigateToProductDetail)
                             }
                             .onFailure {
-                                android.util.Log.e("HoldViewModel", "cancelHold failed", it)
+                                // 실패 처리
                             }
                     }
                 }
@@ -115,7 +115,7 @@ class HoldViewModel @Inject constructor(
                         }
                     }
                     .onFailure {
-                        android.util.Log.e("HoldViewModel", "fetchHold failed", it)
+                        // 실패 처리
                     }
             }
         }
@@ -144,7 +144,7 @@ class HoldViewModel @Inject constructor(
                             }
                         }
                         .onFailure {
-                            android.util.Log.e("HoldViewModel", "polling fetchHold failed", it)
+                            // 실패 처리
                         }
                 }
                 if (shouldStop) break

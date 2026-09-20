@@ -35,7 +35,10 @@ internal class ConsumerHomeRepositoryImpl @Inject constructor(
 
     override fun fetchMyLocation(): Flow<Result<MyLocation?>> = request {
         val response = userService.fetchMyLocation()
-        if (!response.isSuccessful) throw HttpException(response)
+        if (!response.isSuccessful) {
+            val errorBody = response.errorBody()?.string()
+            throw HttpException(response)
+        }
         response.body()?.location?.toMyLocation()
     }
 

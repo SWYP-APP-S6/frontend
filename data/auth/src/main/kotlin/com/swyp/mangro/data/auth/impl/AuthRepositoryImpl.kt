@@ -2,6 +2,7 @@ package com.swyp.mangro.data.auth.impl
 
 import com.swyp.core.local.model.AuthKey
 import com.swyp.core.local.store.AuthStore
+import com.swyp.core.local.store.InstallIdStore
 import com.swyp.core.local.store.UserInfoStore
 import com.swyp.mangro.data.auth.BuildConfig
 import com.swyp.mangro.data.auth.model.AuthFailure
@@ -12,6 +13,7 @@ import com.swyp.mangro.data.auth.repository.AuthRepository
 import com.swyp.mangro.data.auth.util.AuthException
 import com.swyp.mangro.data.auth.util.authRequest
 import com.swyp.mangro.data.auth.util.checked
+import com.swyp.mangro.remote.auth.model.IssueGuestTokenRequest
 import com.swyp.mangro.remote.auth.model.LogoutRequest
 import com.swyp.mangro.remote.auth.model.RegisterUserRequest
 import com.swyp.mangro.remote.auth.model.VerifyConsumerKakaoTokenAndLoginRequest
@@ -31,9 +33,14 @@ internal class AuthRepositoryImpl @Inject constructor(
     private val store: AuthStore,
     private val authenticatedService: AuthService,
     private val userInfoStore: UserInfoStore,
+    private val installIdStore: InstallIdStore,
 ) : AuthRepository {
     private var signupToken: String? = null
     private var pendingSignupKeys: AuthKey? = null
+
+    private companion object {
+        const val GUEST_REFRESH_TOKEN = "GUEST"
+    }
 
     override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = flow {
         signupToken = null
@@ -105,7 +112,7 @@ internal class AuthRepositoryImpl @Inject constructor(
     override fun logout(): Flow<AuthResult<Unit>> = flow {
         val result = authRequest {
             val keys = storage { store.authKey.first() }
-            if (keys != null) {
+            if (keys != null && keys.refreshToken != GUEST_REFRESH_TOKEN) {
                 val response = authenticatedService.logout(LogoutRequest(keys.refreshToken))
                 if (!response.isSuccessful && response.code() != 401) response.checked()
                 response.errorBody()?.close()
@@ -130,6 +137,19 @@ internal class AuthRepositoryImpl @Inject constructor(
             false
         }
         emit(hasSession)
+    }.flowOn(Dispatchers.IO)
+
+    override fun guestLogin(): Flow<AuthResult<Unit>> = flow {
+        val result = authRequest {
+            val installId = storage { installIdStore.getOrCreate() }
+            val response = service.issueGuestToken(IssueGuestTokenRequest(installId)).checked()
+            val accessToken = requireNotNull(response.accessToken)
+            require(accessToken.isNotBlank())
+
+            val keys = AuthKey(accessToken = accessToken, refreshToken = GUEST_REFRESH_TOKEN)
+            storage { store.save(keys) }
+        }
+        emit(result)
     }.flowOn(Dispatchers.IO)
 
     private suspend fun <T> storage(block: suspend () -> T): T = try {

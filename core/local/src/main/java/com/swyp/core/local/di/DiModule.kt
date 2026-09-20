@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.swyp.core.crypto.manager.CryptoManager
 import com.swyp.core.local.impl.AuthStoreImpl
+import com.swyp.core.local.impl.InstallIdStoreImpl
 import com.swyp.core.local.store.AuthStore
+import com.swyp.core.local.store.InstallIdStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,5 +28,15 @@ object DiModule {
             produceFile = { File(context.noBackupFilesDir, "auth.preferences_pb") },
         ),
         cryptoManager = cryptoManager,
+    )
+
+    @Provides
+    @Singleton
+    fun provideInstallIdStore(
+        @ApplicationContext context: Context,
+    ): InstallIdStore = InstallIdStoreImpl(
+        dataStore = PreferenceDataStoreFactory.create(
+            produceFile = { File(context.noBackupFilesDir, "install_id.preferences_pb") },
+        ),
     )
 }

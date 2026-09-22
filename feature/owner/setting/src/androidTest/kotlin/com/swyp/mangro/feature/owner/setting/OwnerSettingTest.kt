@@ -27,6 +27,7 @@ import com.swyp.mangro.data.owner.store.model.OwnerStore
 import com.swyp.mangro.data.owner.store.model.StoreApprovalStatus
 import com.swyp.mangro.data.owner.store.model.StoreRegistration
 import com.swyp.mangro.data.owner.store.repository.StoreRepository
+import com.swyp.mangro.data.user.repository.UserRepository
 import com.swyp.mangro.feature.owner.setting.model.SettingsMenu
 import com.swyp.mangro.feature.owner.setting.screen.OwnerSettingRoute
 import com.swyp.mangro.feature.owner.setting.screen.OwnerSettingViewModel
@@ -61,9 +62,15 @@ class OwnerSettingTest {
             override fun hasSession(): Flow<Boolean> = error("unused")
             override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = error("unused")
             override fun signup(consents: SignupConsents): Flow<AuthResult<Unit>> = error("unused")
+            override fun guestLogin(): Flow<AuthResult<Unit>> = error("unused")
+            override fun isGuestSession(): Flow<Boolean> = error("unused")
+        }
+        val users = object : UserRepository {
+            override fun fetchMe() = error("unused")
+            override fun withdrawUser(): Flow<Unit> = flowOf(Unit)
         }
         lateinit var vm: OwnerSettingViewModel
-        compose.runOnUiThread { vm = OwnerSettingViewModel(stores, auth) }
+        compose.runOnUiThread { vm = OwnerSettingViewModel(stores, auth, users) }
         compose.setContent { MangroTheme(typography = OwnerMangroTypography) { OwnerSettingRoute({ loggedOut = true }, {}, {}, {}, vm) } }
         waitFor("서버 상점")
         compose.onNodeWithText("0212345678").assertIsDisplayed()

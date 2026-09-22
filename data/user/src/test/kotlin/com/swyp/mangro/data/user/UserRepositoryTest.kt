@@ -12,6 +12,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import retrofit2.HttpException
 
 class UserRepositoryTest {
     private val server = MockWebServer()
@@ -42,5 +43,24 @@ class UserRepositoryTest {
         }
         server.enqueue(MockResponse().setResponseCode(401))
         assertTrue(repository.fetchMe().single().isFailure)
+    }
+
+    @Test fun withdrawsCurrentUserWithDeleteRequest() = runTest {
+        server.enqueue(MockResponse().setBody("""{"status":200,"code":"OK","message":"탈퇴했습니다.","data":null}"""))
+
+        repository.withdrawUser().single()
+
+        val request = server.takeRequest()
+        assertEquals("DELETE", request.method)
+        assertEquals("/users/me", request.path)
+    }
+
+    @Test fun withdrawHttpErrorIsNotReportedAsSuccess() = runTest {
+        server.enqueue(MockResponse().setResponseCode(409).setBody("""{"status":409,"code":"STORE_HOLDING_HOLDS_REMAIN","message":"미처리 찜이 있습니다."}"""))
+
+        val failure = runCatching { repository.withdrawUser().single() }.exceptionOrNull()
+
+        assertTrue(failure is HttpException)
+        assertEquals(409, (failure as HttpException).code())
     }
 }

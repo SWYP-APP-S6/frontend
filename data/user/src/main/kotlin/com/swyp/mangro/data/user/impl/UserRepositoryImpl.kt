@@ -39,7 +39,8 @@ internal class UserRepositoryImpl @Inject constructor(private val userService: U
     }.flowOn(Dispatchers.IO)
 
     override fun withdrawUser(): Flow<Unit> = flow {
-        userService.deleteMe()
+        val response = userService.deleteMe()
+        if (!response.isSuccessful) throw HttpException(response)
         emit(Unit)
-    }
+    }.flowOn(Dispatchers.IO)
 }

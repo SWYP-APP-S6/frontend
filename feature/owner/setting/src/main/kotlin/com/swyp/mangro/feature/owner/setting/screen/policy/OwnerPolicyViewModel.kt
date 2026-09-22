@@ -7,7 +7,7 @@ import androidx.navigation.toRoute
 import com.swyp.mangro.data.auth.model.AuthResult
 import com.swyp.mangro.data.auth.model.TermsKind
 import com.swyp.mangro.data.auth.repository.TermsRepository
-import com.swyp.mangro.feature.owner.setting.model.OwnerPolicy
+import com.swyp.mangro.feature.owner.setting.model.SettingsMenu
 import com.swyp.mangro.feature.owner.setting.navigation.OwnerPolicyDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -40,8 +40,9 @@ class OwnerPolicyViewModel @Inject constructor(
         _uiState.update { it.copy(isLoading = true, hasError = false) }
         viewModelScope.launch {
             val kind = when (uiState.value.policy) {
-                OwnerPolicy.TERMS_OF_SERVICE -> TermsKind.SERVICE
-                OwnerPolicy.PRIVACY_POLICY -> TermsKind.PRIVACY_POLICY
+                SettingsMenu.TERMS_OF_SERVICE -> TermsKind.SERVICE
+                SettingsMenu.PRIVACY_POLICY -> TermsKind.PRIVACY_POLICY
+                else -> {}
             }
             val documents = repository.fetchTermsDocuments().first()
             val document = (documents as? AuthResult.Success)?.value?.singleOrNull { it.type == kind }

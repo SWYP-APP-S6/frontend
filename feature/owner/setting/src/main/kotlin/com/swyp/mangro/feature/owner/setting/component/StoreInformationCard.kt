@@ -67,8 +67,16 @@ private fun StoreInformationField(
     value: String,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(text = label, style = MangroTheme.typography.caption.captionS, color = MangroTheme.colors.textSubtitle)
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            text = label,
+            style = MangroTheme.typography.caption.captionS,
+            color = MangroTheme.colors.textSubtitle,
+        )
+
         Text(
             text = value.ifBlank { stringResource(R.string.owner_setting_unregistered) },
             style = MangroTheme.typography.title.titleM,

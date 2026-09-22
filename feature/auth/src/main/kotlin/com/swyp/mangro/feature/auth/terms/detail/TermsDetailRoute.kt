@@ -23,9 +23,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mikepenz.markdown.compose.components.markdownComponents
+import com.mikepenz.markdown.compose.elements.MarkdownTable
+import com.mikepenz.markdown.compose.elements.MarkdownTableHeader
+import com.mikepenz.markdown.compose.elements.MarkdownTableRow
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownColor
 import com.mikepenz.markdown.m3.markdownTypography
@@ -107,9 +112,40 @@ fun TermsDetailRoute(
                         content = state.content,
                         colors = markdownColor(text = MangroTheme.colors.textBody),
                         typography = markdownTypography(paragraph = MangroTheme.typography.body.bodyM),
+                        components = termsMarkdownComponents,
                     )
                 }
             }
         }
     }
 }
+
+private val termsMarkdownComponents = markdownComponents(
+    table = { model ->
+        MarkdownTable(
+            content = model.content,
+            node = model.node,
+            style = model.typography.table,
+            headerBlock = { content, header, tableWidth, style ->
+                MarkdownTableHeader(
+                    content = content,
+                    header = header,
+                    tableWidth = tableWidth,
+                    style = style,
+                    maxLines = Int.MAX_VALUE,
+                    overflow = TextOverflow.Clip,
+                )
+            },
+            rowBlock = { content, row, tableWidth, style ->
+                MarkdownTableRow(
+                    content = content,
+                    header = row,
+                    tableWidth = tableWidth,
+                    style = style,
+                    maxLines = Int.MAX_VALUE,
+                    overflow = TextOverflow.Clip,
+                )
+            },
+        )
+    },
+)

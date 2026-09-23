@@ -9,4 +9,10 @@ data class MyInfoUiState(
     val showLogoutConfirmation: Boolean = false,
     val isLoggingOut: Boolean = false,
     val hasLogoutError: Boolean = false,
-)
+    val showWithdrawConfirmation: Boolean = false,
+    val isWithdrawing: Boolean = false,
+    val hasWithdrawError: Boolean = false,
+    val showHoldRemainDialog: Boolean = false,
+) {
+    val isBusy: Boolean get() = isLoggingOut || isWithdrawing
+}

@@ -157,6 +157,18 @@ internal class AuthRepositoryImpl @Inject constructor(
         emit(result)
     }.flowOn(Dispatchers.IO)
 
+    override fun clearSession(): Flow<AuthResult<Unit>> = flow {
+        val result = authRequest {
+            storage {
+                userInfoStore.clear()
+                store.clear()
+            }
+            signupToken = null
+            pendingSignupKeys = null
+        }
+        emit(result)
+    }.flowOn(Dispatchers.IO)
+
     private suspend fun <T> storage(block: suspend () -> T): T = try {
         block()
     } catch (error: CancellationException) {

@@ -5,6 +5,7 @@
     <string name="owner_setting_store_phone">전화번호</string>
     <string name="owner_setting_unregistered">미등록</string>
     <string name="owner_setting_policy_info">약관 및 정책</string>
+    <string name="owner_setting_account_management">계정 관리</string>
     <string name="owner_setting_terms">서비스 이용약관</string>
     <string name="owner_setting_privacy">개인정보 처리방침</string>
     <string name="owner_setting_back">뒤로</string>
@@ -14,9 +15,13 @@
     <string name="owner_setting_retry">다시 시도</string>
     <string name="owner_setting_logout">로그아웃</string>
     <string name="owner_setting_logging_out">로그아웃 중…</string>
+    <string name="owner_setting_withdraw">회원 탈퇴</string>
     <string name="owner_setting_logout_error">로그아웃하지 못했어요. 다시 시도해 주세요.</string>
+    <string name="owner_setting_withdraw_error">회원 탈퇴하지 못했어요. 다시 시도해 주세요.</string>
     <string name="owner_setting_policy_error">약관을 불러오지 못했습니다. 다시 시도해 주세요.</string>
     <string name="owner_setting_logout_confirmation">로그아웃 하시겠습니까?</string>
+    <string name="owner_setting_withdraw_confirmation">회원 탈퇴 하시겠습니까?</string>
+    <string name="owner_setting_withdraw_confirmation_content">회원 탈퇴 시 현재 계정으로 더 이상 서비스를 이용할 수 없어요.\n진행 중인 찜이 있다면 모두 처리한 후 다시 시도해 주세요.</string>
     <string name="owner_setting_cancel">취소</string>
     <string name="owner_setting_confirm">확인</string>
 </resources>

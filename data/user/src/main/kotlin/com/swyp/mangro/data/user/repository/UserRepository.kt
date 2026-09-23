@@ -5,4 +5,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
     fun fetchMe(): Flow<Result<UserProfile>>
+
+    fun withdrawUser(): Flow<Unit>
 }

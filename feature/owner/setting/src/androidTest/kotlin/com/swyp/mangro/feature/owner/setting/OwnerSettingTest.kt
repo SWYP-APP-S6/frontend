@@ -27,7 +27,8 @@ import com.swyp.mangro.data.owner.store.model.OwnerStore
 import com.swyp.mangro.data.owner.store.model.StoreApprovalStatus
 import com.swyp.mangro.data.owner.store.model.StoreRegistration
 import com.swyp.mangro.data.owner.store.repository.StoreRepository
-import com.swyp.mangro.feature.owner.setting.model.OwnerPolicy
+import com.swyp.mangro.data.user.repository.UserRepository
+import com.swyp.mangro.feature.owner.setting.model.SettingsMenu
 import com.swyp.mangro.feature.owner.setting.screen.OwnerSettingRoute
 import com.swyp.mangro.feature.owner.setting.screen.OwnerSettingViewModel
 import com.swyp.mangro.feature.owner.setting.screen.policy.OwnerPolicyRoute
@@ -61,9 +62,15 @@ class OwnerSettingTest {
             override fun hasSession(): Flow<Boolean> = error("unused")
             override fun login(kakaoAccessToken: String): Flow<AuthResult<LoginStatus>> = error("unused")
             override fun signup(consents: SignupConsents): Flow<AuthResult<Unit>> = error("unused")
+            override fun guestLogin(): Flow<AuthResult<Unit>> = error("unused")
+            override fun isGuestSession(): Flow<Boolean> = error("unused")
+        }
+        val users = object : UserRepository {
+            override fun fetchMe() = error("unused")
+            override fun withdrawUser(): Flow<Unit> = flowOf(Unit)
         }
         lateinit var vm: OwnerSettingViewModel
-        compose.runOnUiThread { vm = OwnerSettingViewModel(stores, auth) }
+        compose.runOnUiThread { vm = OwnerSettingViewModel(stores, auth, users) }
         compose.setContent { MangroTheme(typography = OwnerMangroTypography) { OwnerSettingRoute({ loggedOut = true }, {}, {}, {}, vm) } }
         waitFor("서버 상점")
         compose.onNodeWithText("0212345678").assertIsDisplayed()
@@ -93,7 +100,7 @@ class OwnerSettingTest {
             override fun fetchTermsDocument(id: Long) = flowOf(AuthResult.Success(document))
         }
         lateinit var vm: OwnerPolicyViewModel
-        compose.runOnUiThread { vm = OwnerPolicyViewModel(SavedStateHandle(mapOf("policy" to OwnerPolicy.TERMS_OF_SERVICE)), repository) }
+        compose.runOnUiThread { vm = OwnerPolicyViewModel(SavedStateHandle(mapOf("policy" to SettingsMenu.TERMS_OF_SERVICE)), repository) }
         compose.setContent { MangroTheme(typography = OwnerMangroTypography) { OwnerPolicyRoute({}, vm) } }
         waitFor("약관을 불러오지 못했습니다. 다시 시도해 주세요.")
         compose.runOnIdle { failed = false }
@@ -102,10 +109,10 @@ class OwnerSettingTest {
         compose.onNodeWithText("재시도한 약관 본문").assertIsDisplayed()
     }
 
-    @Test fun serviceTermsDisplayServerMarkdown() = policy(OwnerPolicy.TERMS_OF_SERVICE, TermsKind.SERVICE)
+    @Test fun serviceTermsDisplayServerMarkdown() = policy(SettingsMenu.TERMS_OF_SERVICE, TermsKind.SERVICE)
 
-    @Test fun privacyPolicyDisplaysItsOwnDocument() = policy(OwnerPolicy.PRIVACY_POLICY, TermsKind.PRIVACY_POLICY)
-    private fun policy(policy: OwnerPolicy, kind: TermsKind) {
+    @Test fun privacyPolicyDisplaysItsOwnDocument() = policy(SettingsMenu.PRIVACY_POLICY, TermsKind.PRIVACY_POLICY)
+    private fun policy(policy: SettingsMenu, kind: TermsKind) {
         var requestedId = 0L
         val document = TermsDocument(7, kind, "문서", 2, true, "서버 약관 본문")
         val repository = object : TermsRepository {

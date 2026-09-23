@@ -11,7 +11,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.Density
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.designsystem.theme.OwnerMangroTypography
-import com.swyp.mangro.feature.owner.setting.model.OwnerPolicy
+import com.swyp.mangro.feature.owner.setting.model.SettingsMenu
 import com.swyp.mangro.feature.owner.setting.screen.OwnerSettingAction
 import com.swyp.mangro.feature.owner.setting.screen.OwnerSettingScreen
 import com.swyp.mangro.feature.owner.setting.screen.OwnerSettingUiState
@@ -53,7 +53,7 @@ class OwnerSettingLayoutTest {
         compose.onNodeWithText(storeName).assertIsDisplayed()
         compose.onNodeWithText("개인정보 처리방침").performScrollTo().assertIsDisplayed().performClick()
         compose.runOnIdle {
-            assertEquals(OwnerSettingAction.PolicyClicked(OwnerPolicy.PRIVACY_POLICY), actions.last())
+            assertEquals(OwnerSettingAction.SettingsMenuClicked(SettingsMenu.PRIVACY_POLICY), actions.last())
         }
     }
 }

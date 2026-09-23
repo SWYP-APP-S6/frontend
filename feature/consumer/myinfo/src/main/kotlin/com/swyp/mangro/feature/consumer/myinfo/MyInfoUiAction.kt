@@ -12,4 +12,10 @@ sealed interface MyInfoUiAction {
     data object LogoutErrorDismissed : MyInfoUiAction
     data class MenuClicked(val menu: ConsumerMenu) : MyInfoUiAction
     data class PolicyClicked(val kind: TermsKind) : MyInfoUiAction
+    data object WithdrawClicked : MyInfoUiAction
+    data object WithdrawConfirmed : MyInfoUiAction
+    data object WithdrawDismissed : MyInfoUiAction
+    data object WithdrawErrorDismissed : MyInfoUiAction
+    data object HoldRemainConfirmed : MyInfoUiAction
+    data object HoldRemainDismissed : MyInfoUiAction
 }

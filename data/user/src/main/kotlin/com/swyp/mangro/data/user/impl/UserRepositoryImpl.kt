@@ -1,6 +1,7 @@
 package com.swyp.mangro.data.user.impl
 
 import com.swyp.mangro.data.user.model.UserProfile
+import com.swyp.mangro.data.user.model.WithdrawHoldsRemainException
 import com.swyp.mangro.data.user.repository.UserRepository
 import com.swyp.mangro.remote.user.service.UserService
 import javax.inject.Inject
@@ -40,6 +41,10 @@ internal class UserRepositoryImpl @Inject constructor(private val userService: U
 
     override fun withdrawUser(): Flow<Unit> = flow {
         val response = userService.deleteMe()
+        if (response.code() == 409) {
+            response.errorBody()?.close()
+            throw WithdrawHoldsRemainException()
+        }
         if (!response.isSuccessful) throw HttpException(response)
         emit(Unit)
     }.flowOn(Dispatchers.IO)

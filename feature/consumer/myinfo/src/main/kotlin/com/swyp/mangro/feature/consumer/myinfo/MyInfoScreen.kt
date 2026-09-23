@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.swyp.mangro.core.designsystem.R as DesignR
@@ -61,7 +62,7 @@ fun MyInfoScreen(
             ConsumerBottomAppBar(
                 menus = persistentListOf(ConsumerMenu.HOME, ConsumerMenu.WISH_LIST, ConsumerMenu.MY),
                 currentMenu = ConsumerMenu.MY,
-                onMenuClick = { if (!uiState.isLoggingOut) onAction(MyInfoUiAction.MenuClicked(it)) },
+                onMenuClick = { if (!uiState.isBusy) onAction(MyInfoUiAction.MenuClicked(it)) },
             )
         },
         containerColor = MangroTheme.colors.surfaceAlter,
@@ -127,7 +128,7 @@ fun MyInfoScreen(
                     ) {
                         ActionRow(
                             text = stringResource(R.string.myinfo_terms),
-                            enabled = !uiState.isLoggingOut,
+                            enabled = !uiState.isBusy,
                             onClick = { onAction(MyInfoUiAction.PolicyClicked(TermsKind.SERVICE)) },
                         )
                         HorizontalDivider(
@@ -136,7 +137,7 @@ fun MyInfoScreen(
                         )
                         ActionRow(
                             text = stringResource(R.string.myinfo_privacy),
-                            enabled = !uiState.isLoggingOut,
+                            enabled = !uiState.isBusy,
                             onClick = { onAction(MyInfoUiAction.PolicyClicked(TermsKind.PRIVACY_POLICY)) },
                         )
                     }
@@ -144,16 +145,30 @@ fun MyInfoScreen(
             }
             if (!uiState.isLoading && !uiState.isGuest) {
                 item {
-                    Column(
-                        Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(MangroTheme.colors.surfaceNormal),
-                    ) {
-                        ActionRow(
-                            text = stringResource(if (uiState.isLoggingOut) R.string.myinfo_logging_out else R.string.myinfo_logout),
-                            enabled = !uiState.isLoggingOut,
-                            destructive = true,
-                        ) { onAction(MyInfoUiAction.LogoutClicked) }
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        SectionTitle(text = stringResource(R.string.myinfo_account))
+                        Column(
+                            Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(MangroTheme.colors.surfaceNormal),
+                        ) {
+                            ActionRow(
+                                text = stringResource(if (uiState.isLoggingOut) R.string.myinfo_logging_out else R.string.myinfo_logout),
+                                enabled = !uiState.isBusy,
+                                destructive = true,
+                            ) { onAction(MyInfoUiAction.LogoutClicked) }
+
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 20.dp),
+                                color = MangroTheme.colors.borderSubtle,
+                            )
+
+                            ActionRow(
+                                text = stringResource(if (uiState.isWithdrawing) R.string.myinfo_withdrawing else R.string.myinfo_withdraw),
+                                enabled = !uiState.isBusy,
+                                destructive = true,
+                            ) { onAction(MyInfoUiAction.WithdrawClicked) }
+                        }
                     }
                 }
             }
@@ -186,6 +201,59 @@ fun MyInfoScreen(
             MangroButton(
                 text = stringResource(R.string.myinfo_confirm),
                 onClick = { onAction(MyInfoUiAction.LogoutErrorDismissed) },
+                style = MangroButtonStyle.ACTIVE,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+    )
+    MangroDialogContainer(
+        show = uiState.showWithdrawConfirmation,
+        onDismissRequest = { onAction(MyInfoUiAction.WithdrawDismissed) },
+        title = { Text(stringResource(R.string.myinfo_withdraw_confirmation)) },
+        content = {
+            Text(
+                text = stringResource(R.string.myinfo_withdraw_confirmation_description),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+        actions = {
+            MangroButton(
+                text = stringResource(R.string.myinfo_withdraw),
+                onClick = { onAction(MyInfoUiAction.WithdrawConfirmed) },
+                style = MangroButtonStyle.DESTRUCTIVE,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            MangroButton(
+                text = stringResource(R.string.myinfo_cancel),
+                onClick = { onAction(MyInfoUiAction.WithdrawDismissed) },
+                style = MangroButtonStyle.DEFAULT,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+    )
+    MangroDialogContainer(
+        show = uiState.hasWithdrawError,
+        onDismissRequest = { onAction(MyInfoUiAction.WithdrawErrorDismissed) },
+        title = { Text(stringResource(R.string.myinfo_withdraw_error)) },
+        actions = {
+            MangroButton(
+                text = stringResource(R.string.myinfo_confirm),
+                onClick = { onAction(MyInfoUiAction.WithdrawErrorDismissed) },
+                style = MangroButtonStyle.ACTIVE,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+    )
+    MangroDialogContainer(
+        show = uiState.showHoldRemainDialog,
+        onDismissRequest = { onAction(MyInfoUiAction.HoldRemainDismissed) },
+        title = { Text(stringResource(R.string.myinfo_hold_remain)) },
+        content = { Text(stringResource(R.string.myinfo_hold_remain_description)) },
+        actions = {
+            MangroButton(
+                text = stringResource(R.string.myinfo_go_to_wish_list),
+                onClick = { onAction(MyInfoUiAction.HoldRemainConfirmed) },
                 style = MangroButtonStyle.ACTIVE,
                 modifier = Modifier.fillMaxWidth(),
             )

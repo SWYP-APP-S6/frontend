@@ -2,6 +2,7 @@ package com.swyp.mangro.feature.owner.setting.screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kakao.sdk.user.UserApiClient
 import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
 import com.swyp.mangro.data.auth.model.AuthResult
 import com.swyp.mangro.data.auth.repository.AuthRepository
@@ -10,11 +11,13 @@ import com.swyp.mangro.data.user.repository.UserRepository
 import com.swyp.mangro.feature.owner.setting.model.SettingsMenu
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
@@ -62,12 +65,15 @@ class OwnerSettingViewModel @Inject constructor(
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun withdraw() {
         viewModelScope.launch {
             userRepository.withdrawUser()
+                .flatMapConcat { authRepository.clearSession() }
                 .catch {
                     _event.send(OwnerSettingEvent.ShowWithdrawErrorDialog)
                 }.collect {
+                    UserApiClient.instance.unlink { _ -> }
                     _event.send(OwnerSettingEvent.NavigateToLogin)
                 }
         }

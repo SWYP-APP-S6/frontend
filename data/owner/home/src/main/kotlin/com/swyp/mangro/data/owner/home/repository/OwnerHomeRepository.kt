@@ -5,5 +5,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface OwnerHomeRepository {
     fun fetchHome(): Flow<Result<OwnerHome>>
-    fun markAsPickedUp(holdId: Long): Flow<Result<Unit>>
+
+    fun markAsPickedUp(holdId: Long): Flow<Unit>
 }

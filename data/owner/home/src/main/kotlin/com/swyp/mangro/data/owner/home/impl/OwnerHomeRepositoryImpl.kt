@@ -59,11 +59,16 @@ internal class OwnerHomeRepositoryImpl @Inject constructor(
         )
     }
 
-    override fun markAsPickedUp(holdId: Long): Flow<Result<Unit>> = request {
+    override fun markAsPickedUp(holdId: Long): Flow<Unit> = flow {
         require(holdId > 0)
         val response = holdService.completePickup(holdId)
+        val body = response.body()
+
         if (!response.isSuccessful) throw HttpException(response)
-        require(requireNotNull(response.body()).status.value == "COMPLETED")
+        if (body == null) throw IllegalStateException("")
+        if (body.status.value != "COMPLETED") throw IllegalStateException("")
+
+        emit(Unit)
     }
 }
 

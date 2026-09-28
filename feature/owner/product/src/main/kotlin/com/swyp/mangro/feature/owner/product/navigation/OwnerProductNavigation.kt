@@ -7,7 +7,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
-import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import com.swyp.mangro.feature.owner.product.screen.detail.OwnerProductDetailDestination
 import com.swyp.mangro.feature.owner.product.screen.detail.ProductDetailRoute
 import com.swyp.mangro.feature.owner.product.screen.list.OwnerProductListDestination
@@ -22,8 +21,6 @@ data object OwnerProductEditorDestination
 
 fun NavGraphBuilder.ownerProductNavGraph(
     navController: NavHostController,
-    products: List<OwnerProductModel>,
-    onSaveProducts: (List<OwnerProductModel>) -> Unit,
     onCancelReservations: (List<String>) -> Unit,
     onMenuClick: (OwnerMenu) -> Unit,
     onPickupClick: (String) -> Unit,
@@ -47,7 +44,6 @@ fun NavGraphBuilder.ownerProductNavGraph(
         }
         ProductListRoute(
             viewModel = viewModel,
-            products = products,
             onMenuClick = onMenuClick,
             onPickupClick = onPickupClick,
             onSelect = { navController.navigate(OwnerProductDetailDestination(it)) },
@@ -63,10 +59,7 @@ fun NavGraphBuilder.ownerProductNavGraph(
     composable<OwnerProductEditorDestination> {
         ProductRegistrationRoute(
             onBack = { navController.popBackStack() },
-            onSave = {
-                onSaveProducts(listOf(it))
-                navController.popBackStack()
-            },
+            onSave = { navController.popBackStack() },
         )
     }
 }

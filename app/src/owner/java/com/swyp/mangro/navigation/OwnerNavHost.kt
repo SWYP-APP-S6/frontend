@@ -14,7 +14,6 @@ import androidx.navigation.compose.rememberNavController
 import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
 import com.swyp.mangro.feature.owner.home.navigation.OwnerHomeDestination
 import com.swyp.mangro.feature.owner.home.navigation.ownerHomeNavGraph
-import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import com.swyp.mangro.feature.owner.product.navigation.OwnerProductEditorDestination
 import com.swyp.mangro.feature.owner.product.navigation.navigateToOwnerPickups
 import com.swyp.mangro.feature.owner.product.navigation.ownerPickupNavGraph
@@ -36,8 +35,6 @@ import kotlinx.coroutines.flow.filterNotNull
 @Composable
 internal fun OwnerNavHost(
     notificationOpen: OwnerNotificationOpen? = null,
-    products: List<OwnerProductModel>,
-    onSaveProducts: (List<OwnerProductModel>) -> Unit,
     onNotificationOpened: () -> Unit = {},
     onLogout: () -> Unit,
 ) {
@@ -86,13 +83,13 @@ internal fun OwnerNavHost(
 
         ownerProductNavGraph(
             navController = navController,
-            products = products,
-            onSaveProducts = onSaveProducts,
             onCancelReservations = { navController.navigate(OwnerPickupCancellationDestination) },
             onMenuClick = { menu ->
                 when (menu) {
                     OwnerMenu.HOME -> navController.popBackStack<OwnerHomeDestination>(inclusive = false, saveState = true)
+
                     OwnerMenu.STORE -> Unit
+
                     OwnerMenu.SETTINGS -> navController.navigate(OwnerSettingDestination) {
                         popUpTo<OwnerHomeDestination> { saveState = true }
                         launchSingleTop = true

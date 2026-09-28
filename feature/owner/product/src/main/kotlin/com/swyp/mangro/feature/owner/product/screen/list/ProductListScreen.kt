@@ -62,7 +62,6 @@ import com.swyp.mangro.data.owner.product.model.ProductSummary
 import com.swyp.mangro.feature.owner.product.R
 import com.swyp.mangro.feature.owner.product.component.ManagementLoadStatus
 import com.swyp.mangro.feature.owner.product.model.OwnerPickupModel
-import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
@@ -71,7 +70,6 @@ data object OwnerProductListDestination
 
 @Composable
 internal fun ProductListRoute(
-    products: List<OwnerProductModel>,
     onSelect: (String) -> Unit,
     onMenuClick: (OwnerMenu) -> Unit,
     onPickupClick: (String) -> Unit,

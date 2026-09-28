@@ -17,7 +17,6 @@ import com.swyp.mangro.data.auth.model.SignupConsents
 import com.swyp.mangro.feature.auth.navigation.Login
 import com.swyp.mangro.feature.auth.navigation.authNavGraph
 import com.swyp.mangro.feature.owner.onboarding.navigation.OwnerOnboardingNavigation
-import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import com.swyp.mangro.feature.splash.navigation.Splash
 import com.swyp.mangro.feature.splash.navigation.splashNavGraph
 import com.swyp.mangro.navigation.OwnerNavHost
@@ -110,17 +109,12 @@ internal fun OwnerMainContent(
     onLogout: () -> Unit = {},
 ) {
     OwnerNotificationPermission()
-    var products by rememberSaveable { mutableStateOf(emptyList<OwnerProductModel>()) }
+
     MangroTheme {
         OwnerNavHost(
             notificationOpen = notificationOpen,
             onNotificationOpened = onNotificationOpened,
             onLogout = onLogout,
-            products = products,
-            onSaveProducts = { changed ->
-                val ids = changed.map { it.id }.toSet()
-                products = products.filterNot { it.id in ids } + changed
-            },
         )
     }
 }

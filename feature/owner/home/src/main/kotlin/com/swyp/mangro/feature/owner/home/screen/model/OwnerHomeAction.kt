@@ -1,4 +1,4 @@
-package com.swyp.mangro.feature.owner.home.screen
+package com.swyp.mangro.feature.owner.home.screen.model
 
 sealed interface OwnerHomeAction {
     data object Refresh : OwnerHomeAction
@@ -13,6 +13,6 @@ sealed interface OwnerHomeAction {
     data object ViewCancellations : OwnerHomeAction
     data object DismissAttention : OwnerHomeAction
     data object ViewNotifications : OwnerHomeAction
-    data class ViewPickup(val pickupId: String) : OwnerHomeAction
-    data class MarkAsPickedUp(val pickupId: String) : OwnerHomeAction
+    data class ViewPickup(val id: String) : OwnerHomeAction
+    data class MarkAsPickedUp(val id: String) : OwnerHomeAction
 }

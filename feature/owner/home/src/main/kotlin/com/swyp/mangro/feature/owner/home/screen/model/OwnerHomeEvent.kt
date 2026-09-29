@@ -1,4 +1,4 @@
-package com.swyp.mangro.feature.owner.home.screen
+package com.swyp.mangro.feature.owner.home.screen.model
 
 sealed interface OwnerHomeEvent {
     data class ShowMessage(val message: Int) : OwnerHomeEvent

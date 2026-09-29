@@ -7,12 +7,14 @@ plugins {
 android { namespace = "com.swyp.mangro.data.owner.store" }
 
 dependencies {
+    testImplementation(project(":core:network"))
+
     implementation(project(":remote:owner"))
+
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.retrofit.core)
-    testImplementation(project(":core:network"))
     testImplementation(libs.retrofit.kotlinx.serialization)
     testImplementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit)

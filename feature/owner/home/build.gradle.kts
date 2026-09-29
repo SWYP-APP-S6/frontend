@@ -11,12 +11,14 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:designsystem"))
+    implementation(project(":core:utils"))
+
     implementation(project(":data:user"))
     implementation(project(":data:owner:home"))
     implementation(project(":data:owner:store"))
+
     testImplementation(libs.kotlinx.coroutines.test)
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:utils"))
 
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.navigation.compose)

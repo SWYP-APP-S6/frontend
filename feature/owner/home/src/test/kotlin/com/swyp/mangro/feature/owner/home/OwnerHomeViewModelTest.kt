@@ -8,11 +8,9 @@ import com.swyp.mangro.data.owner.store.model.OwnerStore
 import com.swyp.mangro.data.owner.store.model.StoreApprovalStatus
 import com.swyp.mangro.data.owner.store.model.StoreRegistration
 import com.swyp.mangro.data.owner.store.repository.StoreRepository
-import com.swyp.mangro.data.user.model.UserProfile
-import com.swyp.mangro.data.user.repository.UserRepository
-import com.swyp.mangro.feature.owner.home.screen.OwnerHomeAction
-import com.swyp.mangro.feature.owner.home.screen.OwnerHomeEvent
 import com.swyp.mangro.feature.owner.home.screen.OwnerHomeViewModel
+import com.swyp.mangro.feature.owner.home.screen.model.OwnerHomeAction
+import com.swyp.mangro.feature.owner.home.screen.model.OwnerHomeEvent
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -36,24 +34,20 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class OwnerHomeViewModelTest {
     private val dispatcher = StandardTestDispatcher()
-    private var profile = Result.success(UserProfile(7, "OWNER", "점주", null, false, "", ""))
     private var store = Result.success(OwnerStore(9, "서버 상점", listOf("FRUIT"), StoreApprovalStatus.APPROVED, "09:00:00", "20:00:00"))
     private var home = Result.success(OwnerHome(9, "APPROVED", true, 2, 8, 11, 7, 3, 2, 4, 5, emptyList(), emptyList()))
-    private var userCalls = 0
     private var storeCalls = 0
     private var homeCalls = 0
     private var completeCalls = 0
-    private val completion = CompletableDeferred<Result<Unit>>()
-    private val userRepository = object : UserRepository {
-        override fun fetchMe() = flow {
-            userCalls++
-            emit(profile)
-        }
-    }
+    private val completion = CompletableDeferred<Unit>()
     private val storeRepository = object : StoreRepository {
         override fun fetchMyStore() = flow {
             storeCalls++
             emit(store)
+        }
+        override fun fetchMyStoreInformation() = flow {
+            storeCalls++
+            emit(store.getOrThrow())
         }
         override fun register(registration: StoreRegistration): Flow<Result<Unit>> = error("unused")
     }
@@ -67,7 +61,7 @@ class OwnerHomeViewModelTest {
             emit(completion.await())
         }
     }
-    private fun viewModel() = OwnerHomeViewModel(userRepository, storeRepository, homeRepository)
+    private fun viewModel() = OwnerHomeViewModel(storeRepository, homeRepository)
 
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
 
@@ -88,14 +82,14 @@ class OwnerHomeViewModelTest {
         assertEquals(OwnerHomeEvent.NavigateToPickups(completedOnly = true), vm.event.first())
     }
 
-    @Test fun fetchesAllThreeResourcesAndKeepsServerEmptyInventoryRegistrationFlag() = runTest {
+    @Test fun initialLoadStopsLoadingAndKeepsServerEmptyInventoryRegistrationFlag() = runTest {
         val vm = viewModel()
         assertTrue(vm.uiState.value.isLoading)
-        vm.refresh()
         advanceUntilIdle()
         val state = vm.uiState.value
-        assertEquals(listOf(1, 1, 1), listOf(userCalls, storeCalls, homeCalls))
-        assertEquals(7L, state.profile?.id)
+        assertFalse(state.isLoading)
+        assertEquals(null, state.errorMessage)
+        assertEquals(listOf(1, 1), listOf(storeCalls, homeCalls))
         assertEquals("서버 상점", state.storeName)
         assertEquals("과일", state.storeCategory)
         assertTrue(state.hasRegisteredProduct)
@@ -110,36 +104,75 @@ class OwnerHomeViewModelTest {
         assertEquals(OwnerHomeEvent.NavigateToRegisterProduct, vm.event.first())
     }
 
-    @Test fun pendingRejectedUnknownFailedAndMismatchedStoreNeverEnableRegistration() = runTest {
+    @Test fun pullRefreshRestoresRegistrationFabEligibility() = runTest {
         val vm = viewModel()
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.hasRegisteredProduct)
+        assertTrue(vm.uiState.value.canRegisterProduct)
+
+        vm.refresh()
+        advanceUntilIdle()
+
+        assertFalse(vm.uiState.value.isLoading)
+        assertTrue(vm.uiState.value.hasRegisteredProduct)
+        assertTrue(vm.uiState.value.canRegisterProduct)
+        assertEquals(2, homeCalls)
+    }
+
+    @Test fun failedPullRefreshStopsLoading() = runTest {
+        val vm = viewModel()
+        advanceUntilIdle()
+        home = Result.failure(IllegalStateException())
+
+        vm.refresh()
+        advanceUntilIdle()
+
+        assertFalse(vm.uiState.value.isLoading)
+        assertNotNull(vm.uiState.value.errorMessage)
+    }
+
+    @Test fun refreshedHomeStatusControlsRegistrationAndInitialFailuresKeepItHidden() = runTest {
+        val originalStore = store.getOrThrow()
+        val originalHome = home.getOrThrow()
+        val vm = viewModel()
+        advanceUntilIdle()
+
         for (status in StoreApprovalStatus.entries.filter { it != StoreApprovalStatus.APPROVED }) {
-            store = Result.success(store.getOrThrow().copy(status = status))
+            home = Result.success(originalHome.copy(storeStatus = status.name))
             vm.refresh()
             advanceUntilIdle()
             assertFalse(vm.uiState.value.canRegisterProduct)
             vm.handleAction(OwnerHomeAction.RegisterProduct)
             assertTrue(vm.event.first() is OwnerHomeEvent.ShowMessage)
         }
-        store = Result.success(store.getOrThrow().copy(status = StoreApprovalStatus.APPROVED))
-        profile = Result.failure(IllegalStateException())
+
+        home = Result.success(originalHome)
         vm.refresh()
         advanceUntilIdle()
-        assertNotNull(vm.uiState.value.errorMessage)
-        assertFalse(vm.uiState.value.canRegisterProduct)
-        profile = Result.success(UserProfile(7, "OWNER", "점주", null, false, "", ""))
-        home = Result.success(home.getOrThrow().copy(storeId = 99))
-        vm.refresh()
+        assertTrue(vm.uiState.value.canRegisterProduct)
+
+        store = Result.failure(IllegalStateException())
+        val failedStoreVm = viewModel()
         advanceUntilIdle()
-        assertNotNull(vm.uiState.value.errorMessage)
-        assertFalse(vm.uiState.value.canRegisterProduct)
+        assertFalse(failedStoreVm.uiState.value.isLoading)
+        assertNotNull(failedStoreVm.uiState.value.errorMessage)
+        assertFalse(failedStoreVm.uiState.value.canRegisterProduct)
+
+        store = Result.success(originalStore)
+        home = Result.success(originalHome.copy(storeId = 99))
+        val mismatchedStoreVm = viewModel()
+        advanceUntilIdle()
+        assertFalse(mismatchedStoreVm.uiState.value.isLoading)
+        assertNotNull(mismatchedStoreVm.uiState.value.errorMessage)
+        assertFalse(mismatchedStoreVm.uiState.value.canRegisterProduct)
     }
 
-    @Test fun usesShortfallFieldNotDifferenceAndRetriesFailedHome() = runTest {
-        val vm = viewModel()
+    @Test fun failedInitialLoadStopsLoadingAndRetriesWithShortfallField() = runTest {
         val loaded = home.getOrThrow().copy(products = listOf(OwnerHomeProduct(1, "채소", "", 2000, 6, 4, 2, "VEGETABLE", "ON_SALE", false)))
         home = Result.failure(IllegalStateException())
-        vm.refresh()
+        val vm = viewModel()
         advanceUntilIdle()
+        assertFalse(vm.uiState.value.isLoading)
         assertNotNull(vm.uiState.value.errorMessage)
         home = Result.success(loaded)
         vm.handleAction(OwnerHomeAction.Refresh)
@@ -158,10 +191,9 @@ class OwnerHomeViewModelTest {
         assertEquals(1, completeCalls)
         assertTrue("17" in vm.uiState.value.completingPickupIds)
         home = Result.success(home.getOrThrow().copy(upcomingVisits = emptyList()))
-        completion.complete(Result.success(Unit))
+        completion.complete(Unit)
         advanceUntilIdle()
         assertEquals(2, homeCalls)
-        assertEquals(2, userCalls)
         assertTrue(vm.uiState.value.visitors.isEmpty())
         assertTrue(vm.uiState.value.completingPickupIds.isEmpty())
     }

@@ -27,7 +27,7 @@ import com.swyp.mangro.feature.consumer.home.R as homeR
 
 @Composable
 internal fun LocationPermissionRequiredContent(
-    onExpandRadiusClick: () -> Unit,
+    onBrowseClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -68,8 +68,8 @@ internal fun LocationPermissionRequiredContent(
         Spacer(modifier = Modifier.height(23.dp))
 
         MangroButton(
-            text = stringResource(homeR.string.home_expand_radius_button),
-            onClick = onExpandRadiusClick,
+            text = stringResource(homeR.string.home_none_permission),
+            onClick = onBrowseClick,
             style = MangroButtonStyle.ACTIVE,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -81,7 +81,7 @@ internal fun LocationPermissionRequiredContent(
 private fun LocationPermissionRequiredContentPreview() {
     MangroTheme {
         LocationPermissionRequiredContent(
-            onExpandRadiusClick = {},
+            onBrowseClick = {},
         )
     }
 }

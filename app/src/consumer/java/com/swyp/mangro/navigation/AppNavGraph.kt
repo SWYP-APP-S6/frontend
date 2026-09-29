@@ -4,7 +4,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -54,7 +53,7 @@ fun AppNavGraph(
 
         if (!isSameDestination) {
             navController.navigate(destination) {
-                popUpTo(navController.graph.findStartDestination().id) {
+                popUpTo<Home> {
                     saveState = true
                 }
                 launchSingleTop = true

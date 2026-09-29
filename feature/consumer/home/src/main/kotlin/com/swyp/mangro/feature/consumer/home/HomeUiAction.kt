@@ -5,8 +5,10 @@ import com.swyp.mangro.core.designsystem.component.card.map.StoreProduct
 import com.swyp.mangro.core.model.product.ProductCategory
 
 sealed interface HomeUiAction {
+    data object PermissionIntroAllowClicked : HomeUiAction
+    data object PermissionIntroLaterClicked : HomeUiAction
     data object PermissionBannerActionClicked : HomeUiAction
-    data object ExpandRadiusClicked : HomeUiAction
+    data object BrowseWithoutLocationClicked : HomeUiAction
     data class ViewModeChanged(val mode: HomeViewMode) : HomeUiAction
     data class StorePinClicked(val storeId: String) : HomeUiAction
     data object SelectedStoreDismissed : HomeUiAction

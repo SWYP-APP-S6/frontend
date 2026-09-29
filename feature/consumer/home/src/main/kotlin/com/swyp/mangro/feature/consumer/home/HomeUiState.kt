@@ -10,16 +10,24 @@ data class HomeUiState(
     val locationLatitude: Double? = null,
     val locationLongitude: Double? = null,
     val viewMode: HomeViewMode = HomeViewMode.MAP,
-    val isLocationPermissionGranted: Boolean = false,
+    val locationPermission: LocationPermissionStatus = LocationPermissionStatus.UNKNOWN,
+    val isBrowsingWithoutPermission: Boolean = false,
+    val isPermissionIntroVisible: Boolean = false,
+    val mapZoom: Double = 15.0,
     val storePins: List<StorePinMarker> = emptyList(),
     val selectedStore: SelectedStoreDetail? = null,
     val activeWish: ActiveWishSummary? = null,
     val selectedCategory: ProductCategory? = null,
     val storeGroups: List<StoreProductGroup> = emptyList(),
     val sortOption: HomeSortOption = HomeSortOption.DISTANCE,
-)
+) {
+    val isLocationPermissionGranted: Boolean
+        get() = locationPermission == LocationPermissionStatus.GRANTED
+}
 
 enum class HomeViewMode { MAP, LIST }
+
+enum class LocationPermissionStatus { UNKNOWN, GRANTED, DENIED }
 
 data class StorePinMarker(
     val storeId: String,

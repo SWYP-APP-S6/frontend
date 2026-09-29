@@ -51,7 +51,6 @@ internal class ConsumerHomeRepositoryImpl @Inject constructor(
             ),
         )
         if (!response.isSuccessful) {
-            val errorBody = response.errorBody()?.string()
             throw HttpException(response)
         }
         requireNotNull(response.body()?.location).toMyLocation()

@@ -8,13 +8,14 @@ plugins {
 
 android {
     namespace = "com.swyp.mangro.feature.consumer.home"
+    defaultConfig { missingDimensionStrategy("role", "consumer") }
 }
 
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:model"))
     implementation(project(":core:utils"))
-    implementation(project(":core:model"))
+    implementation(project(":data:auth"))
     implementation(project(":feature:consumer:store"))
     implementation(project(":data:consumer:home"))
     implementation(project(":feature:consumer:hold"))

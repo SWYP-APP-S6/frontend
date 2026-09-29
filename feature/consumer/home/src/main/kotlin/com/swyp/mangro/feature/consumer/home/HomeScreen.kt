@@ -2,6 +2,7 @@ package com.swyp.mangro.feature.consumer.home
 
 import android.graphics.Canvas
 import android.graphics.Paint
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -45,7 +46,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -84,6 +84,7 @@ import com.swyp.mangro.core.designsystem.component.card.product.toLabelTextRes
 import com.swyp.mangro.core.designsystem.component.count
 import com.swyp.mangro.core.designsystem.component.storePinStateOf
 import com.swyp.mangro.core.designsystem.component.tab.MangroPillTabItem
+import com.swyp.mangro.core.designsystem.screen.RequestLocationPermissionScreen
 import com.swyp.mangro.core.designsystem.theme.Gray50
 import com.swyp.mangro.core.designsystem.theme.Gray900
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
@@ -93,6 +94,7 @@ import com.swyp.mangro.feature.consumer.home.HomeViewMode.LIST
 import com.swyp.mangro.feature.consumer.home.R as homeR
 import com.swyp.mangro.feature.consumer.home.component.CountdownCard
 import com.swyp.mangro.feature.consumer.home.component.HomeCategoryChip
+import com.swyp.mangro.feature.consumer.home.component.LocationPermissionRequiredContent
 import com.swyp.mangro.feature.consumer.home.component.SortDropdown
 import com.swyp.mangro.feature.consumer.home.component.StoreGroupHeader
 import kotlin.math.roundToInt
@@ -105,11 +107,25 @@ internal fun HomeScreen(
     onAction: (HomeUiAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    if (uiState.isPermissionIntroVisible) {
+        BackHandler { onAction(HomeUiAction.PermissionIntroLaterClicked) }
+        RequestLocationPermissionScreen(
+            onAllowClick = { onAction(HomeUiAction.PermissionIntroAllowClicked) },
+            onLaterClick = { onAction(HomeUiAction.PermissionIntroLaterClicked) },
+            modifier = modifier,
+        )
+        return
+    }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             HomeTopBar(
-                locationName = uiState.locationName,
+                locationName = if (uiState.locationPermission == LocationPermissionStatus.DENIED) {
+                    stringResource(homeR.string.home_my_location)
+                } else {
+                    uiState.locationName
+                },
                 viewMode = uiState.viewMode,
                 onViewModeChanged = { onAction(HomeUiAction.ViewModeChanged(it)) },
             )
@@ -127,9 +143,17 @@ internal fun HomeScreen(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            when (uiState.viewMode) {
-                HomeViewMode.MAP -> HomeMapContent(uiState = uiState, onAction = onAction)
-                LIST -> HomeListContent(uiState = uiState, onAction = onAction)
+            when (uiState.locationPermission) {
+                LocationPermissionStatus.UNKNOWN -> Unit
+                LocationPermissionStatus.DENIED -> if (uiState.isBrowsingWithoutPermission) {
+                    HomeContent(uiState = uiState, onAction = onAction)
+                } else {
+                    LocationPermissionRequiredContent(
+                        onBrowseClick = { onAction(HomeUiAction.BrowseWithoutLocationClicked) },
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+                LocationPermissionStatus.GRANTED -> HomeContent(uiState = uiState, onAction = onAction)
             }
 
             HomeTopOverlay(
@@ -144,6 +168,17 @@ internal fun HomeScreen(
                 modifier = Modifier.align(Alignment.BottomCenter).zIndex(10f),
             )
         }
+    }
+}
+
+@Composable
+private fun HomeContent(
+    uiState: HomeUiState,
+    onAction: (HomeUiAction) -> Unit,
+) {
+    when (uiState.viewMode) {
+        HomeViewMode.MAP -> HomeMapContent(uiState = uiState, onAction = onAction)
+        LIST -> HomeListContent(uiState = uiState, onAction = onAction)
     }
 }
 
@@ -203,34 +238,28 @@ private fun HomeMapContent(
     onAction: (HomeUiAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    //    if (uiState.storePins.isEmpty()) {
-    //        LocationPermissionRequiredContent(
-    //            onExpandRadiusClick = { onAction(HomeUiAction.ExpandRadiusClicked) },
-    //            modifier = Modifier.fillMaxSize(),
-    //        )
-    //        return
-    //    }
-
     val cameraPositionState = rememberCameraPositionState()
     var selectedPinScreenOffset by remember { mutableStateOf<Offset?>(null) }
 
-    LaunchedEffect(uiState.locationLatitude, uiState.locationLongitude) {
+    LaunchedEffect(uiState.locationLatitude, uiState.locationLongitude, uiState.mapZoom) {
         val lat = uiState.locationLatitude
         val lng = uiState.locationLongitude
         if (lat != null && lng != null) {
-            cameraPositionState.position = CameraPosition(LatLng(lat, lng), 15.0)
+            cameraPositionState.position = CameraPosition(LatLng(lat, lng), uiState.mapZoom)
         }
     }
 
-    val context = LocalContext.current
-    val locationSource = rememberFusedLocationSource()
+    val isGranted = uiState.isLocationPermissionGranted
+    val locationSource = if (isGranted) rememberFusedLocationSource() else null
 
     NaverMap(
         modifier = modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
         locationSource = locationSource,
-        properties = MapProperties(locationTrackingMode = LocationTrackingMode.Follow),
-        uiSettings = MapUiSettings(isLocationButtonEnabled = true),
+        properties = MapProperties(
+            locationTrackingMode = if (isGranted) LocationTrackingMode.Follow else LocationTrackingMode.None,
+        ),
+        uiSettings = MapUiSettings(isLocationButtonEnabled = isGranted),
     ) {
         uiState.storePins.forEach { pin ->
             val isSelected = uiState.selectedStore?.storeId == pin.storeId
@@ -437,7 +466,7 @@ private fun HomeTopOverlay(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        if (uiState.viewMode == HomeViewMode.MAP && !uiState.isLocationPermissionGranted) {
+        if (uiState.locationPermission == LocationPermissionStatus.DENIED) {
             ActionBanner(
                 iconRes = R.drawable.ic_error,
                 stringRes = R.string.banner_location_permission,
@@ -522,10 +551,17 @@ private val previewStoreProducts = listOf(
 private class HomeUiStatePreviewProvider : PreviewParameterProvider<HomeUiState> {
     override val values: Sequence<HomeUiState>
         get() = sequenceOf(
-            HomeUiState(locationName = "망원동"),
-            HomeUiState(locationName = "망원동", isLocationPermissionGranted = false),
+            HomeUiState(locationName = "망원동", locationPermission = LocationPermissionStatus.GRANTED),
+            HomeUiState(locationPermission = LocationPermissionStatus.DENIED, isPermissionIntroVisible = true),
+            HomeUiState(locationPermission = LocationPermissionStatus.DENIED),
+            HomeUiState(
+                locationName = "서울",
+                locationPermission = LocationPermissionStatus.DENIED,
+                isBrowsingWithoutPermission = true,
+            ),
             HomeUiState(
                 locationName = "망원동",
+                locationPermission = LocationPermissionStatus.GRANTED,
                 selectedStore = SelectedStoreDetail(
                     storeId = "store1",
                     storeName = "청과마을",

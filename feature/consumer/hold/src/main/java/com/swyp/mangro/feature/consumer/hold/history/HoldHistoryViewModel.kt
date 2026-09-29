@@ -30,12 +30,12 @@ class HoldHistoryViewModel @Inject constructor(
     private val _uiEvent = Channel<HoldHistoryUiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
-    init {
+    fun refresh() {
         loadHoldHistory()
     }
 
-    fun refresh() {
-        loadHoldHistory()
+    fun markStale() {
+        _uiState.update { it.copy(hasLoaded = false) }
     }
 
     fun handleAction(action: HoldHistoryUiAction) {
@@ -66,11 +66,12 @@ class HoldHistoryViewModel @Inject constructor(
                                 inProgressItems = inProgress.map { hold -> hold.toWishHistoryItem() }.toPersistentList(),
                                 pastItems = past.map { hold -> hold.toWishHistoryItem() }.toPersistentList(),
                                 isLoading = false,
+                                hasLoaded = true,
                             )
                         }
                     }
                     .onFailure {
-                        _uiState.update { it.copy(isLoading = false) }
+                        _uiState.update { it.copy(isLoading = false, hasLoaded = true) }
                     }
             }
         }

@@ -24,8 +24,10 @@ fun HoldHistoryRoute(
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                viewModel.refresh()
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> viewModel.refresh()
+                Lifecycle.Event.ON_STOP -> viewModel.markStale()
+                else -> Unit
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)

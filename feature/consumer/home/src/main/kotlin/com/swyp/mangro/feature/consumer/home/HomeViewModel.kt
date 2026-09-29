@@ -36,7 +36,6 @@ private const val DEFAULT_MAP_ZOOM = 15.0
 private const val LOCATION_REFRESH_THRESHOLD_METERS = 100f
 private const val EXPANDED_MAP_ZOOM = 12.0
 
-// TODO: 권한 없이 둘러볼 때 지도 중심 좌표 (기획 확인 필요, 임시로 서울시청)
 private const val FALLBACK_LATITUDE = 37.5666
 private const val FALLBACK_LONGITUDE = 126.9784
 private const val FALLBACK_REGION_NAME = "내 위치"
@@ -62,6 +61,8 @@ class HomeViewModel @Inject constructor(
 
     private var searchRadiusMeters: Int? = null
     private var nearbyProductsJob: Job? = null
+    private var nearbyStoresJob: Job? = null
+    private var activeHoldJob: Job? = null
 
     private var isGuest: Boolean? = null
     private var lastIsGranted: Boolean? = null
@@ -69,7 +70,6 @@ class HomeViewModel @Inject constructor(
     private var hasShownPermissionIntro = false
 
     init {
-        loadActiveHold()
         loadSessionType()
     }
 
@@ -149,6 +149,8 @@ class HomeViewModel @Inject constructor(
     }
 
     fun refreshOnResume() {
+        loadActiveHold()
+
         val canRefreshLocation = hasUserLocation &&
             _uiState.value.isLocationPermissionGranted &&
             locationJob?.isActive != true
@@ -249,7 +251,8 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun loadNearbyStores(minLat: Double, maxLat: Double, minLng: Double, maxLng: Double) {
-        viewModelScope.launch {
+        nearbyStoresJob?.cancel()
+        nearbyStoresJob = viewModelScope.launch {
             repository.fetchNearbyStores(minLat, maxLat, minLng, maxLng).collect { result ->
                 result
                     .onSuccess { nearby ->
@@ -328,7 +331,8 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun loadActiveHold() {
-        viewModelScope.launch {
+        activeHoldJob?.cancel()
+        activeHoldJob = viewModelScope.launch {
             repository.fetchActiveHold().collect { result ->
                 result
                     .onSuccess { hold ->

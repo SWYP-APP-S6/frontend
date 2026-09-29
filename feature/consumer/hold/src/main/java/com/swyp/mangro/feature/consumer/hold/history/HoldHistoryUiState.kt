@@ -8,4 +8,5 @@ data class HoldHistoryUiState(
     val inProgressItems: ImmutableList<WishHistoryItem> = persistentListOf(),
     val pastItems: ImmutableList<WishHistoryItem> = persistentListOf(),
     val isLoading: Boolean = false,
+    val hasLoaded: Boolean = false,
 )

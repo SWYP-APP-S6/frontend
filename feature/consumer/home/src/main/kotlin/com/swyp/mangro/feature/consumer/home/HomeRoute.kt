@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -48,7 +49,7 @@ fun HomeRoute(
             isGranted = context.hasLocationPermission(),
             canShowIntro = !context.hasShownPermissionIntro(),
         )
-        viewModel.refreshNearbyProducts()
+        viewModel.refreshOnResume()
     }
 
     LaunchedEffect(uiState.isPermissionIntroVisible) {
@@ -93,13 +94,13 @@ private fun Context.permissionPrefs() = getSharedPreferences(PERMISSION_PREFS, C
 private fun Context.hasRequestedLocationPermission(): Boolean = permissionPrefs().getBoolean(KEY_REQUESTED, false)
 
 private fun Context.markLocationPermissionRequested() {
-    permissionPrefs().edit().putBoolean(KEY_REQUESTED, true).apply()
+    permissionPrefs().edit { putBoolean(KEY_REQUESTED, true) }
 }
 
 private fun Context.hasShownPermissionIntro(): Boolean = permissionPrefs().getBoolean(KEY_INTRO_SHOWN, false)
 
 private fun Context.markPermissionIntroShown() {
-    permissionPrefs().edit().putBoolean(KEY_INTRO_SHOWN, true).apply()
+    permissionPrefs().edit { putBoolean(KEY_INTRO_SHOWN, true) }
 }
 
 private fun Context.canShowPermissionDialog(): Boolean {

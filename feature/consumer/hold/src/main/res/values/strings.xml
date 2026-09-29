@@ -20,6 +20,8 @@
     <string name="hold_history_title">찜 내역</string>
     <string name="hold_history_in_progress_title">진행 중</string>
     <string name="hold_history_past_title">지난 내역</string>
+    <string name="hold_history_empty_title">아직 찜한 상품이 없어요!</string>
+    <string name="hold_history_empty_action">찜하러 가기</string>
 
     <string name="hold_detail_title">찜 상세</string>
     <string name="hold_detail_cancel_button">찜 취소</string>

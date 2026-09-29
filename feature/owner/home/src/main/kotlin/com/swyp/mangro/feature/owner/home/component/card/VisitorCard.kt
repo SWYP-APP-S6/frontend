@@ -28,8 +28,7 @@ import com.swyp.mangro.core.designsystem.R as DesignR
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.utils.remainingPickupMinutes
 import com.swyp.mangro.feature.owner.home.R
-import com.swyp.mangro.feature.owner.home.screen.OwnerHomeAction
-import com.swyp.mangro.feature.owner.home.screen.OwnerHomeVisitor
+import com.swyp.mangro.feature.owner.home.screen.model.OwnerHomeVisitor
 
 @Composable
 internal fun VisitorCard(
@@ -37,7 +36,8 @@ internal fun VisitorCard(
     visitor: OwnerHomeVisitor,
     modifier: Modifier = Modifier,
     isCompleting: Boolean = false,
-    onAction: (OwnerHomeAction) -> Unit,
+    onViewPickup: () -> Unit,
+    onMarkAsPickedUp: () -> Unit,
 ) {
     val minutes = remainingPickupMinutes(visitor.pickupDeadlineMillis, nowMillis)
 
@@ -51,7 +51,7 @@ internal fun VisitorCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 165.dp)
-                .clickable(onClick = { onAction(OwnerHomeAction.ViewPickup(visitor.id)) })
+                .clickable(onClick = onViewPickup)
                 .padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 12.dp),
         ) {
             Text(
@@ -104,7 +104,7 @@ internal fun VisitorCard(
                 .background(if (minutes > 0) Color(0xFFFFD2B2) else MangroTheme.colors.borderDefault)
                 .clickable(
                     enabled = minutes > 0 && !isCompleting,
-                    onClick = { onAction(OwnerHomeAction.MarkAsPickedUp(visitor.id)) },
+                    onClick = onMarkAsPickedUp,
                 )
                 .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,

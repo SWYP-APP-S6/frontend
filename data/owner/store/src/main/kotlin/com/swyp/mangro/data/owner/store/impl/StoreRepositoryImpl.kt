@@ -1,10 +1,11 @@
 package com.swyp.mangro.data.owner.store.impl
 
+import com.swyp.mangro.data.owner.store.mapper.toOwnerStore
+import com.swyp.mangro.data.owner.store.mapper.toRequest
 import com.swyp.mangro.data.owner.store.model.OwnerStore
 import com.swyp.mangro.data.owner.store.model.StoreApprovalStatus
 import com.swyp.mangro.data.owner.store.model.StoreRegistration
 import com.swyp.mangro.data.owner.store.repository.StoreRepository
-import com.swyp.mangro.remote.owner.model.RegisterStoreRequest
 import com.swyp.mangro.remote.owner.service.StoreService
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
@@ -14,10 +15,12 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import retrofit2.HttpException
 
-internal class StoreRepositoryImpl @Inject constructor(private val service: StoreService) : StoreRepository {
+internal class StoreRepositoryImpl @Inject constructor(private val storeService: StoreService) : StoreRepository {
+
+    @Deprecated("Legacy Method, need to be delete it")
     override fun fetchMyStore(): Flow<Result<OwnerStore>> = flow {
         val result = try {
-            val response = service.fetchMyStore()
+            val response = storeService.fetchMyStore()
             if (!response.isSuccessful) throw HttpException(response)
             val body = requireNotNull(response.body())
             require(body.id > 0 && body.name.isNotBlank())
@@ -41,9 +44,22 @@ internal class StoreRepositoryImpl @Inject constructor(private val service: Stor
         emit(result)
     }.flowOn(Dispatchers.IO)
 
+    override fun fetchMyStoreInformation(): Flow<OwnerStore> = flow {
+        val response = storeService.fetchMyStore()
+        if (!response.isSuccessful) throw HttpException(response)
+
+        val body = response.body() ?: throw IllegalStateException("Body is null")
+
+        if (body.id <= 0) throw IllegalStateException("Id can't be zero")
+        if (body.name.isBlank()) throw IllegalStateException("Name can't be empty")
+
+        val result = body.toOwnerStore()
+        emit(result)
+    }
+
     override fun register(registration: StoreRegistration): Flow<Result<Unit>> = flow {
         val result = try {
-            val response = service.registerStore(registration.toRequest())
+            val response = storeService.registerStore(registration.toRequest())
             if (!response.isSuccessful) throw HttpException(response)
             require(requireNotNull(response.body()).id > 0)
             Result.success(Unit)
@@ -54,37 +70,4 @@ internal class StoreRepositoryImpl @Inject constructor(private val service: Stor
         }
         emit(result)
     }.flowOn(Dispatchers.IO)
-}
-
-private fun StoreRegistration.toRequest(): RegisterStoreRequest {
-    require(name.isNotBlank() && name.length <= 100)
-    require(postalCode.matches(Regex("[0-9]{5}")))
-    require(address.isNotBlank() && address.length <= 255 && addressDetail.length <= 255)
-    require(phone.matches(Regex("0[0-9]{8,10}")))
-    require(openingMinutes in 0..1380 && closingMinutes in openingMinutes..1380)
-    require(openingMinutes % 60 == 0 && closingMinutes % 60 == 0)
-    require(businessDays.isNotEmpty() && businessDays.all { it in 0..6 })
-    val days = listOf(
-        RegisterStoreRequest.BusinessDays.SUNDAY,
-        RegisterStoreRequest.BusinessDays.MONDAY,
-        RegisterStoreRequest.BusinessDays.TUESDAY,
-        RegisterStoreRequest.BusinessDays.WEDNESDAY,
-        RegisterStoreRequest.BusinessDays.THURSDAY,
-        RegisterStoreRequest.BusinessDays.FRIDAY,
-        RegisterStoreRequest.BusinessDays.SATURDAY,
-    )
-    fun time(minutes: Int) = "${(minutes / 60).toString().padStart(2, '0')}:${(minutes % 60).toString().padStart(2, '0')}:00"
-    return RegisterStoreRequest(
-        name = name,
-        categories = setOf(RegisterStoreRequest.Categories.valueOf(categoryId)),
-        postalCode = postalCode,
-        address = address,
-        addressDetail = addressDetail,
-        phone = phone,
-        businessOpenTime = time(openingMinutes),
-        businessCloseTime = time(closingMinutes),
-        businessDays = businessDays.sorted().map { days[it] }.toSet(),
-        businessRegistrationNumber = "",
-        applicationNote = "",
-    )
 }

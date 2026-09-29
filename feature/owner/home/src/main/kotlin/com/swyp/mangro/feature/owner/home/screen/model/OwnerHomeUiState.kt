@@ -1,8 +1,7 @@
-package com.swyp.mangro.feature.owner.home.screen
+package com.swyp.mangro.feature.owner.home.screen.model
 
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProduct
 import com.swyp.mangro.data.owner.store.model.StoreApprovalStatus
-import com.swyp.mangro.data.user.model.UserProfile
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentSet
 import kotlinx.collections.immutable.persistentListOf
@@ -11,7 +10,6 @@ import kotlinx.collections.immutable.persistentSetOf
 data class OwnerHomeUiState(
     val isLoading: Boolean = false,
     val errorMessage: Int? = null,
-    val profile: UserProfile? = null,
     val approvalStatus: StoreApprovalStatus = StoreApprovalStatus.UNKNOWN,
     val canRegisterProduct: Boolean = false,
     val attentionAvailable: Boolean = false,

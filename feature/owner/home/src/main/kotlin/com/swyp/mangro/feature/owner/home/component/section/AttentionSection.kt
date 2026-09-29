@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.owner.home.R
 import com.swyp.mangro.feature.owner.home.component.card.AttentionCard
-import com.swyp.mangro.feature.owner.home.screen.OwnerHomeAction
+import com.swyp.mangro.feature.owner.home.screen.model.OwnerHomeAction
 
 @Composable
 fun AttentionSection(

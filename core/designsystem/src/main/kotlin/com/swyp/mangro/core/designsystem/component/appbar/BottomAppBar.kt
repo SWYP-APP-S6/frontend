@@ -74,8 +74,9 @@ fun ConsumerBottomAppBar(
     menus: PersistentList<ConsumerMenu>,
     currentMenu: ConsumerMenu,
     onMenuClick: (ConsumerMenu) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    BottomAppBarContainer {
+    BottomAppBarContainer(modifier) {
         menus.forEach { menu ->
             BottomAppBarItem(
                 isSelected = currentMenu == menu,

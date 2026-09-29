@@ -48,6 +48,7 @@ fun HomeRoute(
             isGranted = context.hasLocationPermission(),
             canShowIntro = !context.hasShownPermissionIntro(),
         )
+        viewModel.refreshNearbyProducts()
     }
 
     LaunchedEffect(uiState.isPermissionIntroVisible) {

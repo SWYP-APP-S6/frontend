@@ -13,6 +13,7 @@ data class HomeUiState(
     val locationPermission: LocationPermissionStatus = LocationPermissionStatus.UNKNOWN,
     val isBrowsingWithoutPermission: Boolean = false,
     val isPermissionIntroVisible: Boolean = false,
+    val isNearbyProductsEmpty: Boolean = false,
     val mapZoom: Double = 15.0,
     val storePins: List<StorePinMarker> = emptyList(),
     val selectedStore: SelectedStoreDetail? = null,
@@ -40,7 +41,7 @@ data class SelectedStoreDetail(
     val storeId: String,
     val storeName: String,
     val closingTime: String,
-    val walkingMinutes: Int,
+    val walkingMinutes: Int?,
     val products: List<com.swyp.mangro.core.designsystem.component.card.map.StoreProduct>,
 )
 

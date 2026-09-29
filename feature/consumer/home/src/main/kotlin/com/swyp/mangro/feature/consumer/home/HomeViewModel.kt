@@ -1,5 +1,7 @@
 package com.swyp.mangro.feature.consumer.home
 
+import android.location.Location
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.swyp.mangro.core.designsystem.component.appbar.ConsumerMenu
@@ -23,6 +25,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
+private const val TAG = "HomeViewModel"
 private const val DEFAULT_BOUNDS_DELTA = 0.01
 
 private const val EXPANDED_RADIUS_METERS = 5_000
@@ -30,8 +33,10 @@ private const val EXPANDED_RADIUS_METERS = 5_000
 private const val EXPANDED_LAT_DELTA = 0.045
 private const val EXPANDED_LNG_DELTA = 0.057
 private const val DEFAULT_MAP_ZOOM = 15.0
+private const val LOCATION_REFRESH_THRESHOLD_METERS = 100f
 private const val EXPANDED_MAP_ZOOM = 12.0
 
+// TODO: 권한 없이 둘러볼 때 지도 중심 좌표 (기획 확인 필요, 임시로 서울시청)
 private const val FALLBACK_LATITUDE = 37.5666
 private const val FALLBACK_LONGITUDE = 126.9784
 private const val FALLBACK_REGION_NAME = "내 위치"
@@ -56,6 +61,7 @@ class HomeViewModel @Inject constructor(
     private var hasUserLocation = false
 
     private var searchRadiusMeters: Int? = null
+    private var nearbyProductsJob: Job? = null
 
     private var isGuest: Boolean? = null
     private var lastIsGranted: Boolean? = null
@@ -102,8 +108,8 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun browseWithoutPermission() {
-        _uiState.update { it.copy(isBrowsingWithoutPermission = true) }
+    private fun browseWithoutLocation() {
+        _uiState.update { it.copy(isBrowsingWithoutPermission = true, viewMode = HomeViewMode.MAP) }
         applyLocation(
             regionName = FALLBACK_REGION_NAME,
             latitude = FALLBACK_LATITUDE,
@@ -115,32 +121,97 @@ class HomeViewModel @Inject constructor(
         )
     }
 
+    private fun expandRadius() {
+        val lat = lastLat ?: return
+        val lng = lastLng ?: return
+        _uiState.update { it.copy(isNearbyProductsEmpty = false) }
+        applyLocation(
+            regionName = _uiState.value.locationName,
+            latitude = lat,
+            longitude = lng,
+            latDelta = EXPANDED_LAT_DELTA,
+            lngDelta = EXPANDED_LNG_DELTA,
+            zoom = EXPANDED_MAP_ZOOM,
+            radiusMeters = EXPANDED_RADIUS_METERS,
+        )
+    }
+
     private fun loadLocation() {
         locationJob = viewModelScope.launch {
+            if (resolveLocationViaGps()) return@launch
+
             repository.fetchMyLocation().collect { result ->
-                val saved = result.getOrNull()
-                if (saved != null) {
-                    hasUserLocation = true
-                    applyLocation(saved.regionName, saved.latitude, saved.longitude)
-                } else {
-                    resolveLocationViaGps()
-                }
+                val saved = result.getOrNull() ?: return@collect
+                hasUserLocation = true
+                applyLocation(saved.regionName, saved.latitude, saved.longitude)
             }
         }
     }
 
-    private suspend fun resolveLocationViaGps() {
-        val deviceLocation = locationProvider.fetchCurrentLocation() ?: return
-        val regionName = locationProvider.fetchRegionName(deviceLocation.latitude, deviceLocation.longitude)
-            ?: "내 위치"
+    fun refreshOnResume() {
+        val canRefreshLocation = hasUserLocation &&
+            _uiState.value.isLocationPermissionGranted &&
+            locationJob?.isActive != true
+
+        if (!canRefreshLocation) {
+            refreshNearbyProducts()
+            return
+        }
+        locationJob = viewModelScope.launch {
+            val lat = lastLat
+            val lng = lastLng
+            val deviceLocation = locationProvider.fetchCurrentLocation()
+            val hasMoved = deviceLocation != null &&
+                lat != null &&
+                lng != null &&
+                distanceMeters(lat, lng, deviceLocation.latitude, deviceLocation.longitude) >=
+                LOCATION_REFRESH_THRESHOLD_METERS
+
+            if (deviceLocation != null && hasMoved) {
+                updateDeviceLocation(deviceLocation.latitude, deviceLocation.longitude)
+            } else {
+                refreshNearbyProducts()
+            }
+        }
+    }
+
+    private fun onDeviceLocationChanged(latitude: Double, longitude: Double) {
+        val lat = lastLat ?: return
+        val lng = lastLng ?: return
+        if (!hasUserLocation || locationJob?.isActive == true) return
+        if (distanceMeters(lat, lng, latitude, longitude) < LOCATION_REFRESH_THRESHOLD_METERS) return
+
+        locationJob = viewModelScope.launch {
+            updateDeviceLocation(latitude, longitude, moveCamera = false)
+        }
+    }
+
+    private suspend fun resolveLocationViaGps(): Boolean {
+        val deviceLocation = locationProvider.fetchCurrentLocation() ?: return false
+        updateDeviceLocation(deviceLocation.latitude, deviceLocation.longitude)
+        return true
+    }
+
+    private suspend fun updateDeviceLocation(latitude: Double, longitude: Double, moveCamera: Boolean = true) {
+        val currentRegionName = _uiState.value.locationName
 
         hasUserLocation = true
-        applyLocation(regionName, deviceLocation.latitude, deviceLocation.longitude)
+        if (moveCamera) {
+            applyLocation(currentRegionName, latitude, longitude)
+        } else {
+            lastLat = latitude
+            lastLng = longitude
+            searchRadiusMeters = null
+            refreshNearbyProducts()
+        }
+
+        val regionName = locationProvider.fetchRegionName(latitude, longitude) ?: "내 위치"
+        _uiState.update { it.copy(locationName = regionName) }
 
         repository.setMyLocation(
             regionName = regionName,
-            latitude = deviceLocation.latitude,
-            longitude = deviceLocation.longitude,
+            latitude = latitude,
+            longitude = longitude,
         ).collect { result ->
             result.onFailure {
                 // TODO: 내 위치 저장 실패 처리 (게스트는 무시)
@@ -203,8 +274,16 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun refreshNearbyProducts() {
+        val lat = lastLat ?: return
+        val lng = lastLng ?: return
+        loadNearbyProducts(lat, lng, _uiState.value.sortOption)
+    }
+
     private fun loadNearbyProducts(lat: Double, lng: Double, sortOption: HomeSortOption) {
-        viewModelScope.launch {
+        if (!hasUserLocation) return
+        nearbyProductsJob?.cancel()
+        nearbyProductsJob = viewModelScope.launch {
             repository.fetchNearbyProducts(
                 lat = lat,
                 lng = lng,
@@ -215,6 +294,8 @@ class HomeViewModel @Inject constructor(
                     .onSuccess { nearbyProducts ->
                         _uiState.update { state ->
                             state.copy(
+                                isNearbyProductsEmpty = nearbyProducts.storeGroups.all { it.products.isEmpty() } &&
+                                    searchRadiusMeters != EXPANDED_RADIUS_METERS,
                                 storeGroups = nearbyProducts.storeGroups.map { group ->
                                     StoreProductGroup(
                                         storeId = group.storeId.toString(),
@@ -238,8 +319,9 @@ class HomeViewModel @Inject constructor(
                             )
                         }
                     }
-                    .onFailure {
+                    .onFailure { error ->
                         // TODO: 주변 상품 조회 실패 처리
+                        Log.e(TAG, "fetchNearbyProducts failed", error)
                     }
             }
         }
@@ -287,9 +369,11 @@ class HomeViewModel @Inject constructor(
                     _event.send(HomeUiEvent.RequestLocationPermission)
                 }
             }
-            HomeUiAction.BrowseWithoutLocationClicked -> browseWithoutPermission()
+            HomeUiAction.BrowseWithoutLocationClicked -> browseWithoutLocation()
+            HomeUiAction.ExpandRadiusClicked -> expandRadius()
             is HomeUiAction.ViewModeChanged -> {
                 _uiState.update { it.copy(viewMode = action.mode) }
+                if (action.mode == HomeViewMode.LIST) refreshNearbyProducts()
             }
             is HomeUiAction.StorePinClicked -> {
                 selectStore(action.storeId)
@@ -330,6 +414,7 @@ class HomeViewModel @Inject constructor(
                     loadNearbyProducts(lat, lng, action.option)
                 }
             }
+            is HomeUiAction.DeviceLocationChanged -> onDeviceLocationChanged(action.latitude, action.longitude)
             is HomeUiAction.MapBoundsChanged -> {
                 loadNearbyStores(action.minLat, action.maxLat, action.minLng, action.maxLng)
             }
@@ -344,7 +429,11 @@ class HomeViewModel @Inject constructor(
     private fun selectStore(storeId: String) {
         val id = storeId.toLongOrNull() ?: return
         viewModelScope.launch {
-            repository.fetchStoreProducts(id).collect { result ->
+            repository.fetchStoreProducts(
+                storeId = id,
+                lat = lastLat.takeIf { hasUserLocation },
+                lng = lastLng.takeIf { hasUserLocation },
+            ).collect { result ->
                 result
                     .onSuccess { detail ->
                         _uiState.update { state ->
@@ -353,7 +442,7 @@ class HomeViewModel @Inject constructor(
                                     storeId = storeId,
                                     storeName = detail.name,
                                     closingTime = (detail.businessCloseTime ?: "").toHourMinuteOrEmpty(),
-                                    walkingMinutes = detail.walkingMinutes ?: 0,
+                                    walkingMinutes = detail.walkingMinutes,
                                     products = detail.products.map { product ->
                                         StoreProduct(
                                             id = product.id.toString(),
@@ -401,6 +490,12 @@ private fun HomeSortOption.toRemoteSort(): ProductSortOption = when (this) {
 
 private fun MutableStateFlow<HomeUiState>.update(block: (HomeUiState) -> HomeUiState) {
     value = block(value)
+}
+
+private fun distanceMeters(fromLat: Double, fromLng: Double, toLat: Double, toLng: Double): Float {
+    val result = FloatArray(1)
+    Location.distanceBetween(fromLat, fromLng, toLat, toLng, result)
+    return result[0]
 }
 
 private fun Long.toRemainingMinutes(): Int = ((this - System.currentTimeMillis()) / 60_000L).toInt().coerceAtLeast(0)

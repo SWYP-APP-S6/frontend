@@ -36,7 +36,7 @@ internal class ConsumerHomeRepositoryImpl @Inject constructor(
     override fun fetchMyLocation(): Flow<Result<MyLocation?>> = request {
         val response = userService.fetchMyLocation()
         if (!response.isSuccessful) {
-            val errorBody = response.errorBody()?.string()
+            response.errorBody()?.close()
             throw HttpException(response)
         }
         response.body()?.location?.toMyLocation()
@@ -64,7 +64,7 @@ internal class ConsumerHomeRepositoryImpl @Inject constructor(
             maxLng.roundToSixDecimals(),
         )
         if (!response.isSuccessful) {
-            val errorBody = response.errorBody()?.string()
+            response.errorBody()?.close()
             throw HttpException(response)
         }
         val body = requireNotNull(response.body())
@@ -79,7 +79,11 @@ internal class ConsumerHomeRepositoryImpl @Inject constructor(
 
     override fun fetchStoreProducts(storeId: Long, lat: Double?, lng: Double?): Flow<Result<StoreDetail>> = request {
         require(storeId > 0)
-        val response = storeService.fetchStoreProducts(storeId, lat, lng)
+        val response = storeService.fetchStoreProducts(
+            storeId,
+            lat?.roundToSixDecimals(),
+            lng?.roundToSixDecimals(),
+        )
         if (!response.isSuccessful) throw HttpException(response)
         val body = requireNotNull(response.body())
         StoreDetail(
@@ -106,15 +110,17 @@ internal class ConsumerHomeRepositoryImpl @Inject constructor(
         size: Int?,
     ): Flow<Result<NearbyProducts>> = request {
         val response = productService.fetchNearbyProducts(
-            lat = lat,
-            lng = lng,
+            lat = lat.roundToSixDecimals(),
+            lng = lng.roundToSixDecimals(),
             category = category?.let { c -> ProductService.CategoryFetchNearbyProducts.entries.first { it.value == c } },
             sort = sort?.let { s -> ProductService.SortFetchNearbyProducts.entries.first { it.value == s.name } },
             radiusMeters = radiusMeters,
             page = page,
             size = size,
         )
-        if (!response.isSuccessful) throw HttpException(response)
+        if (!response.isSuccessful) {
+            throw HttpException(response)
+        }
         val body = requireNotNull(response.body())
         NearbyProducts(
             totalProductCount = body.totalProductCount,

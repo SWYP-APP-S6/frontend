@@ -49,8 +49,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.swyp.mangro.core.designsystem.R as DesignR
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
-import com.swyp.mangro.core.designsystem.component.appbar.OwnerBottomAppBar
-import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerPickupRequestCard
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerPickupRequestStatus
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProduct
@@ -71,7 +69,6 @@ data object OwnerProductListDestination
 @Composable
 internal fun ProductListRoute(
     onSelect: (String) -> Unit,
-    onMenuClick: (OwnerMenu) -> Unit,
     onPickupClick: (String) -> Unit,
     onCancelReservations: (List<String>) -> Unit,
     viewModel: ProductListViewModel = hiltViewModel(),
@@ -89,7 +86,6 @@ internal fun ProductListRoute(
         viewModel,
         lifecycleOwner,
         onSelect,
-        onMenuClick,
         onPickupClick,
         onCancelReservations,
     ) {
@@ -97,7 +93,6 @@ internal fun ProductListRoute(
             viewModel.event.collect { event ->
                 when (event) {
                     is ProductListEvent.OpenProduct -> onSelect(event.id)
-                    is ProductListEvent.OpenMenu -> onMenuClick(event.menu)
                     is ProductListEvent.OpenPickup -> onPickupClick(event.id)
                     is ProductListEvent.CancelReservations -> onCancelReservations(event.productIds)
                 }
@@ -149,12 +144,6 @@ fun ProductListScreen(
                 )
                 StoreTabs(state = uiState, onAction = onAction)
             }
-        },
-        bottomBar = {
-            OwnerBottomAppBar(
-                currentMenu = OwnerMenu.STORE,
-                onMenuClick = { onAction(ProductListAction.MenuSelected(it)) },
-            )
         },
     ) { padding ->
         Column(

@@ -55,8 +55,6 @@ import com.swyp.mangro.core.designsystem.R as DesignR
 import com.swyp.mangro.core.designsystem.component.MangroButton
 import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
-import com.swyp.mangro.core.designsystem.component.appbar.OwnerBottomAppBar
-import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
 import com.swyp.mangro.core.designsystem.component.banner.ActionBanner
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProductCard
 import com.swyp.mangro.core.designsystem.component.label.MangroLabel
@@ -185,18 +183,6 @@ fun OwnerHomeScreen(
                     }
                 }
             }
-        },
-        bottomBar = {
-            OwnerBottomAppBar(
-                currentMenu = OwnerMenu.HOME,
-                onMenuClick = {
-                    when (it) {
-                        OwnerMenu.HOME -> Unit
-                        OwnerMenu.STORE -> onAction(OwnerHomeAction.ViewProducts)
-                        OwnerMenu.SETTINGS -> onAction(OwnerHomeAction.ViewSettings)
-                    }
-                },
-            )
         },
         containerColor = MangroTheme.colors.surfaceAlter,
         floatingActionButton = {

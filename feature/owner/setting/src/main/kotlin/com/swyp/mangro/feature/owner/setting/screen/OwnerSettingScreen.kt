@@ -1,6 +1,5 @@
 package com.swyp.mangro.feature.owner.setting.screen
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -39,8 +38,6 @@ import com.swyp.mangro.core.designsystem.R as DesignR
 import com.swyp.mangro.core.designsystem.component.MangroButton
 import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
-import com.swyp.mangro.core.designsystem.component.appbar.OwnerBottomAppBar
-import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
 import com.swyp.mangro.core.designsystem.component.dialog.MangroDialogContainer
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.owner.setting.R
@@ -52,8 +49,6 @@ import kotlinx.collections.immutable.persistentListOf
 @Composable
 internal fun OwnerSettingRoute(
     navigateToLogin: () -> Unit,
-    navigateToHome: () -> Unit,
-    navigateToProducts: () -> Unit,
     navigateToPolicy: (SettingsMenu) -> Unit,
     viewModel: OwnerSettingViewModel = hiltViewModel(),
 ) {
@@ -65,14 +60,10 @@ internal fun OwnerSettingRoute(
     var showWithdrawConfirmDialog by remember { mutableStateOf(false) }
     var showWithdrawErrorDialog by remember { mutableStateOf(false) }
 
-    BackHandler { viewModel.handleAction(OwnerSettingAction.NavigationBackClicked) }
-
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
             when (event) {
                 OwnerSettingEvent.NavigateToLogin -> navigateToLogin()
-                OwnerSettingEvent.NavigateToHome -> navigateToHome()
-                OwnerSettingEvent.NavigateToProducts -> navigateToProducts()
                 is OwnerSettingEvent.NavigateToPolicy -> navigateToPolicy(event.policy)
                 OwnerSettingEvent.ShowLogoutConfirmDialog -> showLogOutConfirmDialog = true
                 OwnerSettingEvent.ShowWithdrawConfirmDialog -> showWithdrawConfirmDialog = true
@@ -190,12 +181,6 @@ fun OwnerSettingScreen(
                         color = MangroTheme.colors.textTitle,
                     )
                 },
-            )
-        },
-        bottomBar = {
-            OwnerBottomAppBar(
-                currentMenu = OwnerMenu.SETTINGS,
-                onMenuClick = { onAction(OwnerSettingAction.NavigationMenuClicked(it)) },
             )
         },
     ) { padding ->

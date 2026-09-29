@@ -3,7 +3,6 @@ package com.swyp.mangro.feature.owner.setting.screen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kakao.sdk.user.UserApiClient
-import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
 import com.swyp.mangro.data.auth.model.AuthResult
 import com.swyp.mangro.data.auth.repository.AuthRepository
 import com.swyp.mangro.data.owner.store.repository.StoreRepository
@@ -86,14 +85,6 @@ class OwnerSettingViewModel @Inject constructor(
 
             OwnerSettingAction.WithdrawConfirmed -> withdraw()
 
-            is OwnerSettingAction.NavigationMenuClicked -> {
-                when (action.menu) {
-                    OwnerMenu.HOME -> _event.trySend(OwnerSettingEvent.NavigateToHome)
-                    OwnerMenu.STORE -> _event.trySend(OwnerSettingEvent.NavigateToProducts)
-                    OwnerMenu.SETTINGS -> Unit
-                }
-            }
-
             is OwnerSettingAction.SettingsMenuClicked -> {
                 when (action.menu) {
                     SettingsMenu.TERMS_OF_SERVICE, SettingsMenu.PRIVACY_POLICY -> {
@@ -108,10 +99,6 @@ class OwnerSettingViewModel @Inject constructor(
                         _event.trySend(OwnerSettingEvent.ShowWithdrawConfirmDialog)
                     }
                 }
-            }
-
-            OwnerSettingAction.NavigationBackClicked -> {
-                _event.trySend(OwnerSettingEvent.NavigateToHome)
             }
         }
     }

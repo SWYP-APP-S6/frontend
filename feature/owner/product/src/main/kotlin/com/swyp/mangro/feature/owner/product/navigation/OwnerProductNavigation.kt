@@ -6,7 +6,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
-import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
 import com.swyp.mangro.feature.owner.product.screen.detail.OwnerProductDetailDestination
 import com.swyp.mangro.feature.owner.product.screen.detail.ProductDetailRoute
 import com.swyp.mangro.feature.owner.product.screen.list.OwnerProductListDestination
@@ -22,7 +21,6 @@ data object OwnerProductEditorDestination
 fun NavGraphBuilder.ownerProductNavGraph(
     navController: NavHostController,
     onCancelReservations: (List<String>) -> Unit,
-    onMenuClick: (OwnerMenu) -> Unit,
     onPickupClick: (String) -> Unit,
 ) {
     composable<OwnerProductListDestination> { entry ->
@@ -44,7 +42,6 @@ fun NavGraphBuilder.ownerProductNavGraph(
         }
         ProductListRoute(
             viewModel = viewModel,
-            onMenuClick = onMenuClick,
             onPickupClick = onPickupClick,
             onSelect = { navController.navigate(OwnerProductDetailDestination(it)) },
             onCancelReservations = onCancelReservations,

@@ -1,7 +1,6 @@
 package com.swyp.mangro.feature.consumer.home
 
 import android.location.Location
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.swyp.mangro.core.designsystem.component.appbar.ConsumerMenu
@@ -25,7 +24,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-private const val TAG = "HomeViewModel"
 private const val DEFAULT_BOUNDS_DELTA = 0.01
 
 private const val EXPANDED_RADIUS_METERS = 5_000
@@ -322,9 +320,8 @@ class HomeViewModel @Inject constructor(
                             )
                         }
                     }
-                    .onFailure { error ->
+                    .onFailure {
                         // TODO: 주변 상품 조회 실패 처리
-                        Log.e(TAG, "fetchNearbyProducts failed", error)
                     }
             }
         }
@@ -376,7 +373,12 @@ class HomeViewModel @Inject constructor(
             HomeUiAction.BrowseWithoutLocationClicked -> browseWithoutLocation()
             HomeUiAction.ExpandRadiusClicked -> expandRadius()
             is HomeUiAction.ViewModeChanged -> {
-                _uiState.update { it.copy(viewMode = action.mode) }
+                _uiState.update {
+                    it.copy(
+                        viewMode = action.mode,
+                        selectedStore = if (action.mode == HomeViewMode.LIST) null else it.selectedStore,
+                    )
+                }
                 if (action.mode == HomeViewMode.LIST) refreshNearbyProducts()
             }
             is HomeUiAction.StorePinClicked -> {

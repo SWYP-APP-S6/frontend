@@ -6,4 +6,5 @@ sealed interface ProductDetailUiAction {
     data object OnWishConfirmClick : ProductDetailUiAction
     data object OnWishBottomSheetDismiss : ProductDetailUiAction
     data object OnStoreInfoClick : ProductDetailUiAction
+    data class OnRecipeClick(val recipeId: Long) : ProductDetailUiAction
 }

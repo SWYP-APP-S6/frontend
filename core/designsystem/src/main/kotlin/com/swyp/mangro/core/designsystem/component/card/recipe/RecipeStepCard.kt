@@ -4,9 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,24 +32,28 @@ fun RecipeStepCard(
     description: String,
     modifier: Modifier = Modifier,
 ) {
-    Row(
+    Box(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .background(MangroTheme.colors.surfaceAlter),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        AsyncImage(
-            model = imageUrl,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(64.dp)
-                .background(MangroTheme.colors.surfaceDisabled),
-        )
+        Box(modifier = Modifier.matchParentSize()) {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .width(64.dp)
+                    .fillMaxHeight()
+                    .background(MangroTheme.colors.surfaceDisabled),
+            )
+        }
 
         Row(
+            modifier = Modifier
+                .heightIn(min = 64.dp)
+                .padding(start = 64.dp + 12.dp, end = 16.dp, top = 12.dp, bottom = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -68,6 +75,7 @@ fun RecipeStepCard(
                 text = description,
                 color = MangroTheme.colors.textTitle,
                 style = MangroTheme.typography.label.labelS ?: MangroTheme.typography.label.labelM,
+                modifier = Modifier.weight(1f),
             )
         }
     }

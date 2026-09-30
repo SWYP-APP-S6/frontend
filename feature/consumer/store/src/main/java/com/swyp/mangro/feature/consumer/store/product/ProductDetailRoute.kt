@@ -22,6 +22,7 @@ fun ProductDetailRoute(
     onNavigateToStoreDetail: () -> Unit,
     onNavigateToHold: (String) -> Unit,
     onNavigateToLogin: () -> Unit,
+    onNavigateToRecipeDetail: (Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ProductDetailViewModel = hiltViewModel(),
 ) {
@@ -35,6 +36,7 @@ fun ProductDetailRoute(
                 is ProductDetailUiEvent.NavigateToStoreDetail -> onNavigateToStoreDetail()
                 is ProductDetailUiEvent.WishConfirmed -> onNavigateToHold(event.holdId)
                 is ProductDetailUiEvent.ShowLoginRequiredDialog -> showLoginRequiredDialog = true
+                is ProductDetailUiEvent.NavigateToRecipeDetail -> onNavigateToRecipeDetail(event.recipeId)
                 is ProductDetailUiEvent.OpenMapDirections -> {
                     val store = event.storeInfo
                     val uri = (

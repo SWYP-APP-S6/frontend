@@ -4,6 +4,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -13,7 +19,9 @@ import com.swyp.mangro.core.utils.HideNavigationBarWhileVisible
 import com.swyp.mangro.feature.auth.navigation.Login
 import com.swyp.mangro.feature.auth.navigation.TermsDetail
 import com.swyp.mangro.feature.auth.navigation.authNavGraph
+import com.swyp.mangro.feature.consumer.hold.navigation.HoldDestination
 import com.swyp.mangro.feature.consumer.hold.navigation.HoldHistoryDestination
+import com.swyp.mangro.feature.consumer.hold.navigation.PickupCompleteDestination
 import com.swyp.mangro.feature.consumer.hold.navigation.holdDetailScreen
 import com.swyp.mangro.feature.consumer.hold.navigation.holdHistoryScreen
 import com.swyp.mangro.feature.consumer.hold.navigation.holdScreen
@@ -25,7 +33,6 @@ import com.swyp.mangro.feature.consumer.myinfo.navigation.MyInfoDestination
 import com.swyp.mangro.feature.consumer.myinfo.navigation.myInfoScreen
 import com.swyp.mangro.feature.consumer.recipe.navigation.navigateToRecipeDetail
 import com.swyp.mangro.feature.consumer.recipe.navigation.recipeDetailScreen
-import com.swyp.mangro.feature.consumer.store.navigation.navigateToProductDetail
 import com.swyp.mangro.feature.consumer.store.navigation.productDetailScreen
 import com.swyp.mangro.feature.splash.navigation.Splash
 import com.swyp.mangro.feature.splash.navigation.splashNavGraph
@@ -34,6 +41,7 @@ import com.swyp.mangro.notification.ConsumerNotificationPermission
 @Composable
 fun AppNavGraph(
     navController: NavHostController = rememberNavController(),
+    holdCompletionViewModel: HoldCompletionViewModel = hiltViewModel(),
 ) {
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
@@ -41,6 +49,34 @@ fun AppNavGraph(
         currentRoute == Login::class.qualifiedName
 
     HideNavigationBarWhileVisible(hidden = hideNavigationBar)
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val isBeforeLogin = currentRoute == null || hideNavigationBar
+
+    LaunchedEffect(isBeforeLogin) {
+        if (isBeforeLogin) return@LaunchedEffect
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            holdCompletionViewModel.watch()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        holdCompletionViewModel.completedHoldId.collect { holdId ->
+            val destination = navController.currentBackStackEntry?.destination
+            val isHandledByHoldScreen = destination?.hasRoute<HoldDestination>() == true ||
+                destination?.hasRoute<PickupCompleteDestination>() == true
+            if (!isHandledByHoldScreen) {
+                navController.navigate(HoldHistoryDestination) {
+                    popUpTo<Home> {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+                navController.navigate(PickupCompleteDestination(holdId = holdId.toString()))
+            }
+        }
+    }
 
     val onNavigateToMenu: (ConsumerMenu) -> Unit = { menu ->
         val destination = when (menu) {
@@ -102,6 +138,9 @@ fun AppNavGraph(
             navController = navController,
             onNavigateToHold = { holdId -> navController.navigateToHold(holdId) },
             onNavigateToLogin = { navController.navigate(Login) },
+            onNavigateToRecipeDetail = { recipeId ->
+                navController.navigateToRecipeDetail(recipeId, fromProductDetail = true)
+            },
         )
         holdScreen(
             navController = navController,
@@ -127,9 +166,6 @@ fun AppNavGraph(
         )
         recipeDetailScreen(
             navController = navController,
-            onNavigateToProductDetail = { productId ->
-                navController.navigateToProductDetail(productId)
-            },
         )
     }
 }

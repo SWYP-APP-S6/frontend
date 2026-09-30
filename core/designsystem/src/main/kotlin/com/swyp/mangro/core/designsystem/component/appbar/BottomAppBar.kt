@@ -52,7 +52,7 @@ fun OwnerBottomAppBar(
             BottomAppBarItem(
                 isSelected = currentMenu == menu,
                 drawResId = when (menu) {
-                    OwnerMenu.HOME -> R.drawable.ic_home
+                    OwnerMenu.HOME -> R.drawable.ic_home_24
                     OwnerMenu.STORE -> R.drawable.ic_owner_manage
                     OwnerMenu.SETTINGS -> R.drawable.ic_owner_settings
                 },
@@ -156,7 +156,7 @@ enum class OwnerMenu { HOME, STORE, SETTINGS }
 
 @DrawableRes
 private fun ConsumerMenu.iconResId(): Int = when (this) {
-    ConsumerMenu.HOME -> R.drawable.ic_home
+    ConsumerMenu.HOME -> R.drawable.ic_home_24
     ConsumerMenu.WISH_LIST -> R.drawable.ic_alarm_on_24px
     ConsumerMenu.MY -> R.drawable.ic_local_library
 }

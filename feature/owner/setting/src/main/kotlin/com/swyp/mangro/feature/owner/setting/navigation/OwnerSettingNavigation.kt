@@ -14,8 +14,6 @@ data object OwnerSettingDestination
 data class OwnerPolicyDestination(val policy: SettingsMenu)
 
 fun NavGraphBuilder.ownerSettingNavGraph(
-    navigateToHome: () -> Unit,
-    navigateToProducts: () -> Unit,
     navigateToPolicy: (SettingsMenu) -> Unit,
     navigateBack: () -> Unit,
     navigateToLogin: () -> Unit,
@@ -23,8 +21,6 @@ fun NavGraphBuilder.ownerSettingNavGraph(
     composable<OwnerSettingDestination> {
         OwnerSettingRoute(
             navigateToLogin = navigateToLogin,
-            navigateToHome = navigateToHome,
-            navigateToProducts = navigateToProducts,
             navigateToPolicy = navigateToPolicy,
         )
     }

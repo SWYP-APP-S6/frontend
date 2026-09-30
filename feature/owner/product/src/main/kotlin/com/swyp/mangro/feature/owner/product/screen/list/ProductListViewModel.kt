@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import androidx.paging.map
-import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
 import com.swyp.mangro.data.owner.product.model.HoldStatus
 import com.swyp.mangro.data.owner.product.model.OwnerProductFilter
 import com.swyp.mangro.data.owner.product.repository.OwnerProductRepository
@@ -126,8 +125,6 @@ class ProductListViewModel @Inject constructor(
             is ProductListAction.PickupClicked -> send(ProductListEvent.OpenPickup(action.id))
 
             is ProductListAction.PickupCompleteClicked -> markAsPickedUp(action.pickup)
-
-            is ProductListAction.MenuSelected -> if (action.menu != OwnerMenu.STORE) send(ProductListEvent.OpenMenu(action.menu))
 
             ProductListAction.ReservationsCancelClicked -> send(ProductListEvent.CancelReservations(emptyList()))
         }

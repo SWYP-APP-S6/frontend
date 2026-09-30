@@ -26,18 +26,17 @@ import com.swyp.mangro.core.designsystem.component.dialog.MangroDialogContainer
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.data.owner.store.model.StoreApprovalStatus
 import com.swyp.mangro.feature.owner.product.R
-import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
 import com.swyp.mangro.feature.owner.product.screen.editor.ProductRegistrationViewModel
 
 @Composable
 internal fun ProductRegistrationRoute(
     onBack: () -> Unit,
-    onSave: (OwnerProductModel) -> Unit,
+    onSave: () -> Unit,
     viewModel: ProductRegistrationViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refresh() }
-    LaunchedEffect(viewModel) { viewModel.save.collect { onSave(it) } }
+    LaunchedEffect(viewModel) { viewModel.save.collect { onSave() } }
 
     MangroDialogContainer(
         show = state.registrationFailed,

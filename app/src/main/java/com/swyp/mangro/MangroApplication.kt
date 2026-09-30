@@ -10,6 +10,7 @@ import javax.inject.Inject
 class MangroApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+
         val nativeAppKey = BuildConfig.KAKAO_NATIVE_APP_KEY
         if (nativeAppKey.isNotBlank()) {
             KakaoSdk.init(this, nativeAppKey, loggingEnabled = false)

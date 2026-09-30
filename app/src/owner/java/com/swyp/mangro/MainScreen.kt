@@ -1,18 +1,26 @@
 package com.swyp.mangro
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -32,9 +40,10 @@ import com.swyp.mangro.feature.owner.setting.navigation.OwnerSettingDestination
 import com.swyp.mangro.feature.splash.navigation.Splash
 import com.swyp.mangro.feature.splash.navigation.splashNavGraph
 import com.swyp.mangro.navigation.OwnerNavHost
-import com.swyp.mangro.notification.OwnerNotificationPermission
+import com.swyp.mangro.notification.OwnerNotificationDisplay
 import com.swyp.mangro.notification.OwnerNotificationReadWorker
 import com.swyp.mangro.notification.OwnerStockReconfirmationRequests
+import com.swyp.mangro.notification.OwnerTokenWorker
 import com.swyp.mangro.notification.model.OwnerNotificationOpen
 import com.swyp.mangro.theme.MangroTheme
 import kotlinx.serialization.Serializable
@@ -140,7 +149,23 @@ internal fun OwnerMainContent(
     onNotificationOpened: () -> Unit = {},
     onLogout: () -> Unit = {},
 ) {
-    OwnerNotificationPermission()
+    val context = LocalContext.current
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        OwnerTokenWorker.enqueue(context)
+    }
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    LifecycleResumeEffect(Unit) {
+        OwnerNotificationDisplay.createChannel(context)
+        OwnerTokenWorker.enqueue(context)
+        onPauseOrDispose {}
+    }
 
     MangroTheme {
         val navController = rememberNavController()

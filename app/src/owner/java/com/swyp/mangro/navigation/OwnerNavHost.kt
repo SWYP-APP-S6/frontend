@@ -27,7 +27,7 @@ import com.swyp.mangro.feature.owner.product.screen.reconfirmation.StockReconfir
 import com.swyp.mangro.feature.owner.setting.navigation.OwnerPolicyDestination
 import com.swyp.mangro.feature.owner.setting.navigation.OwnerSettingDestination
 import com.swyp.mangro.feature.owner.setting.navigation.ownerSettingNavGraph
-import com.swyp.mangro.notification.OwnerStockReconfirmationRequests
+import com.swyp.mangro.notification.OwnerMessagingService
 import com.swyp.mangro.notification.model.OwnerNotificationOpen
 import com.swyp.mangro.notification.model.OwnerNotificationType
 import kotlinx.coroutines.flow.filterNotNull
@@ -47,10 +47,10 @@ internal fun OwnerNavHost(
 
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            OwnerStockReconfirmationRequests.pending.filterNotNull().collect { request ->
+            OwnerMessagingService.pendingStockReconfirmation.filterNotNull().collect { request ->
                 stockRequestKey = request.key
                 stockProductId = request.productId
-                OwnerStockReconfirmationRequests.consume(request)
+                OwnerMessagingService.consumeStockReconfirmation(request)
             }
         }
     }

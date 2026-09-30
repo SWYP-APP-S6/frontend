@@ -40,9 +40,8 @@ import com.swyp.mangro.feature.owner.setting.navigation.OwnerSettingDestination
 import com.swyp.mangro.feature.splash.navigation.Splash
 import com.swyp.mangro.feature.splash.navigation.splashNavGraph
 import com.swyp.mangro.navigation.OwnerNavHost
-import com.swyp.mangro.notification.OwnerNotificationDisplay
+import com.swyp.mangro.notification.OwnerMessagingService
 import com.swyp.mangro.notification.OwnerNotificationReadWorker
-import com.swyp.mangro.notification.OwnerStockReconfirmationRequests
 import com.swyp.mangro.notification.OwnerTokenWorker
 import com.swyp.mangro.notification.model.OwnerNotificationOpen
 import com.swyp.mangro.theme.MangroTheme
@@ -132,7 +131,7 @@ internal fun MainScreen(notificationIntent: Intent? = null) {
                     consumedKey = openKey
                 },
                 onLogout = {
-                    OwnerStockReconfirmationRequests.clear()
+                    OwnerMessagingService.clearStockReconfirmation()
                     navController.navigate(Login) {
                         popUpTo<OwnerMain> { inclusive = true }
                         launchSingleTop = true
@@ -162,7 +161,7 @@ internal fun OwnerMainContent(
     }
 
     LifecycleResumeEffect(Unit) {
-        OwnerNotificationDisplay.createChannel(context)
+        OwnerMessagingService.createNotificationChannel(context)
         OwnerTokenWorker.enqueue(context)
         onPauseOrDispose {}
     }

@@ -37,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.swyp.mangro.core.designsystem.R as DesignR
 import com.swyp.mangro.core.designsystem.component.MangroButton
 import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
+import com.swyp.mangro.core.designsystem.component.appbar.LocalFloatingBottomAppBarOverlayHeight
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
 import com.swyp.mangro.core.designsystem.component.dialog.MangroDialogContainer
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
@@ -168,6 +169,7 @@ fun OwnerSettingScreen(
     onAction: (OwnerSettingAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val floatingBarHeight = LocalFloatingBottomAppBarOverlayHeight.current
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MangroTheme.colors.surfaceAlter,
@@ -188,7 +190,7 @@ fun OwnerSettingScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 28.dp),
+            contentPadding = PaddingValues(start = 20.dp, top = 28.dp, end = 20.dp, bottom = 28.dp + floatingBarHeight),
             verticalArrangement = Arrangement.spacedBy(32.dp),
         ) {
             item {

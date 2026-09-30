@@ -1,24 +1,33 @@
 package com.swyp.mangro
 
+import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Color
+import android.os.Build
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.swyp.mangro.core.designsystem.component.appbar.FloatingBottomAppBarOverlayHeight
+import com.swyp.mangro.core.designsystem.component.appbar.LocalFloatingBottomAppBarOverlayHeight
 import com.swyp.mangro.core.designsystem.component.appbar.OwnerBottomAppBar
 import com.swyp.mangro.core.designsystem.component.appbar.OwnerMenu
 import com.swyp.mangro.core.utils.HideNavigationBarWhileVisible
@@ -134,6 +143,7 @@ internal fun MainScreen(notificationIntent: Intent? = null) {
     }
 }
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 internal fun OwnerMainContent(
     notificationOpen: OwnerNotificationOpen? = null,
@@ -143,6 +153,33 @@ internal fun OwnerMainContent(
     OwnerNotificationPermission()
 
     MangroTheme {
+        val activity = LocalActivity.current
+        val view = LocalView.current
+
+        DisposableEffect(activity, view) {
+            val window = activity?.window
+            val previousContrast = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) window?.isNavigationBarContrastEnforced else null
+            val previousNavigationBarColor = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) window?.navigationBarColor else null
+            val insetsController = window?.let { WindowCompat.getInsetsController(it, view) }
+            val previousLightIcons = insetsController?.isAppearanceLightNavigationBars
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                window?.isNavigationBarContrastEnforced = false
+            } else {
+                window?.navigationBarColor = Color.TRANSPARENT
+            }
+            insetsController?.isAppearanceLightNavigationBars = true
+
+            onDispose {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && previousContrast != null) {
+                    window?.isNavigationBarContrastEnforced = previousContrast
+                } else if (previousNavigationBarColor != null) {
+                    window?.navigationBarColor = previousNavigationBarColor
+                }
+                if (previousLightIcons != null) insetsController.isAppearanceLightNavigationBars = previousLightIcons
+            }
+        }
+
         val navController = rememberNavController()
 
         val destination = navController.currentBackStackEntryAsState().value?.destination
@@ -192,16 +229,19 @@ internal fun OwnerMainContent(
                     )
                 }
             },
-        ) { paddingValues ->
-            OwnerNavHost(
-                navController = navController,
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .consumeWindowInsets(paddingValues),
-                notificationOpen = notificationOpen,
-                onNotificationOpened = onNotificationOpened,
-                onLogout = onLogout,
-            )
+        ) { _ ->
+            // Draw the NavHost behind the capsule; tab screens reserve space for their final items.
+            CompositionLocalProvider(
+                LocalFloatingBottomAppBarOverlayHeight provides if (currentDestination != null) FloatingBottomAppBarOverlayHeight else 0.dp,
+            ) {
+                OwnerNavHost(
+                    navController = navController,
+                    modifier = Modifier.fillMaxSize(),
+                    notificationOpen = notificationOpen,
+                    onNotificationOpened = onNotificationOpened,
+                    onLogout = onLogout,
+                )
+            }
         }
     }
 }

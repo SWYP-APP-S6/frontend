@@ -55,6 +55,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.swyp.mangro.core.designsystem.R as DesignR
 import com.swyp.mangro.core.designsystem.component.MangroButton
 import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
+import com.swyp.mangro.core.designsystem.component.appbar.LocalFloatingBottomAppBarOverlayHeight
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
 import com.swyp.mangro.core.designsystem.component.banner.ActionBanner
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerProduct
@@ -123,6 +124,7 @@ fun OwnerHomeScreen(
     onAction: (OwnerHomeAction) -> Unit,
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
+    val floatingBarHeight = LocalFloatingBottomAppBarOverlayHeight.current
 
     val lifecycleOwner = LocalLifecycleOwner.current
     val nowMillis by produceState(System.currentTimeMillis(), lifecycleOwner, uiState.visitors.isNotEmpty()) {
@@ -180,7 +182,8 @@ fun OwnerHomeScreen(
                 Snackbar(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 8.dp),
+                        .padding(horizontal = 20.dp, vertical = 8.dp)
+                        .padding(bottom = floatingBarHeight),
                     containerColor = MangroTheme.colors.grayScale900,
                     contentColor = MangroTheme.colors.textOnBrandWhite,
                 ) {
@@ -199,7 +202,9 @@ fun OwnerHomeScreen(
                     shape = CircleShape,
                     containerColor = MangroTheme.colors.primaryNormal,
                     contentColor = MangroTheme.colors.textOnBrandWhite,
-                    modifier = Modifier.heightIn(min = 48.dp),
+                    modifier = Modifier
+                        .padding(bottom = floatingBarHeight)
+                        .heightIn(min = 48.dp),
                 ) {
                     Icon(
                         painter = painterResource(DesignR.drawable.ic_plus_24px),
@@ -228,7 +233,7 @@ fun OwnerHomeScreen(
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = if (uiState.hasRegisteredProduct) 88.dp else 44.dp),
+                contentPadding = PaddingValues(bottom = (if (uiState.hasRegisteredProduct) 88.dp else 44.dp) + floatingBarHeight),
                 verticalArrangement = Arrangement.Center,
             ) {
                 if (uiState.isLoading) {

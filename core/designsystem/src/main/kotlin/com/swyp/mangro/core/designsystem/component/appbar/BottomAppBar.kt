@@ -47,26 +47,13 @@ fun OwnerBottomAppBar(
     onMenuClick: (OwnerMenu) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    BottomAppBarContainer(modifier) {
-        OwnerMenu.entries.forEach { menu ->
-            BottomAppBarItem(
-                isSelected = currentMenu == menu,
-                drawResId = when (menu) {
-                    OwnerMenu.HOME -> R.drawable.ic_home_24
-                    OwnerMenu.STORE -> R.drawable.ic_owner_manage
-                    OwnerMenu.SETTINGS -> R.drawable.ic_owner_settings
-                },
-                stringResId = when (menu) {
-                    OwnerMenu.HOME -> R.string.bottom_app_bar_home
-                    OwnerMenu.STORE -> R.string.owner_bottom_store
-                    OwnerMenu.SETTINGS -> R.string.owner_bottom_settings
-                },
-                onClick = { onMenuClick(menu) },
-                minHeight = 66.dp,
-                textStyle = OwnerMangroTypography.title.titleS ?: OwnerMangroTypography.title.titleM,
-            )
-        }
-    }
+    FloatingBottomAppBar(
+        items = ownerFloatingBottomBarItems,
+        selectedItem = currentMenu,
+        onItemClick = onMenuClick,
+        modifier = modifier,
+        textStyle = OwnerMangroTypography.title.titleS ?: OwnerMangroTypography.title.titleM,
+    )
 }
 
 @Composable
@@ -167,3 +154,9 @@ private fun ConsumerMenu.stringResId(): Int = when (this) {
     ConsumerMenu.WISH_LIST -> R.string.bottom_app_bar_wish_list
     ConsumerMenu.MY -> R.string.bottom_app_bar_my
 }
+
+private val ownerFloatingBottomBarItems = listOf(
+    FloatingBottomBarItem(OwnerMenu.HOME, R.drawable.ic_home_24, R.string.bottom_app_bar_home),
+    FloatingBottomBarItem(OwnerMenu.STORE, R.drawable.ic_owner_manage, R.string.owner_bottom_store),
+    FloatingBottomBarItem(OwnerMenu.SETTINGS, R.drawable.ic_owner_settings, R.string.owner_bottom_settings),
+)

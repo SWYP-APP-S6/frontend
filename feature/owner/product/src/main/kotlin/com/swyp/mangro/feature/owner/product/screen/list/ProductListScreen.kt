@@ -48,6 +48,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.swyp.mangro.core.designsystem.R as DesignR
+import com.swyp.mangro.core.designsystem.component.appbar.LocalFloatingBottomAppBarOverlayHeight
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerPickupRequestCard
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerPickupRequestStatus
@@ -116,6 +117,7 @@ fun ProductListScreen(
     products: LazyPagingItems<ProductSummary>,
     modifier: Modifier = Modifier,
 ) {
+    val floatingBarHeight = LocalFloatingBottomAppBarOverlayHeight.current
     val now by produceState(System.currentTimeMillis()) {
         while (true) {
             value = System.currentTimeMillis()
@@ -130,9 +132,9 @@ fun ProductListScreen(
     LaunchedEffect(uiState.filter) { pickupListState.scrollToItem(0) }
     Scaffold(
         modifier = modifier,
-        containerColor = MangroTheme.colors.surfaceNormal,
+        containerColor = MangroTheme.colors.surfaceAlter,
         topBar = {
-            Column {
+            Column(modifier = Modifier.background(MangroTheme.colors.surfaceNormal)) {
                 MangroDefaultStartAlignedTopAppBar(
                     title = {
                         Text(
@@ -250,7 +252,7 @@ fun ProductListScreen(
                     LazyColumn(
                         state = if (uiState.tab == ProductListTab.PRODUCTS) productListState else pickupListState,
                         modifier = Modifier.fillMaxSize().testTag("owner-holds-list"),
-                        contentPadding = PaddingValues(bottom = if (uiState.cancellationCount == 0) 0.dp else 112.dp),
+                        contentPadding = PaddingValues(bottom = (if (uiState.cancellationCount == 0) 0.dp else 112.dp) + floatingBarHeight),
                     ) {
                         if (uiState.tab == ProductListTab.PRODUCTS) {
                             item {

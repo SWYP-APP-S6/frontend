@@ -2,6 +2,7 @@ package com.swyp.mangro.feature.consumer.home
 
 import android.graphics.Canvas
 import android.graphics.Paint
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -16,9 +17,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -32,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -45,9 +49,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -84,6 +90,8 @@ import com.swyp.mangro.core.designsystem.component.card.product.toLabelTextRes
 import com.swyp.mangro.core.designsystem.component.count
 import com.swyp.mangro.core.designsystem.component.storePinStateOf
 import com.swyp.mangro.core.designsystem.component.tab.MangroPillTabItem
+import com.swyp.mangro.core.designsystem.screen.ExpandRadiusScreen
+import com.swyp.mangro.core.designsystem.screen.RequestLocationPermissionScreen
 import com.swyp.mangro.core.designsystem.theme.Gray50
 import com.swyp.mangro.core.designsystem.theme.Gray900
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
@@ -93,6 +101,7 @@ import com.swyp.mangro.feature.consumer.home.HomeViewMode.LIST
 import com.swyp.mangro.feature.consumer.home.R as homeR
 import com.swyp.mangro.feature.consumer.home.component.CountdownCard
 import com.swyp.mangro.feature.consumer.home.component.HomeCategoryChip
+import com.swyp.mangro.feature.consumer.home.component.LocationPermissionRequiredContent
 import com.swyp.mangro.feature.consumer.home.component.SortDropdown
 import com.swyp.mangro.feature.consumer.home.component.StoreGroupHeader
 import kotlin.math.roundToInt
@@ -105,11 +114,51 @@ internal fun HomeScreen(
     onAction: (HomeUiAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    if (uiState.isPermissionIntroVisible) {
+        BackHandler { onAction(HomeUiAction.PermissionIntroLaterClicked) }
+        RequestLocationPermissionScreen(
+            onAllowClick = { onAction(HomeUiAction.PermissionIntroAllowClicked) },
+            onLaterClick = { onAction(HomeUiAction.PermissionIntroLaterClicked) },
+            modifier = modifier,
+        )
+        return
+    }
+
+    var bottomBarHeightPx by remember { mutableIntStateOf(0) }
+
+    Box(modifier = modifier.fillMaxSize()) {
+        HomeScaffold(
+            uiState = uiState,
+            onAction = onAction,
+            onBottomBarHeightChanged = { bottomBarHeightPx = it },
+        )
+
+        if (uiState.isNearbyProductsEmpty) {
+            ExpandRadiusScreen(
+                onExpandRadius = { onAction(HomeUiAction.ExpandRadiusClicked) },
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .padding(bottom = with(LocalDensity.current) { bottomBarHeightPx.toDp() }),
+            )
+        }
+    }
+}
+
+@Composable
+private fun HomeScaffold(
+    uiState: HomeUiState,
+    onAction: (HomeUiAction) -> Unit,
+    onBottomBarHeightChanged: (Int) -> Unit,
+) {
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         topBar = {
             HomeTopBar(
-                locationName = uiState.locationName,
+                locationName = if (uiState.locationPermission == LocationPermissionStatus.DENIED) {
+                    stringResource(homeR.string.home_my_location)
+                } else {
+                    uiState.locationName
+                },
                 viewMode = uiState.viewMode,
                 onViewModeChanged = { onAction(HomeUiAction.ViewModeChanged(it)) },
             )
@@ -119,6 +168,7 @@ internal fun HomeScreen(
                 menus = ConsumerMenu.entries.toPersistentList(),
                 currentMenu = ConsumerMenu.HOME,
                 onMenuClick = { onAction(HomeUiAction.BottomMenuClicked(it)) },
+                modifier = Modifier.onSizeChanged { onBottomBarHeightChanged(it.height) },
             )
         },
     ) { innerPadding ->
@@ -127,9 +177,17 @@ internal fun HomeScreen(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            when (uiState.viewMode) {
-                HomeViewMode.MAP -> HomeMapContent(uiState = uiState, onAction = onAction)
-                LIST -> HomeListContent(uiState = uiState, onAction = onAction)
+            when (uiState.locationPermission) {
+                LocationPermissionStatus.UNKNOWN -> Unit
+                LocationPermissionStatus.DENIED -> if (uiState.isBrowsingWithoutPermission) {
+                    HomeContent(uiState = uiState, onAction = onAction)
+                } else {
+                    LocationPermissionRequiredContent(
+                        onBrowseClick = { onAction(HomeUiAction.BrowseWithoutLocationClicked) },
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+                LocationPermissionStatus.GRANTED -> HomeContent(uiState = uiState, onAction = onAction)
             }
 
             HomeTopOverlay(
@@ -142,6 +200,24 @@ internal fun HomeScreen(
                 selectedStore = uiState.selectedStore,
                 onAction = onAction,
                 modifier = Modifier.align(Alignment.BottomCenter).zIndex(10f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun HomeContent(
+    uiState: HomeUiState,
+    onAction: (HomeUiAction) -> Unit,
+) {
+    when (uiState.viewMode) {
+        HomeViewMode.MAP -> HomeMapContent(uiState = uiState, onAction = onAction)
+        LIST -> if (uiState.isLocationPermissionGranted) {
+            HomeListContent(uiState = uiState, onAction = onAction)
+        } else {
+            LocationPermissionRequiredContent(
+                onBrowseClick = { onAction(HomeUiAction.ViewModeChanged(HomeViewMode.MAP)) },
+                modifier = Modifier.fillMaxSize(),
             )
         }
     }
@@ -203,34 +279,31 @@ private fun HomeMapContent(
     onAction: (HomeUiAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    //    if (uiState.storePins.isEmpty()) {
-    //        LocationPermissionRequiredContent(
-    //            onExpandRadiusClick = { onAction(HomeUiAction.ExpandRadiusClicked) },
-    //            modifier = Modifier.fillMaxSize(),
-    //        )
-    //        return
-    //    }
-
     val cameraPositionState = rememberCameraPositionState()
     var selectedPinScreenOffset by remember { mutableStateOf<Offset?>(null) }
 
-    LaunchedEffect(uiState.locationLatitude, uiState.locationLongitude) {
+    LaunchedEffect(uiState.locationLatitude, uiState.locationLongitude, uiState.mapZoom) {
         val lat = uiState.locationLatitude
         val lng = uiState.locationLongitude
         if (lat != null && lng != null) {
-            cameraPositionState.position = CameraPosition(LatLng(lat, lng), 15.0)
+            cameraPositionState.position = CameraPosition(LatLng(lat, lng), uiState.mapZoom)
         }
     }
 
-    val context = LocalContext.current
-    val locationSource = rememberFusedLocationSource()
+    val isGranted = uiState.isLocationPermissionGranted
+    val locationSource = if (isGranted) rememberFusedLocationSource() else null
 
     NaverMap(
         modifier = modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
         locationSource = locationSource,
-        properties = MapProperties(locationTrackingMode = LocationTrackingMode.Follow),
-        uiSettings = MapUiSettings(isLocationButtonEnabled = true),
+        properties = MapProperties(
+            locationTrackingMode = if (isGranted) LocationTrackingMode.Follow else LocationTrackingMode.None,
+        ),
+        uiSettings = MapUiSettings(isLocationButtonEnabled = isGranted),
+        onLocationChange = { location ->
+            onAction(HomeUiAction.DeviceLocationChanged(location.latitude, location.longitude))
+        },
     ) {
         uiState.storePins.forEach { pin ->
             val isSelected = uiState.selectedStore?.storeId == pin.storeId
@@ -400,6 +473,18 @@ private fun HomeListContent(
             )
         }
 
+        if (filteredGroups.isEmpty()) {
+            HomeListEmptyContent(
+                title = if (uiState.storeGroups.isEmpty()) {
+                    stringResource(homeR.string.home_list_empty_title)
+                } else {
+                    stringResource(homeR.string.home_list_empty_category_title)
+                },
+                modifier = Modifier.fillMaxSize(),
+            )
+            return@Column
+        }
+
         val listState = rememberLazyListState()
 
         LazyColumn(
@@ -431,13 +516,48 @@ private fun HomeListContent(
 }
 
 @Composable
+private fun HomeListEmptyContent(
+    title: String,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .background(White)
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Icon(
+            imageVector = ImageVector.vectorResource(R.drawable.ic_warning),
+            contentDescription = null,
+            tint = Color(0xFFBDBDBD),
+            modifier = Modifier.size(48.dp),
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = title,
+            style = MangroTheme.typography.title.titleL,
+            color = MangroTheme.colors.textTitle,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = stringResource(R.string.expand_radius_description),
+            style = MangroTheme.typography.caption.captionS,
+            color = MangroTheme.colors.textSubtitle,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Composable
 private fun HomeTopOverlay(
     uiState: HomeUiState,
     onAction: (HomeUiAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        if (uiState.viewMode == HomeViewMode.MAP && !uiState.isLocationPermissionGranted) {
+        if (uiState.locationPermission == LocationPermissionStatus.DENIED) {
             ActionBanner(
                 iconRes = R.drawable.ic_error,
                 stringRes = R.string.banner_location_permission,
@@ -495,17 +615,19 @@ private fun SelectedStoreCard(
                 onProductClick = { onAction(HomeUiAction.ProductClicked(it)) },
                 modifier = Modifier.padding(16.dp),
                 travelInfo = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(R.drawable.ic_directions_walk),
-                            contentDescription = null,
-                            tint = Gray900,
-                        )
-                        Text(
-                            text = stringResource(homeR.string.home_walking_minutes, selectedStore.walkingMinutes),
-                            style = MangroTheme.typography.caption.captionS,
-                            color = MangroTheme.colors.textBody,
-                        )
+                    selectedStore.walkingMinutes?.let { walkingMinutes ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = ImageVector.vectorResource(R.drawable.ic_directions_walk),
+                                contentDescription = null,
+                                tint = Gray900,
+                            )
+                            Text(
+                                text = stringResource(homeR.string.home_walking_minutes, walkingMinutes),
+                                style = MangroTheme.typography.caption.captionS,
+                                color = MangroTheme.colors.textBody,
+                            )
+                        }
                     }
                 },
             )
@@ -522,10 +644,22 @@ private val previewStoreProducts = listOf(
 private class HomeUiStatePreviewProvider : PreviewParameterProvider<HomeUiState> {
     override val values: Sequence<HomeUiState>
         get() = sequenceOf(
-            HomeUiState(locationName = "망원동"),
-            HomeUiState(locationName = "망원동", isLocationPermissionGranted = false),
+            HomeUiState(locationName = "망원동", locationPermission = LocationPermissionStatus.GRANTED),
+            HomeUiState(locationPermission = LocationPermissionStatus.DENIED, isPermissionIntroVisible = true),
+            HomeUiState(locationPermission = LocationPermissionStatus.DENIED),
             HomeUiState(
                 locationName = "망원동",
+                locationPermission = LocationPermissionStatus.GRANTED,
+                isNearbyProductsEmpty = true,
+            ),
+            HomeUiState(
+                locationName = "서울",
+                locationPermission = LocationPermissionStatus.DENIED,
+                isBrowsingWithoutPermission = true,
+            ),
+            HomeUiState(
+                locationName = "망원동",
+                locationPermission = LocationPermissionStatus.GRANTED,
                 selectedStore = SelectedStoreDetail(
                     storeId = "store1",
                     storeName = "청과마을",

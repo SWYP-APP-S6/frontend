@@ -1,11 +1,10 @@
 package com.swyp.mangro.feature.consumer.store.product
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -128,6 +127,7 @@ fun ProductDetailScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     Text(
                         text = stringResource(R.string.product_detail_recipe_section_title),
@@ -135,15 +135,15 @@ fun ProductDetailScreen(
                         color = MangroTheme.colors.textTitle,
                     )
 
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    productInfo.recipes.forEach { recipe ->
-                        RecipeCard(
-                            recipeName = recipe.name,
-                            ingredients = recipe.ingredients,
-                            difficulty = recipe.difficulty,
-                            onClick = { onAction(ProductDetailUiAction.OnRecipeClick(recipe.id)) },
-                        )
+                    Column {
+                        productInfo.recipes.forEach { recipe ->
+                            RecipeCard(
+                                recipeName = recipe.name,
+                                ingredients = recipe.ingredients,
+                                difficulty = recipe.difficulty,
+                                onClick = { onAction(ProductDetailUiAction.OnRecipeClick(recipe.id)) },
+                            )
+                        }
                     }
                 }
             }

@@ -14,6 +14,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.swyp.mangro.core.designsystem.component.appbar.ConsumerMenu
 import com.swyp.mangro.core.utils.HideNavigationBarWhileVisible
 import com.swyp.mangro.feature.auth.navigation.Login
@@ -57,6 +58,15 @@ fun AppNavGraph(
         if (isBeforeLogin) return@LaunchedEffect
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
             holdCompletionViewModel.watch()
+        }
+    }
+
+    LaunchedEffect(navController) {
+        navController.currentBackStackEntryFlow.collect { entry ->
+            if (entry.destination.hasRoute<PickupCompleteDestination>()) {
+                entry.toRoute<PickupCompleteDestination>().holdId.toLongOrNull()
+                    ?.let(holdCompletionViewModel::markHandled)
+            }
         }
     }
 

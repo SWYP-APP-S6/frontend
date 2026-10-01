@@ -22,6 +22,7 @@ class HoldCompletionViewModel @Inject constructor(
 ) : ViewModel() {
 
     private var watchingHoldId: Long? = null
+    private val handledHoldIds = mutableSetOf<Long>()
 
     private val _completedHoldId = Channel<Long>(Channel.BUFFERED)
     val completedHoldId = _completedHoldId.receiveAsFlow()
@@ -33,24 +34,32 @@ class HoldCompletionViewModel @Inject constructor(
         }
     }
 
+    fun markHandled(holdId: Long) {
+        handledHoldIds += holdId
+        if (watchingHoldId == holdId) watchingHoldId = null
+    }
+
     private suspend fun checkActiveHold() {
-        val activeResult = homeRepository.fetchActiveHold().first()
-        val activeHold = activeResult.getOrElse { return }
+        val activeHold = homeRepository.fetchActiveHold().first().getOrElse {
+            return
+        }
 
         if (activeHold != null) {
-            watchingHoldId = activeHold.holdId
+            if (activeHold.holdId !in handledHoldIds) watchingHoldId = activeHold.holdId
             return
         }
 
         val holdId = watchingHoldId ?: return
-        val detailResult = holdRepository.fetchHold(holdId).first()
-        val detail = detailResult.getOrElse { return }
+        val detail = holdRepository.fetchHold(holdId).first().getOrElse { return }
 
         when (detail.status) {
             "COMPLETED" -> {
                 watchingHoldId = null
-                _completedHoldId.send(holdId)
+                if (handledHoldIds.add(holdId)) {
+                    _completedHoldId.send(holdId)
+                }
             }
+
             "CANCELED", "EXPIRED" -> watchingHoldId = null
         }
     }

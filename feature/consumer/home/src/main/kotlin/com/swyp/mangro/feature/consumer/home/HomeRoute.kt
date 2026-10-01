@@ -16,7 +16,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.edit
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -45,23 +44,15 @@ fun HomeRoute(
     }
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        viewModel.onLocationPermissionChecked(
-            isGranted = context.hasLocationPermission(),
-            canShowIntro = !context.hasShownPermissionIntro(),
-        )
+        viewModel.onLocationPermissionChecked(isGranted = context.hasLocationPermission())
         viewModel.refreshOnResume()
-    }
-
-    LaunchedEffect(uiState.isPermissionIntroVisible) {
-        if (uiState.isPermissionIntroVisible) context.markPermissionIntroShown()
     }
 
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
             when (event) {
-                HomeUiEvent.RequestLocationPermission -> {
-                    if (context.canShowPermissionDialog() || !context.hasRequestedLocationPermission()) {
-                        context.markLocationPermissionRequested()
+                is HomeUiEvent.RequestLocationPermission -> {
+                    if (context.canShowPermissionDialog() || !event.hasRequestedBefore) {
                         permissionLauncher.launch(LOCATION_PERMISSIONS)
                     } else {
                         context.openAppSettings()
@@ -83,24 +74,6 @@ fun HomeRoute(
 
 private fun Context.hasLocationPermission(): Boolean = LOCATION_PERMISSIONS.any {
     ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
-}
-
-private const val PERMISSION_PREFS = "location_permission"
-private const val KEY_REQUESTED = "requested"
-private const val KEY_INTRO_SHOWN = "intro_shown"
-
-private fun Context.permissionPrefs() = getSharedPreferences(PERMISSION_PREFS, Context.MODE_PRIVATE)
-
-private fun Context.hasRequestedLocationPermission(): Boolean = permissionPrefs().getBoolean(KEY_REQUESTED, false)
-
-private fun Context.markLocationPermissionRequested() {
-    permissionPrefs().edit { putBoolean(KEY_REQUESTED, true) }
-}
-
-private fun Context.hasShownPermissionIntro(): Boolean = permissionPrefs().getBoolean(KEY_INTRO_SHOWN, false)
-
-private fun Context.markPermissionIntroShown() {
-    permissionPrefs().edit { putBoolean(KEY_INTRO_SHOWN, true) }
 }
 
 private fun Context.canShowPermissionDialog(): Boolean {

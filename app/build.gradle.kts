@@ -116,6 +116,9 @@ dependencies {
     add("consumerImplementation", libs.firebase.messaging)
     add("consumerImplementation", libs.kotlinx.coroutines.play.services)
     add("consumerImplementation", project(":data:consumer:notification"))
+    add("consumerImplementation", project(":data:consumer:home"))
+    add("consumerImplementation", project(":data:consumer:hold"))
+    add("consumerImplementation", libs.androidx.hilt.navigation.compose)
 
     add("ownerImplementation", project(":feature:splash"))
     add("ownerImplementation", project(":feature:auth"))

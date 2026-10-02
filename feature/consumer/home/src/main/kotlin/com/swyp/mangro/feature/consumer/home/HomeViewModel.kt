@@ -1,9 +1,9 @@
 package com.swyp.mangro.feature.consumer.home
 
 import android.location.Location
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.swyp.core.local.store.LocationPermissionStore
 import com.swyp.mangro.core.designsystem.component.appbar.ConsumerMenu
 import com.swyp.mangro.core.designsystem.component.card.map.StoreProduct
 import com.swyp.mangro.core.designsystem.component.count
@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-private const val TAG = "HomeViewModel"
 private const val DEFAULT_BOUNDS_DELTA = 0.01
 
 private const val EXPANDED_RADIUS_METERS = 5_000
@@ -45,6 +44,7 @@ class HomeViewModel @Inject constructor(
     private val repository: ConsumerHomeRepository,
     private val authRepository: AuthRepository,
     private val locationProvider: LocationProvider,
+    private val locationPermissionStore: LocationPermissionStore,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -67,7 +67,6 @@ class HomeViewModel @Inject constructor(
     private var isGuest: Boolean? = null
     private var lastIsGranted: Boolean? = null
     private var canShowIntro = false
-    private var hasShownPermissionIntro = false
 
     init {
         loadSessionType()
@@ -76,13 +75,13 @@ class HomeViewModel @Inject constructor(
     private fun loadSessionType() {
         viewModelScope.launch {
             isGuest = runCatching { authRepository.isGuestSession().first() }.getOrDefault(true)
+            canShowIntro = !runCatching { locationPermissionStore.isIntroShown.first() }.getOrDefault(true)
             applyLocationPermission()
         }
     }
 
-    fun onLocationPermissionChecked(isGranted: Boolean, canShowIntro: Boolean = false) {
+    fun onLocationPermissionChecked(isGranted: Boolean) {
         lastIsGranted = isGranted
-        if (canShowIntro) this.canShowIntro = true
         applyLocationPermission()
     }
 
@@ -90,8 +89,11 @@ class HomeViewModel @Inject constructor(
         val isGranted = lastIsGranted ?: return
         if (!isGranted && isGuest == null) return
 
-        val shouldShowIntro = !isGranted && isGuest == false && canShowIntro && !hasShownPermissionIntro
-        if (shouldShowIntro) hasShownPermissionIntro = true
+        val shouldShowIntro = !isGranted && isGuest == false && canShowIntro
+        if (shouldShowIntro) {
+            canShowIntro = false
+            viewModelScope.launch { locationPermissionStore.markIntroShown() }
+        }
 
         _uiState.update {
             it.copy(
@@ -105,6 +107,14 @@ class HomeViewModel @Inject constructor(
         }
         if (isGranted && !hasUserLocation && locationJob?.isActive != true) {
             loadLocation()
+        }
+    }
+
+    private fun requestLocationPermission() {
+        viewModelScope.launch {
+            val hasRequestedBefore = runCatching { locationPermissionStore.isRequested.first() }.getOrDefault(false)
+            runCatching { locationPermissionStore.markRequested() }
+            _event.send(HomeUiEvent.RequestLocationPermission(hasRequestedBefore))
         }
     }
 
@@ -322,9 +332,8 @@ class HomeViewModel @Inject constructor(
                             )
                         }
                     }
-                    .onFailure { error ->
+                    .onFailure {
                         // TODO: 주변 상품 조회 실패 처리
-                        Log.e(TAG, "fetchNearbyProducts failed", error)
                     }
             }
         }
@@ -361,22 +370,21 @@ class HomeViewModel @Inject constructor(
         when (action) {
             HomeUiAction.PermissionIntroAllowClicked -> {
                 _uiState.update { it.copy(isPermissionIntroVisible = false) }
-                viewModelScope.launch {
-                    _event.send(HomeUiEvent.RequestLocationPermission)
-                }
+                requestLocationPermission()
             }
             HomeUiAction.PermissionIntroLaterClicked -> {
                 _uiState.update { it.copy(isPermissionIntroVisible = false) }
             }
-            HomeUiAction.PermissionBannerActionClicked -> {
-                viewModelScope.launch {
-                    _event.send(HomeUiEvent.RequestLocationPermission)
-                }
-            }
+            HomeUiAction.PermissionBannerActionClicked -> requestLocationPermission()
             HomeUiAction.BrowseWithoutLocationClicked -> browseWithoutLocation()
             HomeUiAction.ExpandRadiusClicked -> expandRadius()
             is HomeUiAction.ViewModeChanged -> {
-                _uiState.update { it.copy(viewMode = action.mode) }
+                _uiState.update {
+                    it.copy(
+                        viewMode = action.mode,
+                        selectedStore = if (action.mode == HomeViewMode.LIST) null else it.selectedStore,
+                    )
+                }
                 if (action.mode == HomeViewMode.LIST) refreshNearbyProducts()
             }
             is HomeUiAction.StorePinClicked -> {

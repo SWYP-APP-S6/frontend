@@ -15,6 +15,7 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:model"))
     implementation(project(":core:utils"))
+    implementation(project(":core:local"))
     implementation(project(":data:auth"))
     implementation(project(":feature:consumer:store"))
     implementation(project(":data:consumer:home"))

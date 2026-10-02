@@ -1,6 +1,5 @@
 package com.swyp.mangro.feature.consumer.hold.history
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -31,8 +31,10 @@ import com.swyp.mangro.core.designsystem.component.appbar.ConsumerBottomAppBar
 import com.swyp.mangro.core.designsystem.component.appbar.ConsumerMenu
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
 import com.swyp.mangro.core.designsystem.component.card.wishlist.WishHistoryCard
+import com.swyp.mangro.core.designsystem.component.card.wishlist.WishHistoryItem
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.consumer.hold.R.string
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
@@ -84,62 +86,59 @@ fun HoldHistoryScreen(
                 .verticalScroll(rememberScrollState()),
         ) {
             if (uiState.inProgressItems.isNotEmpty()) {
-                Column {
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = stringResource(string.hold_history_in_progress_title),
-                        style = MangroTheme.typography.title.titleS ?: MangroTheme.typography.title.titleM,
-                        color = MangroTheme.colors.textTitle,
-                        modifier = Modifier.padding(horizontal = 20.dp),
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    uiState.inProgressItems.forEach { item ->
-                        WishHistoryCard(
-                            item = item,
-                            modifier = Modifier.clickable {
-                                onAction(HoldHistoryUiAction.OnItemClick(item.id))
-                            },
-                        )
-                    }
-                }
+                HoldHistorySection(
+                    title = stringResource(string.hold_history_in_progress_title),
+                    titleColor = MangroTheme.colors.textTitle,
+                    items = uiState.inProgressItems,
+                    onItemClick = { onAction(HoldHistoryUiAction.OnItemClick(it)) },
+                )
 
                 if (uiState.pastItems.isNotEmpty()) {
-                    Spacer(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(8.dp)
-                            .background(MangroTheme.colors.surfaceAlter),
+                    HorizontalDivider(
+                        thickness = 8.dp,
+                        color = MangroTheme.colors.surfaceAlter,
                     )
                 }
             }
 
             if (uiState.pastItems.isNotEmpty()) {
-                Column {
-                    Spacer(modifier = Modifier.height(16.dp))
+                HoldHistorySection(
+                    title = stringResource(string.hold_history_past_title),
+                    titleColor = MangroTheme.colors.textSubtitle,
+                    items = uiState.pastItems,
+                    onItemClick = { onAction(HoldHistoryUiAction.OnItemClick(it)) },
+                    modifier = Modifier.padding(bottom = 20.dp),
+                )
+            }
+        }
+    }
+}
 
-                    Text(
-                        text = stringResource(string.hold_history_past_title),
-                        style = MangroTheme.typography.title.titleS ?: MangroTheme.typography.title.titleM,
-                        color = MangroTheme.colors.textSubtitle,
-                        modifier = Modifier.padding(horizontal = 20.dp),
-                    )
+@Composable
+private fun HoldHistorySection(
+    title: String,
+    titleColor: Color,
+    items: ImmutableList<WishHistoryItem>,
+    onItemClick: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.padding(top = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text(
+            text = title,
+            style = MangroTheme.typography.title.titleS ?: MangroTheme.typography.title.titleM,
+            color = titleColor,
+            modifier = Modifier.padding(horizontal = 20.dp),
+        )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    uiState.pastItems.forEach { item ->
-                        WishHistoryCard(
-                            item = item,
-                            modifier = Modifier.clickable {
-                                onAction(HoldHistoryUiAction.OnItemClick(item.id))
-                            },
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-                }
+        Column {
+            items.forEach { item ->
+                WishHistoryCard(
+                    item = item,
+                    modifier = Modifier.clickable { onItemClick(item.id) },
+                )
             }
         }
     }

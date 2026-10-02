@@ -78,6 +78,12 @@ class ProductDetailViewModel @Inject constructor(
                 _uiState.update { it.copy(isWishBottomSheetVisible = false) }
             }
 
+            is ProductDetailUiAction.OnRecipeClick -> {
+                viewModelScope.launch {
+                    _uiEvent.send(ProductDetailUiEvent.NavigateToRecipeDetail(action.recipeId))
+                }
+            }
+
             is ProductDetailUiAction.OnStoreInfoClick -> {
                 viewModelScope.launch {
                     _uiState.value.productInfo?.store?.let { store ->

@@ -7,20 +7,22 @@ import com.swyp.mangro.feature.consumer.recipe.detail.RecipeDetailRoute
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RecipeDetailDestination(val recipeId: Long)
+data class RecipeDetailDestination(
+    val recipeId: Long,
+    val fromProductDetail: Boolean = false,
+)
 
 fun NavGraphBuilder.recipeDetailScreen(
     navController: NavController,
-    onNavigateToProductDetail: (String) -> Unit,
 ) {
     composable<RecipeDetailDestination> {
         RecipeDetailRoute(
             onBackClick = { navController.popBackStack() },
-            onNavigateToProductDetail = onNavigateToProductDetail,
+            onWishClick = { navController.popBackStack() },
         )
     }
 }
 
-fun NavController.navigateToRecipeDetail(recipeId: Long) {
-    navigate(RecipeDetailDestination(recipeId = recipeId))
+fun NavController.navigateToRecipeDetail(recipeId: Long, fromProductDetail: Boolean = false) {
+    navigate(RecipeDetailDestination(recipeId = recipeId, fromProductDetail = fromProductDetail))
 }

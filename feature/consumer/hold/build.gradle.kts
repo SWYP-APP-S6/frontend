@@ -15,6 +15,7 @@ dependencies {
     implementation(project(":core:utils"))
     implementation(project(":core:model"))
     implementation(project(":data:consumer:hold"))
+    implementation(project(":data:consumer:product"))
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

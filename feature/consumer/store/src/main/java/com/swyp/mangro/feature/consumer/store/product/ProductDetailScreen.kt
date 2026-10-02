@@ -1,6 +1,7 @@
 package com.swyp.mangro.feature.consumer.store.product
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -25,8 +27,10 @@ import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
 import com.swyp.mangro.core.designsystem.component.card.product.ProductDetail
 import com.swyp.mangro.core.designsystem.component.card.product.ProductDetailCard
+import com.swyp.mangro.core.designsystem.component.card.recipe.RecipeCard
 import com.swyp.mangro.core.designsystem.component.image.MangroImagePageController
 import com.swyp.mangro.core.designsystem.component.image.MangroImageViewer
+import com.swyp.mangro.core.designsystem.theme.Gray200
 import com.swyp.mangro.core.designsystem.theme.Gray900
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.consumer.store.R
@@ -113,35 +117,36 @@ fun ProductDetailScreen(
                 onStoreClick = { onAction(ProductDetailUiAction.OnStoreInfoClick) },
             )
 
-//            Spacer(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(8.dp)
-//                    .background(Gray200),
-//            )
+            if (productInfo.recipes.isNotEmpty()) {
+                HorizontalDivider(
+                    thickness = 8.dp,
+                    color = Gray200,
+                )
 
-//            Column(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(20.dp),
-//            ) {
-//                Text(
-//                    text = stringResource(R.string.product_detail_recipe_section_title),
-//                    style = MangroTheme.typography.title.titleM,
-//                    color = MangroTheme.colors.textTitle,
-//                )
-//
-//                Spacer(modifier = Modifier.height(10.dp))
-//
-//                productInfo.recipes.forEach { recipe ->
-//                    RecipeCard(
-//                        recipeName = recipe.name,
-//                        ingredients = recipe.ingredients,
-//                        difficulty = recipe.difficulty,
-//                        onClick = { },
-//                    )
-//                }
-//            }
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.product_detail_recipe_section_title),
+                        style = MangroTheme.typography.title.titleM,
+                        color = MangroTheme.colors.textTitle,
+                    )
+
+                    Column {
+                        productInfo.recipes.forEach { recipe ->
+                            RecipeCard(
+                                recipeName = recipe.name,
+                                ingredients = recipe.ingredients,
+                                difficulty = recipe.difficulty,
+                                onClick = { onAction(ProductDetailUiAction.OnRecipeClick(recipe.id)) },
+                            )
+                        }
+                    }
+                }
+            }
 
             if (uiState.isWishBottomSheetVisible) {
                 WishBottomSheet(

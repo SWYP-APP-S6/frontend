@@ -13,6 +13,7 @@ fun NavGraphBuilder.productDetailScreen(
     navController: NavController,
     onNavigateToHold: (String) -> Unit,
     onNavigateToLogin: () -> Unit,
+    onNavigateToRecipeDetail: (Long) -> Unit,
 ) {
     composable<ProductDetailRoute> {
         ProductDetailRoute(
@@ -20,6 +21,7 @@ fun NavGraphBuilder.productDetailScreen(
             onNavigateToStoreDetail = { },
             onNavigateToHold = onNavigateToHold,
             onNavigateToLogin = onNavigateToLogin,
+            onNavigateToRecipeDetail = onNavigateToRecipeDetail,
         )
     }
 }

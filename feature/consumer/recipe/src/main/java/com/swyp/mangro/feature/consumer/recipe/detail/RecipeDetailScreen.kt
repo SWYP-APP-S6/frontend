@@ -43,12 +43,10 @@ import com.swyp.mangro.feature.consumer.recipe.R
 @Composable
 fun RecipeDetailScreen(
     uiState: RecipeDetailUiState,
-    onAction: (RecipeDetailUiAction) -> Unit,
     onBackClick: () -> Unit,
+    onWishClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val detail = uiState.detail ?: return
-
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MangroTheme.colors.surfaceNormal,
@@ -73,22 +71,27 @@ fun RecipeDetailScreen(
             )
         },
         bottomBar = {
-            MangroButton(
-                text = stringResource(R.string.recipe_detail_wish_button),
-                style = MangroButtonStyle.ACTIVE,
-                onClick = { onAction(RecipeDetailUiAction.OnWishClick) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .padding(top = 20.dp, bottom = 12.dp, start = 20.dp, end = 20.dp),
-            )
+            if (uiState.showWishButton) {
+                MangroButton(
+                    text = stringResource(R.string.recipe_detail_wish_button),
+                    style = MangroButtonStyle.ACTIVE,
+                    onClick = onWishClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(top = 20.dp, bottom = 12.dp, start = 20.dp, end = 20.dp),
+                )
+            }
         },
     ) { innerPadding ->
+        val detail = uiState.detail ?: return@Scaffold
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
+                .then(if (uiState.showWishButton) Modifier else Modifier.navigationBarsPadding()),
         ) {
             AsyncImage(
                 model = detail.imageUrl,
@@ -125,7 +128,7 @@ fun RecipeDetailScreen(
 
             RecipeInfoSection(
                 label = stringResource(R.string.recipe_detail_nutrition_title),
-                description = stringResource(R.string.recipe_detail_nutrition_basis),
+                description = detail.nutritionBasisRes?.let { stringResource(it) },
                 content = {
                     Row(
                         modifier = Modifier
@@ -133,8 +136,8 @@ fun RecipeDetailScreen(
                             .horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        detail.nutritionLabels.forEach { label ->
-                            MangroOutlinedLabel(content = label)
+                        detail.nutrition.forEach { nutrition ->
+                            MangroOutlinedLabel(content = "${stringResource(nutrition.nameRes)} ${nutrition.value}")
                         }
                     }
                 },
@@ -208,6 +211,22 @@ private fun RecipeInfoSection(
 @Composable
 private fun RecipeDetailScreenPreview() {
     MangroTheme {
-        RecipeDetailScreen(uiState = dummyRecipeDetailUiState, onAction = {}, onBackClick = {})
+        RecipeDetailScreen(
+            uiState = dummyRecipeDetailUiState,
+            onBackClick = {},
+            onWishClick = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RecipeDetailScreenWithWishButtonPreview() {
+    MangroTheme {
+        RecipeDetailScreen(
+            uiState = dummyRecipeDetailUiState.copy(showWishButton = true),
+            onBackClick = {},
+            onWishClick = {},
+        )
     }
 }

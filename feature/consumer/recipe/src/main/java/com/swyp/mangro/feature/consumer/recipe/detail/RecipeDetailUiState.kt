@@ -2,5 +2,7 @@ package com.swyp.mangro.feature.consumer.recipe.detail
 
 data class RecipeDetailUiState(
     val detail: RecipeDetailInfo? = null,
+    val showWishButton: Boolean = false,
     val isLoading: Boolean = false,
+    val isError: Boolean = false,
 )

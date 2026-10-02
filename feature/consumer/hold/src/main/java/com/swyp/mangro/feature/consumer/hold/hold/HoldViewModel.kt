@@ -12,6 +12,7 @@ import com.swyp.mangro.data.consumer.hold.repository.HoldRepository
 import com.swyp.mangro.feature.consumer.hold.navigation.HoldDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -109,9 +110,13 @@ class HoldViewModel @Inject constructor(
             repository.fetchHold(holdId).collect { result ->
                 result
                     .onSuccess { detail ->
-                        _uiState.update { detail.toHoldUiState() }
-                        if (detail.status == "HOLDING") {
-                            startPollingForCompletion()
+                        when (detail.status) {
+                            "COMPLETED" -> _uiEvent.send(HoldUiEvent.NavigateToPickupComplete(holdId.toString()))
+                            "HOLDING" -> {
+                                _uiState.update { detail.toHoldUiState() }
+                                startPollingForCompletion()
+                            }
+                            else -> _uiState.update { detail.toHoldUiState() }
                         }
                     }
                     .onFailure {
@@ -124,7 +129,7 @@ class HoldViewModel @Inject constructor(
     private fun startPollingForCompletion() {
         viewModelScope.launch {
             while (true) {
-                delay(5_000)
+                delay(5_000.milliseconds)
                 var shouldStop = false
                 repository.fetchHold(holdId).collect { result ->
                     result

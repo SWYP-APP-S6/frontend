@@ -21,8 +21,6 @@ data class Pickup(
         require(deadline > requestedAt)
     }
 
-    val totalPrice: Long get() = unitPrice * quantity
-
     fun statusAt(now: Long): PickupStatus = if (status == PickupStatus.WAITING && now >= deadline) PickupStatus.EXPIRED else status
 }
 

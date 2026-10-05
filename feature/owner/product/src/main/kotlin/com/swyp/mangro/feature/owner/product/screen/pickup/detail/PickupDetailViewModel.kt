@@ -7,8 +7,8 @@ import androidx.navigation.toRoute
 import com.swyp.mangro.data.owner.product.model.HoldDetail
 import com.swyp.mangro.data.owner.product.model.HoldStatus
 import com.swyp.mangro.data.owner.product.repository.OwnerProductRepository
+import com.swyp.mangro.feature.owner.product.mapper.toPickUpStatus
 import com.swyp.mangro.feature.owner.product.model.Pickup
-import com.swyp.mangro.feature.owner.product.model.presentation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
@@ -83,7 +83,7 @@ class PickupDetailViewModel @Inject constructor(
                         unitPrice = item.unitPrice.toLong(),
                         requestedAt = detail.heldAt,
                         deadline = detail.expiresAt,
-                        status = detail.status.presentation(),
+                        status = detail.status.toPickUpStatus(),
                         completedAt = detail.completedAt,
                     )
                 },

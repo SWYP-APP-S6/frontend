@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.swyp.mangro.data.owner.product.repository.OwnerProductRepository
-import com.swyp.mangro.feature.owner.product.model.presentation
+import com.swyp.mangro.feature.owner.product.mapper.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
@@ -46,7 +46,7 @@ class ProductDetailViewModel @Inject constructor(
                 }.collect { result ->
                     result
                         .onSuccess { value ->
-                            val product = value.presentation()
+                            val product = value.toUiModel()
 
                             updateState {
                                 it.copy(
@@ -133,7 +133,7 @@ class ProductDetailViewModel @Inject constructor(
                 .collect { result ->
                     result
                         .onSuccess { value ->
-                            val updated = value.presentation()
+                            val updated = value.toUiModel()
                             updateState {
                                 it.copy(
                                     product = updated,

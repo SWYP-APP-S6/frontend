@@ -47,7 +47,7 @@ import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.feature.owner.product.R
 import com.swyp.mangro.feature.owner.product.component.OwnerDetailLoadStatus
 import com.swyp.mangro.feature.owner.product.component.PickupCancellationSheet
-import com.swyp.mangro.feature.owner.product.model.pickupDate
+import com.swyp.mangro.feature.owner.product.mapper.pickupDate
 import kotlinx.serialization.Serializable
 
 @Serializable

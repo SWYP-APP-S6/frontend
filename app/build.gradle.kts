@@ -81,6 +81,8 @@ dependencies {
     add("ownerImplementation", platform(libs.firebase.bom))
     add("ownerImplementation", libs.firebase.messaging)
     add("ownerImplementation", libs.androidx.work.runtime)
+    add("ownerImplementation", libs.androidx.hilt.work)
+    add("kspOwner", libs.androidx.hilt.compiler)
     add("consumerImplementation", libs.androidx.work.runtime)
     add("ownerImplementation", libs.kotlinx.coroutines.play.services)
     add("ownerImplementation", project(":data:owner:notification"))

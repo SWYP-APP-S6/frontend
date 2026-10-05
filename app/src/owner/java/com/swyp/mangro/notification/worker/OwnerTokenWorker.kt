@@ -1,7 +1,8 @@
-package com.swyp.mangro.notification
+package com.swyp.mangro.notification.worker
 
 import android.content.Context
 import androidx.core.app.NotificationManagerCompat
+import androidx.hilt.work.HiltWorker
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
@@ -13,31 +14,43 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.messaging.FirebaseMessaging
 import com.swyp.core.local.store.AuthStore
 import com.swyp.mangro.data.owner.notification.OwnerNotificationRepository
-import dagger.hilt.EntryPoint
-import dagger.hilt.InstallIn
-import dagger.hilt.android.EntryPointAccessors
-import dagger.hilt.components.SingletonComponent
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 import retrofit2.HttpException
 
-class OwnerTokenWorker(context: Context, parameters: WorkerParameters) : CoroutineWorker(context, parameters) {
+@HiltWorker
+class OwnerTokenWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted params: WorkerParameters,
+    private val authStore: AuthStore,
+    private val notificationRepository: OwnerNotificationRepository,
+) : CoroutineWorker(context, params) {
+
     override suspend fun doWork(): Result {
-        val dependencies = EntryPointAccessors.fromApplication(applicationContext, Dependencies::class.java)
-        return try {
-            if (dependencies.authStore().authKey.first() == null) return Result.success()
+        val authKey = runCatching {
+            authStore.authKey.first()
+        }.getOrElse { e ->
+            if (e is CancellationException) throw e
+            return Result.retry()
+        }
+
+        if (authKey == null) return Result.success()
+
+        val result = try {
             if (FirebaseApp.initializeApp(applicationContext) == null) return Result.failure()
             val token = FirebaseMessaging.getInstance().token.await()
-            val result = if (NotificationManagerCompat.from(applicationContext).areNotificationsEnabled()) {
-                dependencies.repository().registerToken(token).first()
+            val throwable = if (NotificationManagerCompat.from(applicationContext).areNotificationsEnabled()) {
+                notificationRepository.registerToken(token).first()
             } else {
-                dependencies.repository().deleteToken(token).first()
-            }
-            val error = result.exceptionOrNull()
-            when {
-                error == null -> Result.success()
-                error is HttpException && error.code() in 400..499 && error.code() != 429 -> Result.failure()
+                notificationRepository.deleteToken(token).first()
+            }.exceptionOrNull()
+
+            when (throwable) {
+                null -> Result.success()
+                is HttpException if (throwable.code() in 400..499 && throwable.code() != 429) -> Result.failure()
                 else -> Result.retry()
             }
         } catch (e: CancellationException) {
@@ -45,13 +58,8 @@ class OwnerTokenWorker(context: Context, parameters: WorkerParameters) : Corouti
         } catch (_: Exception) {
             Result.retry()
         }
-    }
 
-    @EntryPoint
-    @InstallIn(SingletonComponent::class)
-    interface Dependencies {
-        fun authStore(): AuthStore
-        fun repository(): OwnerNotificationRepository
+        return result
     }
 
     companion object {

@@ -50,7 +50,8 @@
 
 ## 주요 소스 위치
 
-- 공통 Activity, Manifest와 리소스: `app/src/main`
+- 공통 Activity, Application 초기화(`BaseMangroApplication`), Manifest와 리소스: `app/src/main`
+- Flavor별 Hilt Application 진입점 `MangroApplication`: `app/src/consumer`, `app/src/owner`
 - Flavor별 `MainScreen`: `app/src/consumer`, `app/src/owner`
   - Owner는 홈·점포 관리·찜·설정 Navigation을 사용한다. 온보딩 모듈의 실제 주소 검색은 연결되어 있으며 등록 API와 최상위 이동은 미연결이다.
   - 동일한 패키지와 함수 시그니처를 사용하며, 빌드 대상 Flavor의 구현만 포함한다.
@@ -62,6 +63,8 @@
   - 두 Feature 모두 `role` 차원의 owner/consumer Flavor를 선언하며, 화면은 각 Flavor에서 독립적으로 수정한다.
   - Route, ViewModel, 상태와 이벤트는 각 Feature의 `src/main`에서 공유한다.
 - Flavor별 테마와 앱 리소스: `app/src/consumer`, `app/src/owner`
+- Owner의 `MangroApplication`은 `Configuration.Provider`로 `HiltWorkerFactory`를 연결하고 Owner Manifest에서 WorkManager 기본 initializer만 제거한다. Consumer는 기본 설정과 자동 초기화를 유지한다.
+- Owner의 `notification/worker`는 생성자 주입을 사용하는 Hilt Worker를 소유한다. `OwnerNotificationReadWorker`는 `MainScreen`의 알림 처리 완료 콜백에서 읽음 작업을 등록하며, `TokenWorker`는 권한 변경·앱 복귀·FCM 토큰 갱신 시 토큰 동기화 작업을 등록한다.
 - 로컬 단위 테스트: `app/src/test`
 - Android 계측 테스트: `app/src/androidTest`
 - application convention plugin: `MangroApplicationPlugin.kt`
@@ -75,7 +78,7 @@
 - Remote 생성·검증 방법은 [Remote README](../../remote/README.md)를 따른다. OpenAPI Generator 7.24.0 및 Python 3을 사용하며, 생성 코드는 Git에 포함하지 않는다.
 - `:app`은 두 Flavor 모두 `:core:designsystem`, `:core:utils`, `:feature:splash`, `:feature:auth`에 의존한다. 네이버 지도 의존성과 API 키 Manifest 설정은 consumer에만 적용한다.
 - 카카오 SDK 인증은 두 Flavor의 로그인 버튼에 연결되어 있다. 설정과 테스트 절차는 [인증 README](../../feature/auth/README.md)를 따른다. 망그로 서버 인증·회원가입·토큰 저장은 연결되었으며 자동 로그인 및 개인정보처리방침 이동은 미연결이다.
-- `:core:utils`의 `NetworkConnectivityManager`는 기본 네트워크 콜백으로 연결 상태를 관측한다. `MangroApplication`에서 필드 주입받아 앱 시작 시 인스턴스를 생성한다.
+- `:core:utils`의 `NetworkConnectivityManager`는 기본 네트워크 콜백으로 연결 상태를 관측한다. 공통 `BaseMangroApplication`의 필드에 각 Flavor의 Hilt Application이 주입하여 앱 시작 시 인스턴스를 생성한다.
 - 앱의 실제 기능 소스는 아직 초기 상태이며 예제 테스트가 남아 있다.
 - Compose convention plugin은 `:app`, `:core:designsystem`, `:feature:owner:home` 등 Compose UI 모듈에 적용되어 있다. Hilt 및 KSP 플러그인은 `:app`, `:core:utils`, `:core:network`, `:remote:auth`, `:remote:consumer`, `:remote:owner`, `:feature:owner:home` 등에 적용되어 있으며, 앱의 Hilt 진입점은 `MangroApplication`이다.
 - 점주 홈은 최초 안내·빈 상태·운영 현황을 표시한다. Owner Debug와 Release 모두 사용자·상점·홈 API를 조회한다. Preview와 UI 테스트만 샘플 데이터를 사용한다. 승인 완료 시 상품 등록을 허용하며 상품 등록 목적지에서도 서버 상태를 재검증한다. 홈 상품 카드는 실제 상품 상세로 연결한다. 알림 목적지는 준비 중 안내를 표시한다.

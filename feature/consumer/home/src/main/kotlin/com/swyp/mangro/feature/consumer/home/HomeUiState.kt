@@ -21,6 +21,8 @@ data class HomeUiState(
     val selectedCategory: ProductCategory? = null,
     val storeGroups: List<StoreProductGroup> = emptyList(),
     val sortOption: HomeSortOption = HomeSortOption.DISTANCE,
+    val isNearbyProductsLoading: Boolean = false,
+    val hasNearbyProductsError: Boolean = false,
 ) {
     val isLocationPermissionGranted: Boolean
         get() = locationPermission == LocationPermissionStatus.GRANTED

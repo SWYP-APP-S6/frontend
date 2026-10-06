@@ -21,4 +21,5 @@ sealed interface HomeUiAction {
     data class DeviceLocationChanged(val latitude: Double, val longitude: Double) : HomeUiAction
     data class MapBoundsChanged(val minLat: Double, val maxLat: Double, val minLng: Double, val maxLng: Double) : HomeUiAction
     data class ActiveWishClicked(val holdId: String) : HomeUiAction
+    data object NearbyProductsRetryClicked : HomeUiAction
 }

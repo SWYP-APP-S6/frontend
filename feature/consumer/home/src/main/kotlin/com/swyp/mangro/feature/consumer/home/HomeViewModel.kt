@@ -21,6 +21,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -224,11 +225,7 @@ class HomeViewModel @Inject constructor(
             regionName = regionName,
             latitude = latitude,
             longitude = longitude,
-        ).collect { result ->
-            result.onFailure {
-                // TODO: 내 위치 저장 실패 처리 (게스트는 무시)
-            }
-        }
+        ).collect()
     }
 
     private fun applyLocation(
@@ -297,6 +294,7 @@ class HomeViewModel @Inject constructor(
         if (!hasUserLocation) return
         nearbyProductsJob?.cancel()
         nearbyProductsJob = viewModelScope.launch {
+            _uiState.update { it.copy(isNearbyProductsLoading = true) }
             repository.fetchNearbyProducts(
                 lat = lat,
                 lng = lng,
@@ -307,6 +305,8 @@ class HomeViewModel @Inject constructor(
                     .onSuccess { nearbyProducts ->
                         _uiState.update { state ->
                             state.copy(
+                                isNearbyProductsLoading = false,
+                                hasNearbyProductsError = false,
                                 isNearbyProductsEmpty = nearbyProducts.storeGroups.all { it.products.isEmpty() } &&
                                     searchRadiusMeters != EXPANDED_RADIUS_METERS,
                                 storeGroups = nearbyProducts.storeGroups.map { group ->
@@ -333,7 +333,7 @@ class HomeViewModel @Inject constructor(
                         }
                     }
                     .onFailure {
-                        // TODO: 주변 상품 조회 실패 처리
+                        _uiState.update { it.copy(isNearbyProductsLoading = false, hasNearbyProductsError = true) }
                     }
             }
         }
@@ -358,9 +358,6 @@ class HomeViewModel @Inject constructor(
                                 },
                             )
                         }
-                    }
-                    .onFailure {
-                        // TODO: 활성 찜 조회 실패 처리
                     }
             }
         }
@@ -435,6 +432,10 @@ class HomeViewModel @Inject constructor(
                     _event.send(HomeUiEvent.NavigateToHold(action.holdId))
                 }
             }
+            HomeUiAction.NearbyProductsRetryClicked -> {
+                if (_uiState.value.isNearbyProductsLoading) return
+                refreshNearbyProducts()
+            }
         }
     }
 
@@ -488,7 +489,7 @@ class HomeViewModel @Inject constructor(
                         }
                     }
                     .onFailure {
-                        // TODO: 상점 상세 조회 실패 처리
+                        _event.send(HomeUiEvent.ShowToast(R.string.home_store_detail_load_failed))
                     }
             }
         }

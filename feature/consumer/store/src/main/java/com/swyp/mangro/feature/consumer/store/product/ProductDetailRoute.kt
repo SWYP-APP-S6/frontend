@@ -3,6 +3,7 @@ package com.swyp.mangro.feature.consumer.store.product
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -51,6 +52,8 @@ fun ProductDetailRoute(
                         context.startActivity(Intent(Intent.ACTION_VIEW, marketUri))
                     }
                 }
+                is ProductDetailUiEvent.ShowToast ->
+                    Toast.makeText(context, event.messageRes, Toast.LENGTH_SHORT).show()
             }
         }
     }

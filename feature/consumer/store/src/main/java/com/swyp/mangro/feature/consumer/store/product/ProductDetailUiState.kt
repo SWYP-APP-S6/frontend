@@ -18,4 +18,6 @@ data class ProductDetailUiState(
     val productInfo: ProductInfo? = null,
     val wishState: WishUiState = WishUiState(),
     val isWishBottomSheetVisible: Boolean = false,
+    val isLoading: Boolean = false,
+    val hasError: Boolean = false,
 )

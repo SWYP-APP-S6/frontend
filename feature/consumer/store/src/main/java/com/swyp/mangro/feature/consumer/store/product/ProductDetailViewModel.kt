@@ -13,6 +13,7 @@ import com.swyp.mangro.core.network.exception.LoginRequiredException
 import com.swyp.mangro.core.utils.LocationProvider
 import com.swyp.mangro.data.consumer.product.model.ProductDetail
 import com.swyp.mangro.data.consumer.product.repository.ProductDetailRepository
+import com.swyp.mangro.feature.consumer.store.R
 import com.swyp.mangro.feature.consumer.store.navigation.ProductDetailRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -67,7 +68,7 @@ class ProductDetailViewModel @Inject constructor(
                                     _uiState.update { it.copy(isWishBottomSheetVisible = false) }
                                     _uiEvent.send(ProductDetailUiEvent.ShowLoginRequiredDialog)
                                 } else {
-                                    // 실패 처리
+                                    _uiEvent.send(ProductDetailUiEvent.ShowToast(R.string.product_detail_wish_failed))
                                 }
                             }
                     }
@@ -91,19 +92,25 @@ class ProductDetailViewModel @Inject constructor(
                     }
                 }
             }
+
+            is ProductDetailUiAction.OnRetryClick -> {
+                if (_uiState.value.isLoading) return
+                loadProductDetail()
+            }
         }
     }
 
     private fun loadProductDetail() {
         viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, hasError = false) }
             val location = locationProvider.fetchCurrentLocation()
             repository.fetchProduct(productId, location?.latitude, location?.longitude).collect { result ->
                 result
                     .onSuccess { detail ->
-                        _uiState.update { it.copy(productInfo = detail.toProductInfo()) }
+                        _uiState.update { it.copy(productInfo = detail.toProductInfo(), isLoading = false) }
                     }
                     .onFailure {
-                        // TODO: 실패 처리
+                        _uiState.update { it.copy(isLoading = false, hasError = true) }
                     }
             }
         }

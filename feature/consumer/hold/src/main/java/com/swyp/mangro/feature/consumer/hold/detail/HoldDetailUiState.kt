@@ -4,4 +4,5 @@ data class HoldDetailUiState(
     val detail: HoldDetailInfo? = null,
     val isCancelButtonEnabled: Boolean = false,
     val isLoading: Boolean = false,
+    val hasError: Boolean = false,
 )

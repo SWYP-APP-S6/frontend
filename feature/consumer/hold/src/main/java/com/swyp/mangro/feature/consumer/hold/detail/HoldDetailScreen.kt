@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.swyp.mangro.core.designsystem.R as dsR
 import com.swyp.mangro.core.designsystem.component.MangroButton
 import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
+import com.swyp.mangro.core.designsystem.component.MangroLoadStatus
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
 import com.swyp.mangro.core.designsystem.component.card.wishlist.WishDetailCard
 import com.swyp.mangro.core.designsystem.component.card.wishlist.WishStatus
@@ -43,31 +44,30 @@ fun HoldDetailScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val detail = uiState.detail ?: return
+    val detail = uiState.detail
+
+    if (detail == null) {
+        Scaffold(
+            modifier = modifier.fillMaxSize(),
+            containerColor = MangroTheme.colors.surfaceNormal,
+            topBar = { HoldDetailTopBar(onBackClick = onBackClick) },
+        ) { innerPadding ->
+            MangroLoadStatus(
+                isLoading = uiState.isLoading,
+                hasError = uiState.hasError,
+                onRetry = { onAction(HoldDetailUiAction.OnRetryClick) },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+            )
+        }
+        return
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MangroTheme.colors.surfaceNormal,
-        topBar = {
-            MangroDefaultStartAlignedTopAppBar(
-                modifier = Modifier.fillMaxWidth(),
-                navigationIcon = {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(dsR.drawable.ic_arrow_left),
-                        contentDescription = null,
-                        tint = Gray900,
-                        modifier = Modifier.size(24.dp).clickable(onClick = onBackClick),
-                    )
-                },
-                title = {
-                    Text(
-                        text = stringResource(R.string.hold_detail_title),
-                        style = MangroTheme.typography.heading.headingXXS,
-                        color = MangroTheme.colors.grayScale900,
-                    )
-                },
-            )
-        },
+        topBar = { HoldDetailTopBar(onBackClick = onBackClick) },
         bottomBar = {
             val isInProgress = detail.item.status == WishStatus.IN_PROGRESS
 
@@ -128,6 +128,28 @@ fun HoldDetailScreen(
 }
 
 @Composable
+private fun HoldDetailTopBar(onBackClick: () -> Unit) {
+    MangroDefaultStartAlignedTopAppBar(
+        modifier = Modifier.fillMaxWidth(),
+        navigationIcon = {
+            Icon(
+                imageVector = ImageVector.vectorResource(dsR.drawable.ic_arrow_left),
+                contentDescription = null,
+                tint = Gray900,
+                modifier = Modifier.size(24.dp).clickable(onClick = onBackClick),
+            )
+        },
+        title = {
+            Text(
+                text = stringResource(R.string.hold_detail_title),
+                style = MangroTheme.typography.heading.headingXXS,
+                color = MangroTheme.colors.grayScale900,
+            )
+        },
+    )
+}
+
+@Composable
 private fun HoldDetailInfoRow(
     label: String,
     mainValue: String,
@@ -183,5 +205,13 @@ private fun HoldDetailScreenInProgressPreview() {
 private fun HoldDetailScreenPastPreview() {
     MangroTheme {
         HoldDetailScreen(uiState = dummyHoldDetailUiStatePast, onAction = {}, onBackClick = {})
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HoldDetailScreenErrorPreview() {
+    MangroTheme {
+        HoldDetailScreen(uiState = HoldDetailUiState(hasError = true), onAction = {}, onBackClick = {})
     }
 }

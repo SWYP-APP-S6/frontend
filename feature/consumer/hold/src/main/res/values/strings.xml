@@ -28,6 +28,7 @@
     <string name="hold_detail_store_label">상점</string>
     <string name="hold_detail_requested_at_label">찜한 시각</string>
     <string name="hold_detail_expired_at_label">만료 시각</string>
+    <string name="hold_detail_cancel_failed">찜을 취소하지 못했어요. 잠시 후 다시 시도해주세요.</string>
 
     <string name="pickup_complete_title">수령 완료</string>
     <string name="pickup_complete_message">식자재 수령이 완료되었어요!</string>

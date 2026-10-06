@@ -8,6 +8,7 @@ import com.swyp.mangro.core.designsystem.component.card.wishlist.WishDetailItem
 import com.swyp.mangro.core.designsystem.component.card.wishlist.WishStatus
 import com.swyp.mangro.data.consumer.hold.model.HoldDetail
 import com.swyp.mangro.data.consumer.hold.repository.HoldRepository
+import com.swyp.mangro.feature.consumer.hold.R
 import com.swyp.mangro.feature.consumer.hold.navigation.HoldDetailDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Instant
@@ -56,17 +57,22 @@ class HoldDetailViewModel @Inject constructor(
                                 _uiEvent.send(HoldDetailUiEvent.NavigateToHoldHistory)
                             }
                             .onFailure {
-                                // TODO: 실패 처리
+                                _uiEvent.send(HoldDetailUiEvent.ShowToast(R.string.hold_detail_cancel_failed))
                             }
                     }
                 }
+            }
+
+            is HoldDetailUiAction.OnRetryClick -> {
+                if (_uiState.value.isLoading) return
+                loadHoldDetail(holdId)
             }
         }
     }
 
     private fun loadHoldDetail(holdId: Long) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = true, hasError = false) }
             repository.fetchHold(holdId).collect { result ->
                 result
                     .onSuccess { detail ->
@@ -79,7 +85,7 @@ class HoldDetailViewModel @Inject constructor(
                         }
                     }
                     .onFailure {
-                        _uiState.update { it.copy(isLoading = false) }
+                        _uiState.update { it.copy(isLoading = false, hasError = true) }
                     }
             }
         }

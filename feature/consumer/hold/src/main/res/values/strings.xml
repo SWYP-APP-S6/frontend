@@ -16,6 +16,7 @@
 
     <string name="hold_cancelled_notice">%1$s에서\n준비가 어려워졌어요</string>
     <string name="hold_cancelled_reason">예약이 취소 되었어요</string>
+    <string name="hold_cancel_failed">찜을 취소하지 못했어요. 잠시 후 다시 시도해주세요.</string>
 
     <string name="hold_history_title">찜 내역</string>
     <string name="hold_history_in_progress_title">진행 중</string>

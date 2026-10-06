@@ -13,4 +13,6 @@ data class HoldUiState(
     val wishedProducts: ImmutableList<WishedProduct> = persistentListOf(),
     val storeInfo: StoreInfo? = null,
     val isCancelled: Boolean = false,
+    val isLoading: Boolean = false,
+    val hasError: Boolean = false,
 )

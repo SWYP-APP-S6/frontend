@@ -131,7 +131,6 @@ internal fun MainScreen(notificationIntent: Intent? = null) {
                     consumedKey = openKey
                 },
                 onLogout = {
-                    OwnerMessagingService.clearStockReconfirmation()
                     navController.navigate(Login) {
                         popUpTo<OwnerMain> { inclusive = true }
                         launchSingleTop = true

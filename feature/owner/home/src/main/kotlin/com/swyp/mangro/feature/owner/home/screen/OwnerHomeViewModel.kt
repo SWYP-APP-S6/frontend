@@ -14,13 +14,18 @@ import com.swyp.mangro.feature.owner.home.screen.model.OwnerHomeEvent
 import com.swyp.mangro.feature.owner.home.screen.model.OwnerHomeUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -39,9 +44,11 @@ class OwnerHomeViewModel @Inject constructor(
     val event = _event.receiveAsFlow()
 
     private var refreshJob: Job? = null
+    private var notificationJob: Job? = null
+    private val initialLoad: Job
 
     init {
-        viewModelScope.launch {
+        initialLoad = viewModelScope.launch {
             combine(
                 storeRepository.fetchMyStoreInformation(),
                 homeRepository.fetchHome(),
@@ -96,15 +103,31 @@ class OwnerHomeViewModel @Inject constructor(
         }
     }
 
-    fun refresh() {
-        if (refreshJob?.isActive == true) return
+    @OptIn(FlowPreview::class)
+    fun observeRefreshRequests(requests: Flow<Unit>) {
+        if (notificationJob?.isActive == true) return
+        notificationJob = viewModelScope.launch {
+            requests.debounce(500.milliseconds).conflate().collect {
+                initialLoad.join()
+                refreshJob?.join()
+                startRefresh(showLoading = false).join()
+            }
+        }
+    }
 
-        refreshJob = viewModelScope.launch {
+    fun refresh() {
+        startRefresh(showLoading = true)
+    }
+
+    private fun startRefresh(showLoading: Boolean): Job {
+        refreshJob?.takeIf { it.isActive }?.let { return it }
+
+        return viewModelScope.launch {
             homeRepository.fetchHome()
                 .onStart {
-                    _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+                    if (showLoading) _uiState.update { it.copy(isLoading = true, errorMessage = null) }
                 }.catch {
-                    _uiState.update { it.copy(isLoading = false, errorMessage = R.string.owner_home_load_failed) }
+                    if (showLoading) _uiState.update { it.copy(isLoading = false, errorMessage = R.string.owner_home_load_failed) }
                 }.onCompletion {
                     _uiState.update { it.copy(isLoading = false) }
                 }.collect { result ->
@@ -127,7 +150,7 @@ class OwnerHomeViewModel @Inject constructor(
                         )
                     }
                 }
-        }
+        }.also { refreshJob = it }
     }
 
     fun handleAction(action: OwnerHomeAction) {

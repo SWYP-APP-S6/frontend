@@ -49,7 +49,7 @@
     <string name="product_detail_seller_label">판매처</string>
     <string name="product_detail_operating_hours_label">운영시간</string>
     <string name="product_detail_distance_prefix">내 위치로부터 </string>
-    <string name="product_detail_distance_value">%1$dm</string>
+    <string name="product_detail_distance_value">%1$s</string>
 
     <string name="owner_product_card_remaining_prefix">남은 수량</string>
     <string name="owner_product_card_expected_visit_prefix">방문 예정</string>

@@ -36,7 +36,7 @@ internal class ProductDetailRepositoryImpl @Inject constructor(
             id = body.id,
             name = body.name,
             category = body.category.value,
-            tags = body.tags,
+            tags = body.tags.map { it.trimQuotes() },
             photoUrls = body.photoUrls,
             originalPrice = body.originalPrice,
             salePrice = body.salePrice,
@@ -101,11 +101,13 @@ internal class ProductDetailRepositoryImpl @Inject constructor(
 
 private fun Double.roundToSixDecimals(): Double = (this * 1_000_000).toLong() / 1_000_000.0
 
-private fun List<String>.splitIngredientsIfNeeded(): List<String> = if (size == 1) {
-    this[0]
-        .split(Regex("[,()、/·]+"))
-        .map { it.trim() }
+private fun List<String>.splitIngredientsIfNeeded(): List<String> {
+    val items = if (size == 1) this[0].split(Regex("[,()、/·]+")) else this
+    return items
+        .map { it.trimQuotes() }
         .filter { it.isNotBlank() }
-} else {
-    this
 }
+
+private fun String.trimQuotes(): String = trim { it.isWhitespace() || it in QUOTE_CHARS }
+
+private const val QUOTE_CHARS = "\"“”"

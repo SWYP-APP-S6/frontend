@@ -31,6 +31,8 @@ import com.swyp.mangro.core.designsystem.theme.ConsumerMangroCaption
 import com.swyp.mangro.core.designsystem.theme.Gray600
 import com.swyp.mangro.core.designsystem.theme.MangroTheme
 import com.swyp.mangro.core.model.product.ProductCategory
+import java.util.Locale
+import kotlin.math.roundToInt
 
 data class ProductDetail(
     val hashtags: List<String>,
@@ -185,7 +187,7 @@ fun ProductDetailCard(
                     )
 
                     Text(
-                        text = stringResource(R.string.product_detail_distance_value, product.distanceMeters),
+                        text = stringResource(R.string.product_detail_distance_value, product.distanceMeters.toDistanceText()),
                         color = MangroTheme.colors.primaryStrong,
                         style = MangroTheme.typography.body.bodyM,
                     )
@@ -261,6 +263,16 @@ private fun ProductInfoRow(
             modifier = Modifier
                 .weight(1f),
         ) { content() }
+    }
+}
+
+private fun Int.toDistanceText(): String {
+    if (this < 1_000) return "${this}m"
+    val km = this / 1_000.0
+    return if (km >= 10) {
+        "${km.roundToInt()}km"
+    } else {
+        "%.1f".format(Locale.US, km).removeSuffix(".0") + "km"
     }
 }
 

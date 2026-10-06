@@ -1,6 +1,5 @@
 package com.swyp.mangro.feature.consumer.hold.complete
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -57,11 +56,16 @@ class PickupCompleteViewModel @Inject constructor(
                     _uiEvent.send(PickupCompleteUiEvent.NavigateToMenu(action.menu))
                 }
             }
+            is PickupCompleteUiAction.OnRetryClick -> {
+                if (_uiState.value.isLoading) return
+                loadPickupComplete()
+            }
         }
     }
 
     private fun loadPickupComplete() {
         viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, hasError = false) }
             repository.fetchHold(holdId).collect { result ->
                 result
                     .onSuccess { detail ->
@@ -78,12 +82,13 @@ class PickupCompleteViewModel @Inject constructor(
                                     ),
                                     recommendedRecipes = persistentListOf(),
                                 ),
+                                isLoading = false,
                             )
                         }
                         firstItem?.let { loadRecommendedRecipes(it.productId) }
                     }
                     .onFailure {
-                        // TODO: 수령 완료 정보 조회 실패 처리
+                        _uiState.update { it.copy(isLoading = false, hasError = true) }
                     }
             }
         }
@@ -92,16 +97,13 @@ class PickupCompleteViewModel @Inject constructor(
     private fun loadRecommendedRecipes(productId: Long) {
         viewModelScope.launch {
             productRepository.fetchProduct(productId).collect { result ->
-                result
-                    .onSuccess { product ->
-                        val recipes = product.recipes.map { it.toRecipe() }.toPersistentList()
-                        _uiState.update { state ->
-                            state.copy(info = state.info?.copy(recommendedRecipes = recipes))
-                        }
+                result.onSuccess { product ->
+                    val recipes = product.recipes.map { it.toRecipe() }.toPersistentList()
+                    _uiState.update { state ->
+                        state.copy(info = state.info?.copy(recommendedRecipes = recipes))
                     }
-                    .onFailure { error ->
-                        Log.e("PickupRecipe", "fetchProduct failed", error)
-                    }
+                }
+                // 추천 레시피 조회 실패 시 섹션을 노출하지 않음
             }
         }
     }

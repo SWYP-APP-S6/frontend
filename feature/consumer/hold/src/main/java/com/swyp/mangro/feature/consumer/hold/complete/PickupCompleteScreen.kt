@@ -28,6 +28,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.swyp.mangro.core.designsystem.R as dsR
+import com.swyp.mangro.core.designsystem.component.MangroLoadStatus
 import com.swyp.mangro.core.designsystem.component.appbar.ConsumerBottomAppBar
 import com.swyp.mangro.core.designsystem.component.appbar.ConsumerMenu
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
@@ -52,7 +53,9 @@ fun PickupCompleteScreen(
             MangroDefaultStartAlignedTopAppBar(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFFFFD2B2)),
+                    .then(
+                        if (uiState.info != null) Modifier.background(Color(0xFFFFD2B2)) else Modifier,
+                    ),
                 navigationIcon = {
                     Icon(
                         imageVector = ImageVector.vectorResource(dsR.drawable.ic_arrow_left),
@@ -78,7 +81,18 @@ fun PickupCompleteScreen(
             )
         },
     ) { innerPadding ->
-        val info = uiState.info ?: return@Scaffold
+        val info = uiState.info
+        if (info == null) {
+            MangroLoadStatus(
+                isLoading = uiState.isLoading,
+                hasError = uiState.hasError,
+                onRetry = { onAction(PickupCompleteUiAction.OnRetryClick) },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+            )
+            return@Scaffold
+        }
 
         Column(
             modifier = Modifier
@@ -160,5 +174,13 @@ fun PickupCompleteScreen(
 private fun PickupCompleteScreenPreview() {
     MangroTheme {
         PickupCompleteScreen(uiState = dummyPickupCompleteUiState, onAction = {}, onBackClick = {})
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PickupCompleteScreenErrorPreview() {
+    MangroTheme {
+        PickupCompleteScreen(uiState = PickupCompleteUiState(hasError = true), onAction = {}, onBackClick = {})
     }
 }

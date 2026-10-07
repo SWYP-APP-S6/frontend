@@ -8,8 +8,8 @@ import androidx.paging.map
 import com.swyp.mangro.data.owner.product.model.HoldStatus
 import com.swyp.mangro.data.owner.product.model.OwnerProductFilter
 import com.swyp.mangro.data.owner.product.repository.OwnerProductRepository
+import com.swyp.mangro.feature.owner.product.mapper.toUiModel
 import com.swyp.mangro.feature.owner.product.model.OwnerPickupModel
-import com.swyp.mangro.feature.owner.product.model.presentation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -76,7 +76,7 @@ class ProductListViewModel @Inject constructor(
                 if (it.filter == filter) it.copy(totalHolds = page.total, filteredTotal = page.filteredTotal) else it
             }
         }.map { data ->
-            data.map { it.presentation(System.currentTimeMillis() + offset, offset, false) }
+            data.map { it.toUiModel(System.currentTimeMillis() + offset, offset, false) }
         }
     }.cachedIn(viewModelScope)
 

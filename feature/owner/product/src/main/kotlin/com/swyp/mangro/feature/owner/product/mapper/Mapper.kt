@@ -1,12 +1,23 @@
-package com.swyp.mangro.feature.owner.product.model
+package com.swyp.mangro.feature.owner.product.mapper
 
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerPickupRequestItem
 import com.swyp.mangro.core.designsystem.component.card.owner.OwnerPickupRequestStatus
 import com.swyp.mangro.data.owner.product.model.HoldStatus
 import com.swyp.mangro.data.owner.product.model.ManagedHold
 import com.swyp.mangro.data.owner.product.model.ManagedProduct
+import com.swyp.mangro.feature.owner.product.model.OwnerPickupModel
+import com.swyp.mangro.feature.owner.product.model.OwnerProductModel
+import com.swyp.mangro.feature.owner.product.model.PickupStatus
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-internal fun ManagedProduct.presentation() = OwnerProductModel(
+internal fun pickupDate(
+    millis: Long,
+    pattern: String = "MM.dd(E) H시 mm분",
+): String = SimpleDateFormat(pattern, Locale.KOREA).format(Date(millis))
+
+internal fun ManagedProduct.toUiModel() = OwnerProductModel(
     id = id.toString(), name = name, photos = listOf(photoUrl).filter { it.isNotBlank() },
     originalPrice = originalPrice, salePrice = salePrice, initialQuantity = initialQuantity,
     remainingQuantity = stockQuantity, reservedQuantity = activeHoldQuantity, pickedUpQuantity = completedQuantity,
@@ -15,15 +26,17 @@ internal fun ManagedProduct.presentation() = OwnerProductModel(
     serverShortfall = shortfallQuantity, serverAvailable = availableQuantity,
     stockEditable = stockEditable, minAdjustableQuantity = 0,
 )
-internal fun HoldStatus.presentation() = when (this) {
+internal fun HoldStatus.toPickUpStatus() = when (this) {
     HoldStatus.HOLDING -> PickupStatus.WAITING
     HoldStatus.COMPLETED -> PickupStatus.COMPLETED
     HoldStatus.EXPIRED -> PickupStatus.EXPIRED
     HoldStatus.CANCELED_BY_OWNER -> PickupStatus.UNAVAILABLE
     HoldStatus.CANCELED_BY_USER -> PickupStatus.CANCELED
 }
-internal fun ManagedHold.presentation(now: Long, offset: Long, busy: Boolean): OwnerPickupModel {
+
+internal fun ManagedHold.toUiModel(now: Long, offset: Long, busy: Boolean): OwnerPickupModel {
     val active = status == HoldStatus.HOLDING && now < expiresAt
+
     return OwnerPickupModel(
         productId = productId.toString(),
         request = OwnerPickupRequestItem(

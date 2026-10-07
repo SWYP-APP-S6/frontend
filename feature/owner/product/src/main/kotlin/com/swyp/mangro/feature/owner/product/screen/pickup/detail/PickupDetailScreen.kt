@@ -33,8 +33,8 @@ import com.swyp.mangro.feature.owner.product.R
 import com.swyp.mangro.feature.owner.product.component.OwnerDetailLoadStatus
 import com.swyp.mangro.feature.owner.product.component.OwnerProductScaffold
 import com.swyp.mangro.feature.owner.product.component.pickup.PickupTimer
+import com.swyp.mangro.feature.owner.product.mapper.pickupDate
 import com.swyp.mangro.feature.owner.product.model.PickupStatus
-import com.swyp.mangro.feature.owner.product.model.pickupDate
 import java.text.NumberFormat
 import java.util.Locale
 import kotlinx.serialization.Serializable

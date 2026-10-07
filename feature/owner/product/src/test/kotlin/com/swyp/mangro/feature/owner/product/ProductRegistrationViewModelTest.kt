@@ -52,6 +52,10 @@ class ProductRegistrationViewModelTest {
             calls++
             emit(response)
         }
+        override fun fetchMyStoreInformation() = flow {
+            calls++
+            emit(response.getOrThrow())
+        }
         override fun register(registration: StoreRegistration): Flow<Result<Unit>> = error("unused")
     }
 

@@ -47,6 +47,7 @@ fun MangroTextField(
     inputTransformation: InputTransformation? = null,
     outputTransformation: OutputTransformation? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
+    isError: Boolean = false,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
@@ -78,7 +79,14 @@ fun MangroTextField(
             outputTransformation = outputTransformation,
             modifier = modifier,
             decorator = { innerTextField ->
-                MangroTextFieldDecoration(isFocused, state.text.isEmpty(), placeholder, innerTextField, leadingIcon)
+                MangroTextFieldDecoration(
+                    isFocused = isFocused,
+                    isEmpty = state.text.isEmpty(),
+                    placeholder = placeholder,
+                    innerTextField = innerTextField,
+                    leadingIcon = leadingIcon,
+                    isError = isError,
+                )
             },
         )
     }
@@ -91,6 +99,7 @@ fun MangroTextField(
     placeholder: String,
     modifier: Modifier = Modifier,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    isError: Boolean = false,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
@@ -112,7 +121,13 @@ fun MangroTextField(
             singleLine = true,
             keyboardOptions = keyboardOptions,
             decorationBox = { innerTextField ->
-                MangroTextFieldDecoration(isFocused, value.isEmpty(), placeholder, innerTextField)
+                MangroTextFieldDecoration(
+                    isFocused = isFocused,
+                    isEmpty = value.isEmpty(),
+                    placeholder = placeholder,
+                    innerTextField = innerTextField,
+                    isError = isError,
+                )
             },
         )
     }
@@ -125,11 +140,12 @@ private fun MangroTextFieldDecoration(
     placeholder: String,
     innerTextField: @Composable () -> Unit,
     leadingIcon: @Composable (() -> Unit)? = null,
+    isError: Boolean = false,
 ) {
-    val borderColor = if (isFocused) {
-        Orange600
-    } else {
-        MangroTheme.colors.borderDefault
+    val borderColor = when {
+        isError -> MangroTheme.colors.dangerNormal
+        isFocused -> Orange600
+        else -> MangroTheme.colors.borderDefault
     }
 
     val shape = RoundedCornerShape(8.dp)

@@ -141,6 +141,7 @@ internal fun ProductPriceScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 inputTransformation = priceInputTransformation,
                 outputTransformation = priceOutputTransformation,
+                errorMessage = uiState.originalPriceError?.let { stringResource(R.string.owner_product_price_amount_error) },
                 leadingIcon = {
                     Icon(
                         painter = painterResource(DesignR.drawable.ic_won),
@@ -159,6 +160,11 @@ internal fun ProductPriceScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 inputTransformation = priceInputTransformation,
                 outputTransformation = priceOutputTransformation,
+                errorMessage = when (uiState.salePriceError) {
+                    ProductPriceError.INVALID_AMOUNT -> stringResource(R.string.owner_product_price_amount_error)
+                    ProductPriceError.NOT_LOWER_THAN_ORIGINAL -> stringResource(R.string.owner_product_sale_price_error)
+                    null -> null
+                },
                 leadingIcon = {
                     Icon(
                         painter = painterResource(DesignR.drawable.ic_won),
@@ -204,12 +210,6 @@ internal fun ProductPriceScreen(
                     color = MangroTheme.colors.primaryNormal,
                     style = (MangroTheme.typography.title.titleS ?: MangroTheme.typography.title.titleM),
                     textAlign = TextAlign.End,
-                )
-            } else if (salePrice.text.isNotEmpty()) {
-                Text(
-                    text = stringResource(R.string.owner_product_price_error),
-                    style = MangroTheme.typography.caption.captionS,
-                    color = MangroTheme.colors.textSubtitle,
                 )
             }
         }

@@ -45,6 +45,7 @@ fun MangroInputBox(
     inputTransformation: InputTransformation? = null,
     outputTransformation: OutputTransformation? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
+    errorMessage: String? = null,
 ) {
     Column(
         modifier = modifier,
@@ -88,7 +89,17 @@ fun MangroInputBox(
             inputTransformation = inputTransformation,
             outputTransformation = outputTransformation,
             leadingIcon = leadingIcon,
+            isError = errorMessage != null,
         )
+
+        if (errorMessage != null) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = errorMessage,
+                color = MangroTheme.colors.dangerNormal,
+                style = MangroTheme.typography.caption.captionS,
+            )
+        }
     }
 }
 

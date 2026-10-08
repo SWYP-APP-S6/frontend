@@ -78,6 +78,7 @@ import com.naver.maps.map.compose.rememberCameraPositionState
 import com.naver.maps.map.compose.rememberFusedLocationSource
 import com.naver.maps.map.overlay.OverlayImage
 import com.swyp.mangro.core.designsystem.R
+import com.swyp.mangro.core.designsystem.component.MangroLoadStatus
 import com.swyp.mangro.core.designsystem.component.MangroStorePin
 import com.swyp.mangro.core.designsystem.component.appbar.ConsumerBottomAppBar
 import com.swyp.mangro.core.designsystem.component.appbar.ConsumerMenu
@@ -473,6 +474,18 @@ private fun HomeListContent(
             )
         }
 
+        if (uiState.hasNearbyProductsError) {
+            MangroLoadStatus(
+                isLoading = uiState.isNearbyProductsLoading,
+                hasError = true,
+                onRetry = { onAction(HomeUiAction.NearbyProductsRetryClicked) },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(White),
+            )
+            return@Column
+        }
+
         if (filteredGroups.isEmpty()) {
             HomeListEmptyContent(
                 title = if (uiState.storeGroups.isEmpty()) {
@@ -667,6 +680,12 @@ private class HomeUiStatePreviewProvider : PreviewParameterProvider<HomeUiState>
                     walkingMinutes = 7,
                     products = previewStoreProducts,
                 ),
+            ),
+            HomeUiState(
+                locationName = "망원동",
+                locationPermission = LocationPermissionStatus.GRANTED,
+                viewMode = LIST,
+                hasNearbyProductsError = true,
             ),
         )
 }

@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.swyp.mangro.core.designsystem.R as dsR
 import com.swyp.mangro.core.designsystem.component.MangroButton
 import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
+import com.swyp.mangro.core.designsystem.component.MangroLoadStatus
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
 import com.swyp.mangro.core.designsystem.component.card.store.StoreLocationCard
 import com.swyp.mangro.core.designsystem.component.card.timer.TimerCard
@@ -44,32 +45,30 @@ fun HoldScreen(
     modifier: Modifier = Modifier,
 ) {
     val wishedProducts = uiState.wishedProducts
-    if (wishedProducts.isEmpty()) return
-    val storeInfo = uiState.storeInfo ?: return
+    val storeInfo = uiState.storeInfo
+
+    if (wishedProducts.isEmpty() || storeInfo == null) {
+        Scaffold(
+            modifier = modifier.fillMaxSize(),
+            contentColor = MangroTheme.colors.surfaceNormal,
+            topBar = { HoldTopBar(onCloseClick = onCloseClick) },
+        ) { innerPadding ->
+            MangroLoadStatus(
+                isLoading = uiState.isLoading,
+                hasError = uiState.hasError,
+                onRetry = { onAction(HoldUiAction.OnReloadClick) },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+            )
+        }
+        return
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         contentColor = MangroTheme.colors.surfaceNormal,
-        topBar = {
-            MangroDefaultStartAlignedTopAppBar(
-                modifier = Modifier.fillMaxWidth(),
-                title = {
-                    Text(
-                        text = stringResource(R.string.hold_title),
-                        style = MangroTheme.typography.title.titleM,
-                        color = MangroTheme.colors.grayScale900,
-                    )
-                },
-                actions = {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(dsR.drawable.ic_x_24px),
-                        contentDescription = stringResource(R.string.hold_title),
-                        tint = Gray900,
-                        modifier = Modifier.size(24.dp).clickable(onClick = onCloseClick),
-                    )
-                },
-            )
-        },
+        topBar = { HoldTopBar(onCloseClick = onCloseClick) },
         bottomBar = {
             val isExpired = uiState.timerPhase == TimerCardPhase.EXPIRED
 
@@ -190,6 +189,28 @@ fun HoldScreen(
     }
 }
 
+@Composable
+private fun HoldTopBar(onCloseClick: () -> Unit) {
+    MangroDefaultStartAlignedTopAppBar(
+        modifier = Modifier.fillMaxWidth(),
+        title = {
+            Text(
+                text = stringResource(R.string.hold_title),
+                style = MangroTheme.typography.title.titleM,
+                color = MangroTheme.colors.grayScale900,
+            )
+        },
+        actions = {
+            Icon(
+                imageVector = ImageVector.vectorResource(dsR.drawable.ic_x_24px),
+                contentDescription = stringResource(R.string.hold_title),
+                tint = Gray900,
+                modifier = Modifier.size(24.dp).clickable(onClick = onCloseClick),
+            )
+        },
+    )
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun HoldScreenDefaultPreview() {
@@ -219,5 +240,13 @@ private fun HoldScreenExpiredPreview() {
 private fun HoldScreenCancelledPreview() {
     MangroTheme {
         HoldScreen(uiState = dummyHoldUiStateCancelled, onAction = {}, onCloseClick = {})
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HoldScreenErrorPreview() {
+    MangroTheme {
+        HoldScreen(uiState = HoldUiState(hasError = true), onAction = {}, onCloseClick = {})
     }
 }

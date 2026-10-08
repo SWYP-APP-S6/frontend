@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -62,6 +63,8 @@ fun HomeRoute(
                 HomeUiEvent.NavigateToWishList -> navigateToWishList()
                 HomeUiEvent.NavigateToMy -> navigateToMy()
                 is HomeUiEvent.NavigateToHold -> navigateToHold(event.holdId)
+                is HomeUiEvent.ShowToast ->
+                    Toast.makeText(context, event.messageRes, Toast.LENGTH_SHORT).show()
             }
         }
     }

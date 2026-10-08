@@ -6,6 +6,7 @@ sealed interface HoldUiAction {
     data class OnTimerPhaseChange(val phase: TimerCardPhase) : HoldUiAction
     data object OnCancelClick : HoldUiAction
     data object OnRetryClick : HoldUiAction
+    data object OnReloadClick : HoldUiAction
     data object OnDirectionsClick : HoldUiAction
     data object OnCopyAddressClick : HoldUiAction
     data object OnCallClick : HoldUiAction

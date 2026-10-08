@@ -3,6 +3,7 @@ package com.swyp.mangro.feature.consumer.hold.hold
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,9 +51,11 @@ fun HoldRoute(
                     clipboardManager.setText(AnnotatedString(event.address))
                 }
                 is HoldUiEvent.OpenDialer -> {
-                    val dialIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${event.phoneNumber}"))
+                    val dialIntent = Intent(Intent.ACTION_DIAL, "tel:${event.phoneNumber}".toUri())
                     context.startActivity(dialIntent)
                 }
+                is HoldUiEvent.ShowToast ->
+                    Toast.makeText(context, event.messageRes, Toast.LENGTH_SHORT).show()
             }
         }
     }

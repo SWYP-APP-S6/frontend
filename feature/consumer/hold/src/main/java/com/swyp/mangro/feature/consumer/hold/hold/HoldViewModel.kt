@@ -9,6 +9,7 @@ import com.swyp.mangro.core.designsystem.component.card.wishlist.WishedProduct
 import com.swyp.mangro.core.model.store.StoreInfo
 import com.swyp.mangro.data.consumer.hold.model.HoldDetail
 import com.swyp.mangro.data.consumer.hold.repository.HoldRepository
+import com.swyp.mangro.feature.consumer.hold.R
 import com.swyp.mangro.feature.consumer.hold.navigation.HoldDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -54,7 +55,7 @@ class HoldViewModel @Inject constructor(
                                 _uiEvent.send(HoldUiEvent.NavigateToProductDetail)
                             }
                             .onFailure {
-                                // 실패 처리
+                                _uiEvent.send(HoldUiEvent.ShowToast(R.string.hold_cancel_failed))
                             }
                     }
                 }
@@ -71,6 +72,11 @@ class HoldViewModel @Inject constructor(
                         )
                     }
                 }
+            }
+
+            is HoldUiAction.OnReloadClick -> {
+                if (_uiState.value.isLoading) return
+                loadHoldInfo()
             }
 
             is HoldUiAction.OnDirectionsClick -> {
@@ -107,6 +113,7 @@ class HoldViewModel @Inject constructor(
 
     private fun loadHoldInfo() {
         viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, hasError = false) }
             repository.fetchHold(holdId).collect { result ->
                 result
                     .onSuccess { detail ->
@@ -120,7 +127,7 @@ class HoldViewModel @Inject constructor(
                         }
                     }
                     .onFailure {
-                        // 실패 처리
+                        _uiState.update { it.copy(isLoading = false, hasError = true) }
                     }
             }
         }
@@ -132,25 +139,22 @@ class HoldViewModel @Inject constructor(
                 delay(5_000.milliseconds)
                 var shouldStop = false
                 repository.fetchHold(holdId).collect { result ->
-                    result
-                        .onSuccess { detail ->
-                            when (detail.status) {
-                                "COMPLETED" -> {
-                                    shouldStop = true
-                                    _uiEvent.send(HoldUiEvent.NavigateToPickupComplete(holdId.toString()))
-                                }
-                                "CANCELED", "EXPIRED" -> {
-                                    shouldStop = true
-                                    _uiState.update { detail.toHoldUiState() }
-                                }
-                                else -> {
-                                    _uiState.update { detail.toHoldUiState() }
-                                }
+                    result.onSuccess { detail ->
+                        when (detail.status) {
+                            "COMPLETED" -> {
+                                shouldStop = true
+                                _uiEvent.send(HoldUiEvent.NavigateToPickupComplete(holdId.toString()))
+                            }
+                            "CANCELED", "EXPIRED" -> {
+                                shouldStop = true
+                                _uiState.update { detail.toHoldUiState() }
+                            }
+                            else -> {
+                                _uiState.update { detail.toHoldUiState() }
                             }
                         }
-                        .onFailure {
-                            // 실패 처리
-                        }
+                    }
+                    // 폴링 실패는 다음 주기에 다시 시도하므로 별도 처리하지 않음
                 }
                 if (shouldStop) break
             }

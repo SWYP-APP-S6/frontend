@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.swyp.mangro.core.designsystem.R as dsR
 import com.swyp.mangro.core.designsystem.component.MangroButton
 import com.swyp.mangro.core.designsystem.component.MangroButtonStyle
+import com.swyp.mangro.core.designsystem.component.MangroLoadStatus
 import com.swyp.mangro.core.designsystem.component.appbar.MangroDefaultStartAlignedTopAppBar
 import com.swyp.mangro.core.designsystem.component.card.product.ProductDetail
 import com.swyp.mangro.core.designsystem.component.card.product.ProductDetailCard
@@ -58,32 +59,30 @@ fun ProductDetailScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val productInfo = uiState.productInfo ?: return
+    val productInfo = uiState.productInfo
+
+    if (productInfo == null) {
+        Scaffold(
+            modifier = modifier.fillMaxSize(),
+            containerColor = MangroTheme.colors.surfaceNormal,
+            topBar = { ProductDetailTopBar(onBackClick = onBackClick) },
+        ) { innerPadding ->
+            MangroLoadStatus(
+                isLoading = uiState.isLoading,
+                hasError = uiState.hasError,
+                onRetry = { onAction(ProductDetailUiAction.OnRetryClick) },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+            )
+        }
+        return
+    }
 
     Scaffold(
-        modifier = modifier
-            .fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         containerColor = MangroTheme.colors.surfaceNormal,
-        topBar = {
-            MangroDefaultStartAlignedTopAppBar(
-                modifier = Modifier.fillMaxWidth(),
-                navigationIcon = {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(dsR.drawable.ic_arrow_left),
-                        contentDescription = stringResource(R.string.product_detail_title),
-                        tint = Gray900,
-                        modifier = Modifier.size(24.dp).clickable(onClick = onBackClick),
-                    )
-                },
-                title = {
-                    Text(
-                        text = stringResource(R.string.product_detail_title),
-                        style = MangroTheme.typography.heading.headingXXS,
-                        color = MangroTheme.colors.grayScale900,
-                    )
-                },
-            )
-        },
+        topBar = { ProductDetailTopBar(onBackClick = onBackClick) },
         bottomBar = {
             MangroButton(
                 text = stringResource(R.string.product_detail_wish_button),
@@ -161,6 +160,28 @@ fun ProductDetailScreen(
     }
 }
 
+@Composable
+private fun ProductDetailTopBar(onBackClick: () -> Unit) {
+    MangroDefaultStartAlignedTopAppBar(
+        modifier = Modifier.fillMaxWidth(),
+        navigationIcon = {
+            Icon(
+                imageVector = ImageVector.vectorResource(dsR.drawable.ic_arrow_left),
+                contentDescription = stringResource(R.string.product_detail_title),
+                tint = Gray900,
+                modifier = Modifier.size(24.dp).clickable(onClick = onBackClick),
+            )
+        },
+        title = {
+            Text(
+                text = stringResource(R.string.product_detail_title),
+                style = MangroTheme.typography.heading.headingXXS,
+                color = MangroTheme.colors.grayScale900,
+            )
+        },
+    )
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun ProductDetailScreenPreview() {
@@ -179,6 +200,18 @@ private fun ProductDetailScreenWishBottomSheetPreview() {
     MangroTheme {
         ProductDetailScreen(
             uiState = dummyProductDetailUiStateWishSheetOpen,
+            onAction = {},
+            onBackClick = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ProductDetailScreenErrorPreview() {
+    MangroTheme {
+        ProductDetailScreen(
+            uiState = ProductDetailUiState(hasError = true),
             onAction = {},
             onBackClick = {},
         )

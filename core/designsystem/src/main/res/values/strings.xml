@@ -94,4 +94,7 @@
     <string name="product_category_dairy_egg">유제품/달걀</string>
     <string name="product_category_bakery">베이커리</string>
     <string name="product_category_prepared_food">조리식품</string>
+
+    <string name="load_status_error">정보를 불러오지 못했어요</string>
+    <string name="load_status_retry">다시 시도</string>
 </resources>

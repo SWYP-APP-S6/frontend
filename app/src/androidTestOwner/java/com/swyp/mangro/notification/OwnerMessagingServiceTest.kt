@@ -15,7 +15,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class OwnerNotificationDisplayTest {
+class OwnerMessagingServiceTest {
     @Test fun ownerAlertsUseChannelServerTextAndImmutableAppIntent() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val context = instrumentation.targetContext
@@ -26,9 +26,9 @@ class OwnerNotificationDisplayTest {
         val tag = "owner-notification-test"
         try {
             OwnerNotificationType.entries.forEach { type ->
-                OwnerNotificationDisplay.show(context, OwnerPushMessage(type, "테스트 제목", "테스트 본문"), tag)
+                OwnerMessagingService.showNotification(context, OwnerPushMessage(type, "테스트 제목", "테스트 본문"), tag)
                 val posted = manager.activeNotifications.single { it.tag == tag }.notification
-                assertEquals(OwnerNotificationDisplay.CHANNEL_ID, posted.channelId)
+                assertEquals(OwnerMessagingService.CHANNEL_ID, posted.channelId)
                 assertEquals("테스트 제목", posted.extras.getString(Notification.EXTRA_TITLE))
                 assertEquals("테스트 본문", posted.extras.getString(Notification.EXTRA_TEXT))
                 assertNotNull(posted.contentIntent)

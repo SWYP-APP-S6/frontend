@@ -78,6 +78,8 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentSet
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
 @Composable
 fun OwnerHomeScreenRoute(
@@ -87,12 +89,17 @@ fun OwnerHomeScreenRoute(
     navigateToProduct: (String) -> Unit,
     navigateToPickup: (String) -> Unit,
     navigateToRegisterProduct: () -> Unit,
+    refreshRequests: Flow<Unit> = emptyFlow(),
     viewModel: OwnerHomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(viewModel, refreshRequests) {
+        viewModel.observeRefreshRequests(refreshRequests)
+    }
 
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
